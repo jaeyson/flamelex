@@ -1,11 +1,30 @@
 {
-  description = "A very basic flake";
+  description = "Flamelex - an Alchemical workbench";
+  # https://baez.link/getting-started-using-nix-flakes-as-an-elixir-development-environment
 
-  outputs = { self, nixpkgs }: {
-
-    packages.x86_64-linux.hello = nixpkgs.legacyPackages.x86_64-linux.hello;
-
-    packages.x86_64-linux.default = self.packages.x86_64-linux.hello;
-
+  inputs = {
+    nixpkgs = { url = "github:NixOS/nixpkgs/nixpkgs-unstable"; }; 
+    flake-utils = { url = "github:numtide/flake-utils"; };
   };
+
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        inherit (nixpkgs.lib) optional;
+        pkgs = import nixpkgs { inherit system; };
+
+        elixir = pkgs.beam.packages.erlang.elixir;
+        elixir-ls = pkgs.beam.packages.erlang.elixir_ls;
+        locales = pkgs.glibcLocales;
+      in
+      {
+          devShell = pkgs.mkShell
+          {
+              buildInputs = [
+                elixir
+                locales
+            ];
+          };
+      }
+    );
 }
