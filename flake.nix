@@ -1,5 +1,5 @@
 {
-  description = "Flamelex - an Alchemical workbench";
+  description = "Flamelex - an Alchemical laboratory.";
   # https://baez.link/getting-started-using-nix-flakes-as-an-elixir-development-environment
 
   inputs = {
