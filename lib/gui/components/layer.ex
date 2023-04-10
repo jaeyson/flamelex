@@ -21,10 +21,10 @@ defmodule Flamelex.GUI.Component.Layer do
    #TODO handle the state & calc_state_fn not being mandatory args...
 
    def init(scene, %{layer_module: layer, radix_state: radix_state} = args, opts) do
-      Logger.debug "Initializing layer #{opts[:id]}..."
+      # Logger.debug "Initializing layer #{opts[:id]}..."
 
       init_state = layer.calc_state(radix_state)
-      init_graph = layer.render(init_state, radix_state)
+      {:ok, init_graph} = layer.render(init_state, radix_state)
 
       init_scene = scene
       # |> assign(id: opts[:id] || raise "invalid ID")
@@ -33,7 +33,7 @@ defmodule Flamelex.GUI.Component.Layer do
       |> assign(state: init_state)
       |> push_graph(init_graph)
 
-      Flamelex.Utils.PubSub.subscribe(topic: :radix_state_change)
+      Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
 
       {:ok, init_scene}
    end
@@ -47,7 +47,7 @@ defmodule Flamelex.GUI.Component.Layer do
    #    |> assign(state: args[:state] || nil)
    #    |> push_graph(args.graph)
 
-   #    Flamelex.Utils.PubSub.subscribe(topic: :radix_state_change)
+   #    Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
 
    #    {:ok, init_scene}
    # end
@@ -60,15 +60,18 @@ defmodule Flamelex.GUI.Component.Layer do
       new_layer_state = layer.calc_state(new_radix_state)
 
       if new_layer_state != old_layer_state do
-         new_graph = layer.render(new_layer_state, new_radix_state)
-
-         new_scene =
-            scene
-            |> assign(state: new_layer_state)
-            |> assign(graph: new_graph)
-            |> push_graph(new_graph)
-
-         {:noreply, new_scene}
+         case layer.render(new_layer_state, new_radix_state) do
+            :ignore ->
+               {:noreply, scene}
+            {:ok, %Scenic.Graph{} = new_graph} ->
+               new_scene =
+                  scene
+                  |> assign(state: new_layer_state)
+                  |> assign(graph: new_graph)
+                  |> push_graph(new_graph)
+   
+               {:noreply, new_scene}
+         end
       else
          {:noreply, scene}
       end

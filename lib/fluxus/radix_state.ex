@@ -1,6 +1,49 @@
 defmodule Flamelex.Fluxus.Structs.RadixState do
-   @moduledoc false
-   use Flamelex.ProjectAliases
+   @moduledoc """
+   In latin, `fluxus` means "flow" and `radix` means "root". FluxusRadix
+   is the root node in the state-tree of fluxus internally (now renamed
+   to RadixState).
+
+   The FluxusRadix holds the highest-level flamelex state, for example:
+
+      - the active buffer
+      - the system mode
+      - the input history (both keystrokes, & actions)
+      - it acts as a conduit for all user-input
+
+   We need a single junction-point where all the data required to make
+   decisions can be combined & acted upon - this is it.
+
+   What belongs in the domain of RadixState? Anything which affects both
+   buffers & GUI components. e.g. opening the Command buffer requires:
+
+   * changing the input mode
+   * checking the contents of `Flamelex.Buffer.Command`
+   * rendering the GUI.Component
+   * etc...
+
+   changing the input mode alone requires that we make our changes at the
+   FluxusRadix level, so we might as well just put the rest as side-effects
+   in the reducer at this level. This makes sense because it's a heirarchy -
+   since we need to change the input it's an FluxusRadix level change, so
+   the function to open the Command buffer must be implemented at this level.
+   If we don't need to alter anything at this level, then do not implement
+   it in a reducer/handler at this level, handle it somewhere lower.
+
+   When we need to trigger something at the Radix level, we can use actions.
+   Actions get handled by the TansStatum module, though the actual processing
+   occurs in a seperate process, running under the
+   `Flamelex.Fluxus.HandleAction.TaskSupervisor`.
+
+   User input also gets funneled through this process - the RadixState (which
+   includes the user-input history) and the input itself are handled by
+   one of the InputHandler functions, which operate in basically the same
+   manner as reducers - spun up into their own process & handled in there.
+   Inputs usually lead to an action being dispatched, which is sent back
+   to FluxusRadix (kind of a loop-back) to be then handled.
+   """
+
+   use Flamelex.Lib.ProjectAliases
 
    @max_keystroke_history_limit 50
    @max_action_history_limit 50
@@ -14,11 +57,20 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
       {:ok, ibm_plex_mono_font_metrics} =
          TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
 
+      #TODO initialize the whole all with some default layer states
+
       %{
          root: %{
             active_app: :desktop,
             # active_app: :renseijin,
             graph: nil, # This holds the layers construct
+            layers: %{
+               one: %{
+                  layout: %{
+                     editor: :full_screen
+                  }
+               }
+            }
             # layers: [ # The final %Graph{} which we are holding on to for, for each layer
             #    #NOTE: We use a Keyword list, as it works better for pattern matching than maps with keys
             #    one: nil,
@@ -53,6 +105,10 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
                height: 40,
                font_size: 22
             }
+         },
+         projects: %{
+            open_proj: nil,
+            proj_list: []
          },
          editor: %{
             font: ScenicWidgets.TextPad.Structs.Font.new(%{
@@ -90,28 +146,6 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
                metrics: ibm_plex_mono_font_metrics,
                size: 24
             })
-         },
-         memex: %{
-            graph: nil, # Store the %Graph{} here if we need to (for switching between apps easily)
-            active?: Application.get_env(:memelex, :active?), # If the Memex is disabled at the app config level, we need to ignore a lot of actions
-            story_river: %{
-               open_tidbits: [],
-               # mode: :read_only,
-               #TODO put the scroll in another process, then it a) will hopefully be more seperated and b) we can just update that one (maybe even just by calling update_opts) and don't have to re-render every component we're scrolling, which is kinda crazy
-               scroll: %{
-                  accumulator: {0, 0},
-                  direction: :vertical,
-                  components: [],
-                  #acc_length: nil # this will get populated by the component, and will accumulate as TidBits get put in the StoryRiver 
-               }
-            },
-            sidebar: %{
-               active_tab: :ctrl_panel,
-               search: %{
-                  active?: false,
-                  string: ""
-               }
-            }
          },
          # widget_wkb: %{
          #    graph: nil,
@@ -206,5 +240,9 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
 
 
 
+  def mutate(radix_state, :open_widget_wkb) do
+   radix_state
+   |> put_in([:root, :active_app], :widget_wkb)
+  end
 
 end

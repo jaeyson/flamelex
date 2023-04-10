@@ -1,6 +1,6 @@
-defmodule Flamelex.Utils.PubSub do
-  @registrar_proc Flamelex.PubSub
-  @topic :flamelex
+defmodule Flamelex.Lib.Utils.PubSub do
+  @registrar_proc Fluxus.PubSub
+  @topic :radix_state_changes
 
   def subscribe, do: subscribe(topic: @topic)
 

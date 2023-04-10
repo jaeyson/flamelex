@@ -5,7 +5,7 @@ defmodule Flamelex.Keymaps.Desktop do
    @ignorable_keys [@shift_space, @meta, @left_ctrl, @left_alt]
 
    def process(_radix_state, @leader) do
-      Logger.debug " <<-- Leader key pressed -->>"
+      # Logger.debug " <<-- Leader key pressed -->>"
       :ok
    end
 
@@ -33,8 +33,19 @@ defmodule Flamelex.Keymaps.Desktop do
 
    # open the Kommander with keybinding <leader>k
    def process(%{history: %{keystrokes: [@leader|_rest]}} = radix_state, @lowercase_k) do
-      Logger.debug "Opening KommandBuffer..."
+      # Logger.debug "Opening KommandBuffer..."
       :ok = Flamelex.API.Kommander.show()
+   end
+
+   def process(%{
+      root: %{layers: %{one: %{explorer: %{active?: true}}}},
+      history: %{keystrokes: [@sub_leader|_rest]}} = radix_state, @lowercase_e
+   ) do
+      Flamelex.API.Editor.hide_explorer()
+   end
+
+   def process(%{history: %{keystrokes: [@sub_leader|_rest]}} = radix_state, @lowercase_e) do
+      Flamelex.API.Editor.show_explorer()
    end
 
    # NOTE - this has to go below the match where we record the history of pressing @leader
@@ -48,7 +59,7 @@ defmodule Flamelex.Keymaps.Desktop do
 
    # open the Memex with keybinding <leader>h
    # def process(@lowercase_h, %{history: %{keystrokes: [@leader|_rest]}} = radix_state) do
-   #    :ok = Flamelex.API.Memex.open()
+   #    :ok = Flamelex.API.Diary.open()
    # end
    
 end

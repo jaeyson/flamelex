@@ -1,4 +1,4 @@
-defmodule Flamelex.ProjectAliases do
+defmodule Flamelex.Lib.ProjectAliases do
   @moduledoc """
   This module makes it easy to include a whole set of very common aliases
   used throughout Flamelex.
@@ -11,7 +11,14 @@ defmodule Flamelex.ProjectAliases do
         Buffer,
         Kommander,
         GUI,
-        Memex
+        Diary
+      }
+
+      alias Memelex.My
+
+      alias Memelex.My.{
+        Journal,
+        Wiki
       }
 
       alias Flamelex.Fluxus
@@ -23,10 +30,12 @@ defmodule Flamelex.ProjectAliases do
       
       alias Flamelex.GUI.Utils.Draw
 
-      alias Flamelex.Utils.ProcessRegistry
-      alias Flamelex.Utils.PubSub
+      alias Flamelex.Lib.Utils.ProcessRegistry
+      alias Flamelex.Lib.Utils.PubSub
 
-      use IceCream # https://github.com/joseph-lozano/ice_cream
+      # use IceCream # https://github.com/joseph-lozano/ice_cream
+
+      import Memelex.Environment, only: [reload_modz: 0]
 
     end
   end

@@ -1,4 +1,4 @@
-defmodule Flamelex.Fluxus.UserInputHandler do
+defmodule Flamelex.Fluxus.UserInputHandler do #TODO rename just InputHandler to make it easier to find
    @moduledoc """
    This is the highest-level input handler. All user-input gets routed
    through this module.
@@ -12,19 +12,20 @@ defmodule Flamelex.Fluxus.UserInputHandler do
       Flamelex.Keymaps.Kommander |> process_with_rescue(radix_state, input)
    end
 
-   # # def process(%{root: %{active_app: :memex}, kommander: %{hidden?: true}} = radix_state, input) do
-   # def process(%{root: %{active_app: :memex}} = radix_state, input) do
-   #     Keymaps.Memex |> handle_with_rescue(radix_state, input)
-   # end
-
    def process(%{root: %{active_app: :desktop}} = radix_state, input) do
-      Logger.debug "Accepted input: #{inspect input} -- active_app: :desktop"
       Flamelex.Keymaps.Desktop |> process_with_rescue(radix_state, input)
    end
 
    def process(%{root: %{active_app: :editor}} = radix_state, input) do
-      Logger.debug "Accepted input: #{inspect input} -- active_app: :editor"
+      #TODO route this to QuillEx
+      # QuillEx.Fluxus.input(input)
       Flamelex.Keymaps.Editor |> process_with_rescue(radix_state, input)
+   end
+
+   def process(%{root: %{active_app: :memex}} = radix_state, input) do
+      # fire it off to Memelex, they can worry about this one...
+      Memelex.Fluxus.input(input)
+      :ignore
    end
 
    def process(_radix_state, input) do
@@ -47,23 +48,24 @@ defmodule Flamelex.Fluxus.UserInputHandler do
                :ignore
       else
          :ok ->
-               {:ok, radix_state |> record_input(input)}
-         {:ok, new_radix_state} ->
-               {:ok, new_radix_state |> record_input(input)}
+            {:ok, radix_state |> record_input(input)}
+         #TODO I don't think we should allow any InputHandler to return a RadixState, since we dont broadcast out from them...
+         # {:ok, new_radix_state} ->
+         #    {:ok, new_radix_state |> record_input(input)}
          :ignore ->
-               :ignore
+            :ignore
       end
    end
 
    defp record_input(radix_state, {:key, {key, @key_pressed, []}} = input) when input in @valid_text_input_characters do
-      Logger.debug "-- Recording INPUT: #{inspect key}"
+      # Logger.debug "-- Recording INPUT: #{inspect key}"
       #NOTE: We store the latest keystroke at the front of the list, not the back
       radix_state
       |> put_in([:history, :keystrokes], radix_state.history.keystrokes |> List.insert_at(0, input))
    end
 
    defp record_input(radix_state, input) do
-      Logger.debug "NOT recording: #{inspect input} as input..."
+      # Logger.debug "NOT recording: #{inspect input} as input..."
       radix_state
    end
 end
@@ -209,12 +211,6 @@ end
 #     )
 #   end
 
-
-#   def lookup_action_for_input_async(%{mode: :memex} = radix_state, user_input) do
-#     #Logger.debug "#{__MODULE__} routing input received in Memex :mode."
-#     Flamelex.KeyMappings.Memex.keymap(radix_state, user_input)
-#     |> handle_lookup(radix_state)
-#   end
 
 #   #NOTE: this function is defined here, but it is run in it's own process...
 #   def lookup_action_for_input_async(%{mode: m} = radix_state, user_input)
