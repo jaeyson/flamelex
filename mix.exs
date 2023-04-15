@@ -27,7 +27,7 @@ defmodule Flamelex.App.MixProject do
     @version
   end
 
-  #TODO use mix environments to figure out which memex to connect to?
+  # TODO use mix environments to figure out which memex to connect to?
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
@@ -35,7 +35,6 @@ defmodule Flamelex.App.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-
       ## NOTE - these deps are all ones I have local copies of, so if you
       #         happn to be reading this (hello Vacarsu) you'll need to
       #         either clone them locally or switch back to the mix managed versions
@@ -43,14 +42,13 @@ defmodule Flamelex.App.MixProject do
       #         I think you can just comment out memex for now, but, it might
       #         also break stuff
 
-      #NOTE: These are the public declarations (pulled from github)
       # {:scenic, "~> 0.11.0-beta.0"},
-      # {:scenic, git: "https://github.com/JediLuke/scenic", branch: "no_text_wrap"},
-      # {:scenic_driver_local, "~> 0.11.0-beta.0"},
+      {:scenic, git: "https://github.com/JediLuke/scenic", branch: "no_text_wrap", override: true},
+      {:scenic_driver_local, "~> 0.11.0-beta.0", override: true},
       # {:memelex, git: "https://github.com/JediLuke/memelex"},
       #      These are the imports for local dev
-      {:scenic, path: "../scenic", override: true, runtime: false},
-      {:scenic_driver_local, path: "../scenic_driver_local", override: true},
+      # {:scenic, path: "../scenic", override: true, runtime: false},
+      # {:scenic_driver_local, path: "../scenic_driver_local", override: true},
       {:scenic_widget_contrib, path: "../scenic-widget-contrib", override: true},
       {:memelex, path: "../memelex", runtime: false},
       {:quillex, path: "../quillex", runtime: false},
@@ -58,8 +56,8 @@ defmodule Flamelex.App.MixProject do
       # {:scenic_layout_o_matic, "~> 0.4.0"},
       {:ecto_sql, "~> 3.0"},
       {:truetype_metrics, "~> 0.5"},
-      # {:font_metrics, "~> 0.5"},
-      {:font_metrics, path: "../font_metrics", override: true},
+      {:font_metrics, "~> 0.5", override: true},
+      # {:font_metrics, path: "../font_metrics", override: true},
       {:elixir_uuid, "~> 1.2"},
       {:wormhole, "~> 2.3"},
       {:jason, "~> 1.1"},
@@ -67,7 +65,7 @@ defmodule Flamelex.App.MixProject do
       {:tzdata, "~> 1.0.4"},
       {:map_diff, "~> 1.3"},
       # {:event_bus, "~> 1.6.2"},
-      {:event_bus, path: "../event_bus", override: true},
+      {:event_bus, git: "https://github.com/JediLuke/event_bus", override: true},
       {:struct_access, "~> 1.1.2"},
       {:ex_doc, "~> 0.23", only: :dev, runtime: false},
       {:ice_cream, "~> 0.0.5", only: [:dev, :test]},
