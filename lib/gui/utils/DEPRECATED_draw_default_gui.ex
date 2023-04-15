@@ -1,5 +1,3 @@
-
-
 # ## TODO - below be dragons!
 
 # #   def process({%{viewport: %{width: w}} = state, graph}, {'NEW_NOTE_COMMAND', contents, buffer_pid: buf_pid}) do
@@ -68,7 +66,6 @@
 # #     #                    translate: {25, 50 + offset_count * 110}, # text draws from bottom-left corner?? :( also, how high is it???
 # #     #                    font_size: 24, fill: :black)
 # #     #              end)
-
 
 # #     #         {graph, offset_count + 1}
 # #     #       end)

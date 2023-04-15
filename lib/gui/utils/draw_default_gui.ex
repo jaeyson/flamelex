@@ -5,14 +5,14 @@ defmodule Flamelex.GUI.Utils.DefaultGUI.NEW do
 
   # alias LayoutOMatic.Layouts.Components.Layout, as: AutoLayout
 
-
-  #TODO ok so here - what we need is a cohesive, layered, auto-layout system
+  # TODO ok so here - what we need is a cohesive, layered, auto-layout system
 
   def draw(_state) do
     Scenic.Graph.build()
-    |> Scenic.Primitives.rect({80, 80}, fill: :white,  translate: {100, 100})
-    |> Scenic.Primitives.rect({80, 80}, fill: :green,  translate: {140, 140})
+    |> Scenic.Primitives.rect({80, 80}, fill: :white, translate: {100, 100})
+    |> Scenic.Primitives.rect({80, 80}, fill: :green, translate: {140, 140})
   end
+
   # def draw(%{viewport: vp, layers: layers} = state) do
 
   #   base_graph = Scenic.Graph.build()
@@ -33,7 +33,6 @@ defmodule Flamelex.GUI.Utils.DefaultGUI.NEW do
   #     ]}))
   # end
 
-
   # def draw_layer(graph, %{id: id, num: x, draw_function: draw_fn}) when x >= 1 do
 
   #   #TODO this is really it - now we need auto-layouts
@@ -45,9 +44,6 @@ defmodule Flamelex.GUI.Utils.DefaultGUI.NEW do
 
   #   graph |> Scenic.Primitives.group(draw_fn, id: {:layer, id, x})
   # end
-
-
-
 
   # def renseijin() do
   #   # returns a function, which takes a graph, which will be passed to the Scenic group

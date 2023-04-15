@@ -1,7 +1,6 @@
 defmodule Test.Flamelex.API.Kommander do
   use ExUnit.Case
 
-
   # here's my rough script
 
   # - show the command buffer
@@ -21,11 +20,5 @@ defmodule Test.Flamelex.API.Kommander do
 
   # - test backspace when inputting text
 
-
-
-
-#TODO vim test - test the keybinding <space>k, calls Kommander.open()
-
-
-
+  # TODO vim test - test the keybinding <space>k, calls Kommander.open()
 end
