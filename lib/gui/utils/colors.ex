@@ -1,6 +1,6 @@
 defmodule Flamelex.GUI.Colors do
-
-  def pallete do #TODO this should be a config
+  # TODO this should be a config
+  def pallete do
     Flamelex.GUI.ColorsPalletes.Anakin
     # Flamelex.GUI.ColorsPalletes.Obiwan
   end
@@ -12,7 +12,6 @@ defmodule Flamelex.GUI.Colors do
   def foreground do
     pallete().foreground()
   end
-
 
   def mode(:normal), do: :beige
   def mode(:insert), do: :green

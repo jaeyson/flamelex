@@ -1,4 +1,4 @@
-#NOTE -
+# NOTE -
 
 # The answer to this conundrum presented itself in time, as these things often do!
 
@@ -17,7 +17,6 @@
 # ... to this end I just renamed the file diary_api.ex, because the
 # memex view is going to end up being called the Diary view
 
-
 defmodule Flamelex.API.Diary do
   @moduledoc """
   An API for the integrated Memex.
@@ -34,9 +33,6 @@ defmodule Flamelex.API.Diary do
   """
   require Logger
 
-
-
-
   @doc ~s(Open the Memelex-GUI-pane inside Flamelex.)
   def open do
     # Logger.debug "#{__MODULE__} opening the Memex..."
@@ -48,12 +44,11 @@ defmodule Flamelex.API.Diary do
   #   # Flamelex.Fluxus.action({:open_tidbit, t})
   # end
 
-  #TODO modify an existing TidBit (but that would require us to call)
+  # TODO modify an existing TidBit (but that would require us to call)
   # def modify()
 
   def close do
     # Logger.debug "#{__MODULE__} closing the Memex..."
     Flamelex.Fluxus.action({Flamelex.Fluxus.Reducers.Memex, :close_memex})
   end
-
 end

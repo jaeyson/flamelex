@@ -1,5 +1,5 @@
 defmodule Flamelex.GUI.ColorsPalletes.Anakin do
-  #TODO we should have a behaviour here probs
+  # TODO we should have a behaviour here probs
 
   # https://vimcolors.org/
 
@@ -63,7 +63,6 @@ defmodule Flamelex.GUI.ColorsPalletes.Anakin do
   # hi Operator guifg=#6de5ff guibg=NONE
   # hi cssAttr guifg=#6de5ff guibg=NONE
 
-
   # hi Pmenu guifg=#dadada guibg=#454545
   # hi SignColumn guibg=#272935
   # hi Title guifg=#dadada
@@ -80,9 +79,8 @@ defmodule Flamelex.GUI.ColorsPalletes.Anakin do
   # hi VertSplit gui=NONE guifg=#454545 guibg=NONE
   # hi Visual gui=NONE guibg=#454545
 
-
-  def background, do: rgb_tuple(%{ red: 39 , green: 41 , blue: 53  })
-  def foreground, do: rgb_tuple(%{ red: 218, green: 218, blue: 218 })
+  def background, do: rgb_tuple(%{red: 39, green: 41, blue: 53})
+  def foreground, do: rgb_tuple(%{red: 218, green: 218, blue: 218})
 
   # def primary, do:
   # def contrasting, do:
