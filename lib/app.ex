@@ -3,26 +3,25 @@ defmodule Flamelex.App do
   use Application
   require Logger
 
-
   def start(_type, _args) do
-    #Logger.debug "#{__MODULE__} initializing..."
+    # Logger.debug "#{__MODULE__} initializing..."
 
     children = [
-      #NOTE: Fluxus has to come before the GUI because
+      # NOTE: Fluxus has to come before the GUI because
       # GUI calls RadixStore to get it's init state
-      #TODO maybe we should pass it in to both from this top level??
+      # TODO maybe we should pass it in to both from this top level??
       Flamelex.Fluxus.TopLevelSupervisor,
       {Scenic, [viewport_config()]}
     ]
 
-    children = if boot_memelex?(),
-                    do: children ++ [Memelex.App.BootLoader],
-                  else: children
+    children =
+      if boot_memelex?(),
+        do: children ++ [Memelex.App.BootLoader],
+        else: children
 
     opts = [strategy: :one_for_one, name: __MODULE__]
     Supervisor.start_link(children, opts)
   end
-
 
   @macbook_pro {1440, 855}
   @window_size_macbook_pro_2 {1680, 1005}

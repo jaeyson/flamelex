@@ -1,180 +1,179 @@
 defmodule Flamelex.Fluxus.Structs.RadixState do
-   @moduledoc """
-   In latin, `fluxus` means "flow" and `radix` means "root". FluxusRadix
-   is the root node in the state-tree of fluxus internally (now renamed
-   to RadixState).
+  @moduledoc """
+  In latin, `fluxus` means "flow" and `radix` means "root". FluxusRadix
+  is the root node in the state-tree of fluxus internally (now renamed
+  to RadixState).
 
-   The FluxusRadix holds the highest-level flamelex state, for example:
+  The FluxusRadix holds the highest-level flamelex state, for example:
 
-      - the active buffer
-      - the system mode
-      - the input history (both keystrokes, & actions)
-      - it acts as a conduit for all user-input
+     - the active buffer
+     - the system mode
+     - the input history (both keystrokes, & actions)
+     - it acts as a conduit for all user-input
 
-   We need a single junction-point where all the data required to make
-   decisions can be combined & acted upon - this is it.
+  We need a single junction-point where all the data required to make
+  decisions can be combined & acted upon - this is it.
 
-   What belongs in the domain of RadixState? Anything which affects both
-   buffers & GUI components. e.g. opening the Command buffer requires:
+  What belongs in the domain of RadixState? Anything which affects both
+  buffers & GUI components. e.g. opening the Command buffer requires:
 
-   * changing the input mode
-   * checking the contents of `Flamelex.Buffer.Command`
-   * rendering the GUI.Component
-   * etc...
+  * changing the input mode
+  * checking the contents of `Flamelex.Buffer.Command`
+  * rendering the GUI.Component
+  * etc...
 
-   changing the input mode alone requires that we make our changes at the
-   FluxusRadix level, so we might as well just put the rest as side-effects
-   in the reducer at this level. This makes sense because it's a heirarchy -
-   since we need to change the input it's an FluxusRadix level change, so
-   the function to open the Command buffer must be implemented at this level.
-   If we don't need to alter anything at this level, then do not implement
-   it in a reducer/handler at this level, handle it somewhere lower.
+  changing the input mode alone requires that we make our changes at the
+  FluxusRadix level, so we might as well just put the rest as side-effects
+  in the reducer at this level. This makes sense because it's a heirarchy -
+  since we need to change the input it's an FluxusRadix level change, so
+  the function to open the Command buffer must be implemented at this level.
+  If we don't need to alter anything at this level, then do not implement
+  it in a reducer/handler at this level, handle it somewhere lower.
 
-   When we need to trigger something at the Radix level, we can use actions.
-   Actions get handled by the TansStatum module, though the actual processing
-   occurs in a seperate process, running under the
-   `Flamelex.Fluxus.HandleAction.TaskSupervisor`.
+  When we need to trigger something at the Radix level, we can use actions.
+  Actions get handled by the TansStatum module, though the actual processing
+  occurs in a seperate process, running under the
+  `Flamelex.Fluxus.HandleAction.TaskSupervisor`.
 
-   User input also gets funneled through this process - the RadixState (which
-   includes the user-input history) and the input itself are handled by
-   one of the InputHandler functions, which operate in basically the same
-   manner as reducers - spun up into their own process & handled in there.
-   Inputs usually lead to an action being dispatched, which is sent back
-   to FluxusRadix (kind of a loop-back) to be then handled.
-   """
+  User input also gets funneled through this process - the RadixState (which
+  includes the user-input history) and the input itself are handled by
+  one of the InputHandler functions, which operate in basically the same
+  manner as reducers - spun up into their own process & handled in there.
+  Inputs usually lead to an action being dispatched, which is sent back
+  to FluxusRadix (kind of a loop-back) to be then handled.
+  """
 
-   use Flamelex.Lib.ProjectAliases
+  use Flamelex.Lib.ProjectAliases
 
-   @max_keystroke_history_limit 50
-   @max_action_history_limit 50
+  @max_keystroke_history_limit 50
+  @max_action_history_limit 50
 
+  @doc """
+  This function calculates & returns the default RadixState - the one
+  that is populated upon applications startup.
+  """
+  def initialize do
+    {:ok, ibm_plex_mono_font_metrics} =
+      TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
 
-   @doc """
-   This function calculates & returns the default RadixState - the one
-   that is populated upon applications startup.  
-   """
-   def initialize do
-      {:ok, ibm_plex_mono_font_metrics} =
-         TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
+    # TODO initialize the whole all with some default layer states
 
-      #TODO initialize the whole all with some default layer states
-
-      %{
-         root: %{
-            active_app: :desktop,
-            # active_app: :renseijin,
-            graph: nil, # This holds the layers construct
-            layers: %{
-               one: %{
-                  layout: %{
-                     editor: :full_screen
-                  }
-               }
+    %{
+      root: %{
+        active_app: :desktop,
+        # active_app: :renseijin,
+        # This holds the layers construct
+        graph: nil,
+        layers: %{
+          one: %{
+            layout: %{
+              editor: :full_screen
             }
-            # layers: [ # The final %Graph{} which we are holding on to for, for each layer
-            #    #NOTE: We use a Keyword list, as it works better for pattern matching than maps with keys
-            #    one: nil,
-            #    two: nil,
-            #    three: nil,
-            #    four: nil
-            # ]
-         },
-         gui: %{
-            viewport: nil,
-            theme: Flamelex.GUI.Utils.Theme.default()
-            # fonts: %{
-            #    primary: ScenicWidgets.TextPad.Structs.Font.new(%{
-            #       name: :ibm_plex_mono,
-            #       metrics: ibm_plex_mono_font_metrics
-            #    })
-            # }
-         },
-         desktop: %{
-            renseijin: %{
-               visible?: true,
-               animate?: false
-             },
-         },
-         #TODO move this into desktop...
-         menu_bar: %{
-            font: :ibm_plex_mono,
-            height: 60,
-            show?: true,
-            font_size: 36,
-            sub_menu: %{
-               height: 40,
-               font_size: 22
+          }
+        }
+        # layers: [ # The final %Graph{} which we are holding on to for, for each layer
+        #    #NOTE: We use a Keyword list, as it works better for pattern matching than maps with keys
+        #    one: nil,
+        #    two: nil,
+        #    three: nil,
+        #    four: nil
+        # ]
+      },
+      gui: %{
+        viewport: nil,
+        theme: Flamelex.GUI.Utils.Theme.default()
+        # fonts: %{
+        #    primary: ScenicWidgets.TextPad.Structs.Font.new(%{
+        #       name: :ibm_plex_mono,
+        #       metrics: ibm_plex_mono_font_metrics
+        #    })
+        # }
+      },
+      desktop: %{
+        renseijin: %{
+          visible?: true,
+          animate?: false
+        }
+      },
+      # TODO move this into desktop...
+      menu_bar: %{
+        font: :ibm_plex_mono,
+        height: 60,
+        show?: true,
+        font_size: 36,
+        sub_menu: %{
+          height: 40,
+          font_size: 22
+        }
+      },
+      projects: %{
+        open_proj: nil,
+        proj_list: []
+      },
+      editor: %{
+        font:
+          ScenicWidgets.TextPad.Structs.Font.new(%{
+            name: :ibm_plex_mono,
+            metrics: ibm_plex_mono_font_metrics,
+            size: 24
+          }),
+        graph: nil,
+        # A list of %Buffer{} structs
+        buffers: [],
+        active_buf: nil,
+        config: %{
+          keymap: Flamelex.KeyMappings.Vim,
+          scroll: %{
+            # invert: %{ # change the direction of scroll wheel
+            #   horizontal?: true,
+            #   vertical?: false
+            # },
+            # higher value means faster scrolling
+            speed: %{
+              horizontal: 5,
+              vertical: 3
             }
-         },
-         projects: %{
-            open_proj: nil,
-            proj_list: []
-         },
-         editor: %{
-            font: ScenicWidgets.TextPad.Structs.Font.new(%{
-               name: :ibm_plex_mono,
-               metrics: ibm_plex_mono_font_metrics,
-               size: 24
-            }),
-            graph: nil,
-            buffers: [], # A list of %Buffer{} structs
-            active_buf: nil,
-            config: %{
-               keymap: Flamelex.KeyMappings.Vim,
-               scroll: %{
-                  # invert: %{ # change the direction of scroll wheel
-                  #   horizontal?: true,
-                  #   vertical?: false
-                  # },
-                  speed: %{ # higher value means faster scrolling
-                    horizontal: 5,
-                    vertical: 3
-                  }
-               }
-            }
-         },
-         kommander: %{
-            hidden?: true,
-            buffer: QuillEx.Structs.Buffer.new(%{
-               id: {:buffer, Kommander},
-               type: :text,
-               data: "",
-               mode: :edit
-            }),
-            font: ScenicWidgets.TextPad.Structs.Font.new(%{
-               name: :ibm_plex_mono,
-               metrics: ibm_plex_mono_font_metrics,
-               size: 24
-            })
-         },
-         # widget_wkb: %{
-         #    graph: nil,
-         # },
-         history: %{
-            keystrokes:   [],
-            # actions:      []
-         }
+          }
+        }
+      },
+      kommander: %{
+        hidden?: true,
+        buffer:
+          QuillEx.Structs.Buffer.new(%{
+            id: {:buffer, Kommander},
+            type: :text,
+            data: "",
+            mode: :edit
+          }),
+        font:
+          ScenicWidgets.TextPad.Structs.Font.new(%{
+            name: :ibm_plex_mono,
+            metrics: ibm_plex_mono_font_metrics,
+            size: 24
+          })
+      },
+      # widget_workbench: %{
+      #    graph: nil,
+      # },
+      history: %{
+        keystrokes: []
+        # actions:      []
       }
-   end
+    }
+  end
 
+  # defdelegate change_font(radix_state, new_font),
+  #    to: QuillEx.Fluxus.Structs.RadixState
 
-   # defdelegate change_font(radix_state, new_font),
-   #    to: QuillEx.Fluxus.Structs.RadixState
+  # defdelegate change_font_size(radix_state, direction),
+  #    to: QuillEx.Fluxus.Structs.RadixState
 
-   # defdelegate change_font_size(radix_state, direction),
-   #    to: QuillEx.Fluxus.Structs.RadixState
+  # defdelegate change_editor_scroll_state(radix_state, new_scroll_state),
+  #    to: QuillEx.Fluxus.Structs.RadixState
 
-   # defdelegate change_editor_scroll_state(radix_state, new_scroll_state),
-   #    to: QuillEx.Fluxus.Structs.RadixState
-
-
-  #TODO it should be possible to use the action/keystroke history to record macros
-
+  # TODO it should be possible to use the action/keystroke history to record macros
 
   # @modes [:normal, :insert, {:kommand_buffer_active, :insert}]
-
-
-
 
   # #TODO ok, figure out how modes is gonna work, with active buffer etc...
   # def set(%__MODULE__{} = radix_state, [mode: m]) when m in @modes do
@@ -238,11 +237,8 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
   #   |> hd()
   # end
 
-
-
-  def mutate(radix_state, :open_widget_wkb) do
-   radix_state
-   |> put_in([:root, :active_app], :widget_wkb)
+  def mutate(radix_state, :open_widget_workbench) do
+    radix_state
+    |> put_in([:root, :active_app], :widget_workbench)
   end
-
 end
