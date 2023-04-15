@@ -48,7 +48,54 @@ defmodule Flamelex.GUI.Layers.LayerTwo do
             {"toggle line nums", fn -> raise "no" end},
             {"toggle file tray", fn -> raise "no" end},
             {"toggle tab bar", fn -> raise "no" end},
-            {:sub_menu, "font",
+            font_sub_menu()
+          ]},
+         {:sub_menu, "Kommander",
+          [
+            {"show", &Flamelex.API.Kommander.show/0},
+            {"hide", &Flamelex.API.Kommander.hide/0}
+          ]},
+         {:sub_menu, "DevTools",
+          [
+            {"get radix state",
+             fn -> Flamelex.API.DevTools.get_radix_state() |> IO.inspect() end},
+            {"temet nosce", &Flamelex.temet_nosce/0}
+          ]},
+         widget_workbench(),
+         re_source_shell(),
+         quit()
+       ]},
+      {:sub_menu, "Buffer", buffer_menu(radix_state)},
+      memex_top_level_menu(),
+      {:sub_menu, "API",
+       ScenicWidgets.MenuBar.modules_and_zero_arity_functions("Elixir.Flamelex.API")}
+      # {"Help", [
+      # GettingStarted
+      # {"About Flamelex", &Flamelex.API.Misc.makers_mark/0}]},
+    ]
+  end
+
+  def memex_top_level_menu do
+    {:sub_menu, "Memex",
+       [
+         {"open", &Flamelex.API.Diary.open/0},
+         {"close", &Flamelex.API.Diary.close/0},
+         {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end}
+         # random
+         # journal
+       ]}
+  end
+
+  def buffer_menu(%{editor: %{buffers: []}} = _radix_state) do
+    [
+      {"new", &Flamelex.API.Buffer.new/0},
+      {"save", &Flamelex.API.Buffer.save/0},
+      {"close", &Flamelex.API.Buffer.close/0}
+    ]
+  end
+
+  def font_sub_menu do
+    {:sub_menu, "font",
              [
                {:sub_menu, "primary font",
                 [
@@ -108,45 +155,6 @@ defmodule Flamelex.GUI.Layers.LayerTwo do
                   |> Flamelex.Fluxus.RadixStore.update()
                 end}
              ]}
-          ]},
-         {:sub_menu, "Kommander",
-          [
-            {"show", &Flamelex.API.Kommander.show/0},
-            {"hide", &Flamelex.API.Kommander.hide/0}
-          ]},
-         {:sub_menu, "DevTools",
-          [
-            {"get radix state",
-             fn -> Flamelex.API.DevTools.get_radix_state() |> IO.inspect() end},
-            {"temet nosce", &Flamelex.temet_nosce/0}
-          ]},
-         widget_workbench(),
-         re_source_shell(),
-         quit()
-       ]},
-      {:sub_menu, "Buffer", buffer_menu(radix_state)},
-      {:sub_menu, "Memex",
-       [
-         {"open", &Flamelex.API.Diary.open/0},
-         {"close", &Flamelex.API.Diary.close/0},
-         {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end}
-         # random
-         # journal
-       ]},
-      {:sub_menu, "API",
-       ScenicWidgets.MenuBar.modules_and_zero_arity_functions("Elixir.Flamelex.API")}
-      # {"Help", [
-      # GettingStarted
-      # {"About Flamelex", &Flamelex.API.Misc.makers_mark/0}]},
-    ]
-  end
-
-  def buffer_menu(%{editor: %{buffers: []}} = _radix_state) do
-    [
-      {"new", &Flamelex.API.Buffer.new/0},
-      {"save", &Flamelex.API.Buffer.save/0},
-      {"close", &Flamelex.API.Buffer.close/0}
-    ]
   end
 
   def buffer_menu(%{editor: %{buffers: open_buffers}} = _radix_state) do
