@@ -11,13 +11,11 @@ defmodule Flamelex do
   delegate functions here to Flamelex.API
   """
 
-  #NOTE if I ever figure out some cool way of doing this
+  # NOTE if I ever figure out some cool way of doing this
   # automatically, post it back here https://elixirforum.com/t/batch-delegate-functions-to-a-module/25046
   @api Flamelex.API
-  
+
   defdelegate temet_nosce(), to: @api
-
-
 end
 
 defmodule Flamelex.API do
@@ -39,14 +37,19 @@ defmodule Flamelex.API do
   function is for. Except the keeping state part, that doesn't work yet!
   """
   def temet_nosce do
-    IO.puts "\n#{__MODULE__} stopping..."
-    Application.stop(:flamelex)
+    quit()
 
-    IO.puts "\n#{__MODULE__} recompiling..."
-    IEx.Helpers.recompile
+    IO.puts("\n#{__MODULE__} recompiling...")
+    IEx.Helpers.recompile()
 
-    IO.puts "\n#{__MODULE__} starting...\n"
+    IO.puts("\n#{__MODULE__} starting...\n")
     Application.start(:flamelex)
+  end
+
+  def quit do
+    IO.puts("\n#{__MODULE__} stopping...")
+    Application.stop(:flamelex)
+    IO.puts("\n#{__MODULE__} Done.")
   end
 
   def redraw_gui do
@@ -55,7 +58,6 @@ defmodule Flamelex.API do
     raise "not implemented"
   end
 
-
   @doc """
   #TODO
   Increase or decrease the logging output of Flamelex during runtime.
@@ -63,7 +65,6 @@ defmodule Flamelex.API do
   def set_log_level(:debug) do
     raise "How do I set the log level??"
   end
-
 
   @doc """
   Trigger help for the user.

@@ -121,7 +121,8 @@ defmodule Flamelex.GUI.Layers.LayerTwo do
             {"temet nosce", &Flamelex.temet_nosce/0}
           ]},
          widget_workbench(),
-         re_source_shell()
+         re_source_shell(),
+         quit()
        ]},
       {:sub_menu, "Buffer", buffer_menu(radix_state)},
       {:sub_menu, "Memex",
@@ -174,4 +175,9 @@ defmodule Flamelex.GUI.Layers.LayerTwo do
   def re_source_shell do
     {"re_source_shell", &Flamelex.Lib.Utils.TerminalIO.create_shell_alias/0}
   end
+
+  def quit do
+    {"quit", &Flamelex.API.quit/0}
+  end
+
 end

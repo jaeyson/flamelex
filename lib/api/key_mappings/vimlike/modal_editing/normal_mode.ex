@@ -1,117 +1,120 @@
 defmodule Flamelex.KeyMappings.Vim.NormalMode do
-   use Flamelex.Keymaps.Editor.GlobalBindings
-   alias QuillEx.Reducers.BufferReducer.Utils
-   require Logger
+  use Flamelex.Keymaps.Editor.GlobalBindings
+  alias QuillEx.Reducers.BufferReducer.Utils
+  require Logger
 
-   # These are convenience bindings to make the code more readable when moving cursors
-   @left_one_column {0, -1}
-   @up_one_row {-1, 0}
-   @right_one_column {0, 1}
-   @down_one_row {1, 0}
+  # These are convenience bindings to make the code more readable when moving cursors
+  @left_one_column {0, -1}
+  @up_one_row {-1, 0}
+  @right_one_column {0, 1}
+  @down_one_row {1, 0}
 
-   def process(_state, @leader) do
-      # Logger.debug " <<-- Leader key pressed -->>"
-      :ok
-   end
+  def process(_state, @leader) do
+    # Logger.debug " <<-- Leader key pressed -->>"
+    :ok
+  end
 
-   def process(_state, @sub_leader) do
-      # Logger.debug " <<-- Sub-Leader key pressed -->>"
-      :ok
-   end
+  def process(_state, @sub_leader) do
+    # Logger.debug " <<-- Sub-Leader key pressed -->>"
+    :ok
+  end
 
-   # defer to Desktop key-mappings for leader commands
-   def process(%{history: %{keystrokes: [@leader|_rest]}} = radix_state, key) do
-      Flamelex.Keymaps.Desktop.process(radix_state, key)
-   end
+  # defer to Desktop key-mappings for leader commands
+  def process(%{history: %{keystrokes: [@leader | _rest]}} = radix_state, key) do
+    Flamelex.Keymaps.Desktop.process(radix_state, key)
+  end
 
-   def process(%{history: %{keystrokes: [@sub_leader|_rest]}} = radix_state, key) do
-      Flamelex.Keymaps.Desktop.process(radix_state, key)
-   end
+  def process(%{history: %{keystrokes: [@sub_leader | _rest]}} = radix_state, key) do
+    Flamelex.Keymaps.Desktop.process(radix_state, key)
+  end
 
-   def process(%{kommander: %{hidden?: false}}, @escape_key) do
-      :ok = Flamelex.API.Kommander.hide()
-   end
+  def process(%{kommander: %{hidden?: false}}, @escape_key) do
+    :ok = Flamelex.API.Kommander.hide()
+  end
 
+  ## Vim normal-mode keybindings
+  ## ---------------------------
 
-   ## Vim normal-mode keybindings
-   ## ---------------------------
+  # switch to insert mode
+  def process(%{root: %{active_app: :editor}, editor: %{active_buf: active_buf}}, @lowercase_i) do
+    Flamelex.API.Buffer.modify(active_buf, {:set_mode, {:vim, :insert}})
+  end
 
+  # switch to insert mode - after current column
+  def process(%{root: %{active_app: :editor}, editor: %{active_buf: active_buf}}, @lowercase_a) do
+    Flamelex.API.Buffer.modify(active_buf, {:set_mode, {:vim, :insert}})
+    Flamelex.API.Buffer.move_cursor(@right_one_column)
+  end
 
-   # switch to insert mode
-   def process(%{root: %{active_app: :editor}, editor: %{active_buf: active_buf}}, @lowercase_i) do
-      Flamelex.API.Buffer.modify(active_buf, {:set_mode, {:vim, :insert}})
-   end
+  # switch to insert mode - open up a new line below the current cursor for editing
+  def process(radix_state, @lowercase_o) do
+    active_buf = %{cursors: [cursor]} = Utils.filter_active_buf(radix_state)
+    Flamelex.API.Buffer.modify(active_buf, {:insert_line, after: cursor.line, text: ""})
+    Flamelex.API.Buffer.modify(active_buf, {:set_mode, {:vim, :insert}})
+    Flamelex.API.Buffer.move_cursor(@down_one_row)
+  end
 
-   # switch to insert mode - after current column
-   def process(%{root: %{active_app: :editor}, editor: %{active_buf: active_buf}}, @lowercase_a) do
-      Flamelex.API.Buffer.modify(active_buf, {:set_mode, {:vim, :insert}})
-      Flamelex.API.Buffer.move_cursor(@right_one_column)
-   end
+  # hjkl navigation
+  def process(_radix_state, @lowercase_h) do
+    Flamelex.API.Buffer.move_cursor(@left_one_column)
+  end
 
-   # switch to insert mode - open up a new line below the current cursor for editing
-   def process(radix_state, @lowercase_o) do
-      active_buf = %{cursors: [cursor]} = Utils.filter_active_buf(radix_state)
-      Flamelex.API.Buffer.modify(active_buf, {:insert_line, after: cursor.line, text: ""})
-      Flamelex.API.Buffer.modify(active_buf, {:set_mode, {:vim, :insert}})
-      Flamelex.API.Buffer.move_cursor(@down_one_row)
-   end
+  def process(_radix_state, @lowercase_j) do
+    Flamelex.API.Buffer.move_cursor(@down_one_row)
+  end
 
-   # hjkl navigation
-   def process(_radix_state, @lowercase_h) do
-      Flamelex.API.Buffer.move_cursor(@left_one_column)
-   end
+  def process(_radix_state, @lowercase_k) do
+    Flamelex.API.Buffer.move_cursor(@up_one_row)
+  end
 
-   def process(_radix_state, @lowercase_j) do
-      Flamelex.API.Buffer.move_cursor(@down_one_row)
-   end
+  def process(_radix_state, @lowercase_l) do
+    Flamelex.API.Buffer.move_cursor(@right_one_column)
+  end
 
-   def process(_radix_state, @lowercase_k) do
-      Flamelex.API.Buffer.move_cursor(@up_one_row)
-   end
+  def process(_radix_state, key) when key in @arrow_keys do
+    # REMINDER: these tuples are in the form `{line, col}`
+    delta =
+      case key do
+        @left_arrow ->
+          @left_one_column
 
-   def process(_radix_state, @lowercase_l) do
-      Flamelex.API.Buffer.move_cursor(@right_one_column)
-   end
+        @up_arrow ->
+          @up_one_row
 
-   def process(_radix_state, key) when key in @arrow_keys do
-      # REMINDER: these tuples are in the form `{line, col}`
-      delta = case key do
-         @left_arrow ->
-            @left_one_column
-         @up_arrow ->
-            @up_one_row
-         @right_arrow ->
-            @right_one_column
-         @down_arrow ->
-            @down_one_row
+        @right_arrow ->
+          @right_one_column
+
+        @down_arrow ->
+          @down_one_row
       end
 
-      Flamelex.API.Buffer.move_cursor(delta)
-   end
+    Flamelex.API.Buffer.move_cursor(delta)
+  end
 
-   def process(%{history: %{keystrokes: [@lowercase_g|_rest]}} = radix_state, @lowercase_g) do
-      # active_buf = %{cursors: [cursor]} = Utils.filter_active_buf(radix_state)
-      #TODO THIS IMPLICITELY IMPLIES MOVING THE ACTIVE BUFFER
-      Flamelex.API.Buffer.move_cursor(:last_line)
-   end
+  def process(%{history: %{keystrokes: [@lowercase_g | _rest]}} = radix_state, @lowercase_g) do
+    # active_buf = %{cursors: [cursor]} = Utils.filter_active_buf(radix_state)
+    # TODO THIS IMPLICITELY IMPLIES MOVING THE ACTIVE BUFFER
+    Flamelex.API.Buffer.move_cursor(:last_line)
+  end
 
-   def process(_radix_state, @lowercase_g) do
-      :ok # add to history
-   end
+  def process(_radix_state, @lowercase_g) do
+    # add to history
+    :ok
+  end
 
-   def process(_radix_state, @uppercase_G) do
-      Flamelex.API.Buffer.move_cursor(:first_line)
-   end
+  def process(_radix_state, @uppercase_G) do
+    Flamelex.API.Buffer.move_cursor(:first_line)
+  end
 
-   def process(%{history: %{keystrokes: [@lowercase_d|_rest]}} = radix_state, @lowercase_d) do
-      active_buf = %{cursors: [cursor]} = Utils.filter_active_buf(radix_state)
-      Flamelex.API.Buffer.modify(active_buf, {:delete_line, cursor.line})
-   end
+  def process(%{history: %{keystrokes: [@lowercase_d | _rest]}} = radix_state, @lowercase_d) do
+    active_buf = %{cursors: [cursor]} = Utils.filter_active_buf(radix_state)
+    Flamelex.API.Buffer.modify(active_buf, {:delete_line, cursor.line})
+  end
 
-   def process(_radix_state, @lowercase_d) do
-      :ok # add to history
-   end
-
+  def process(_radix_state, @lowercase_d) do
+    # add to history
+    :ok
+  end
 
   # def map(%{active_buffer: active_buf}) do
   #   %{
@@ -257,16 +260,6 @@ defmodule Flamelex.KeyMappings.Vim.NormalMode do
   # end
 end
 
-
-
-
-
-
-
-
-
-
-
 # defmodule Flamelex.KeyMappings.Vim do
 #   @moduledoc """
 #   Implements the Vim keybindings for editing text inside flamelex.
@@ -280,8 +273,6 @@ end
 #   use ScenicWidgets.ScenicEventsDefinitions
 #   alias Flamelex.Fluxus.Structs.RadixState
 #   require Logger
-
-
 
 #   # this is our vim leader
 #   def leader, do: @space_bar
@@ -318,19 +309,15 @@ end
 #     end
 #   end
 
-
-
 #   def keymap(%{mode: :insert} = state, input) do
 #     #Logger.debug "#{__MODULE__} received input: #{inspect input}, routing it to InsertMode..."
 #     InsertMode.keymap(state, input)
 #   end
 
-
 #   # def keymap(state, input) do
 #   #   context = %{state: state, input: input}
 #   #   raise "failed to pattern-match on a known :mode in the RadixState. #{inspect context.state.mode}"
 #   # end
-
 
 #   # returns true if the last key was pressed was the leader key
 #   def last_keystroke_was_leader?(radix_state) do

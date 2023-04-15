@@ -1,49 +1,47 @@
 defmodule Flamelex.Fluxus.Reducers.Memex do
-   @moduledoc false
-   alias Memelex.Reducers.MemexReducer
+  @moduledoc false
+  alias Memelex.Reducers.MemexReducer
 
+  #     def process(%{root: %{active_app: :memex}} = radix_state, :open_memex) do
+  #         Logger.debug "ignoring a command to open the memex, the memex is already active"
+  #         :ignore
+  #     end
 
-#     def process(%{root: %{active_app: :memex}} = radix_state, :open_memex) do
-#         Logger.debug "ignoring a command to open the memex, the memex is already active"
-#         :ignore
-#     end
+  def process(radix_state, :open_memex) do
+    new_radix_state =
+      radix_state
+      |> put_in([:root, :active_app], :memex)
 
-   def process(radix_state, :open_memex) do
-      new_radix_state = 
-         radix_state
-         |> put_in([:root, :active_app], :memex)
+    {:ok, new_radix_state}
+  end
 
-      {:ok, new_radix_state}
-   end
+  def process(radix_state, :close_memex) do
+    # TODO maybe look in history for previously open app?
+    new_radix_state =
+      radix_state
+      |> put_in([:root, :active_app], :desktop)
 
-   def process(radix_state, :close_memex) do
-      #TODO maybe look in history for previously open app?
-      new_radix_state = 
-         radix_state
-         |> put_in([:root, :active_app], :desktop)
+    {:ok, new_radix_state}
+  end
 
-      {:ok, new_radix_state}
-   end
+  # def process(_radix_state, ) do
+  #    new_buf_list = buf_list |> Enum.reject(&(&1.id == buf_to_close))
 
-   # def process(_radix_state, ) do
-   #    new_buf_list = buf_list |> Enum.reject(&(&1.id == buf_to_close))
-  
-   #    new_radix_state =
-   #      if new_buf_list == [] do
-   #        radix_state
-   #        |> put_in([:root, :active_app], :desktop)
-   #        |> put_in([:editor, :buffers], new_buf_list)
-   #        |> put_in([:editor, :active_buf], nil)
-   #      else
-   #        radix_state
-   #        |> put_in([:editor, :buffers], new_buf_list)
-   #        |> put_in([:editor, :active_buf], hd(new_buf_list).id)
-   #      end
-  
-   #    {:ok, new_radix_state}
-   #  end
+  #    new_radix_state =
+  #      if new_buf_list == [] do
+  #        radix_state
+  #        |> put_in([:root, :active_app], :desktop)
+  #        |> put_in([:editor, :buffers], new_buf_list)
+  #        |> put_in([:editor, :active_buf], nil)
+  #      else
+  #        radix_state
+  #        |> put_in([:editor, :buffers], new_buf_list)
+  #        |> put_in([:editor, :active_buf], hd(new_buf_list).id)
+  #      end
+
+  #    {:ok, new_radix_state}
+  #  end
 end
-
 
 #     def process(%{memex: memex} = radix_state, :new_tidbit) do
 #         Logger.debug "creating a new TidBit..."
@@ -68,7 +66,7 @@ end
 #         Logger.debug "opening a random TidBit..."
 #         process(radix_state, {:open_tidbit, Memelex.My.Wiki.random()})
 #     end
-    
+
 #     def process(radix_state, {:edit_tidbit, %{tidbit_uuid: tidbit_uuid}}) do
 #         new_open_tidbits_list =
 #             radix_state.memex.story_river.open_tidbits
@@ -132,7 +130,6 @@ end
 #         {:ok, new_radix_state}
 #     end
 
-
 #     #TODO discard - simply re-read in the TidBit from memory & dump our changes
 
 #     # def process(radix_state, {:update_tidbit, %{uuid: tidbit_uuid} = new_tidbit}) do
@@ -161,7 +158,7 @@ end
 #                     not_the_tidbit_were_looking_for ->
 #                         not_the_tidbit_were_looking_for # no modifications
 #                 end)
-        
+
 #         new_radix_state = radix_state
 #         |> put_in([:memex, :story_river, :open_tidbits], updated_tidbits_list)
 
@@ -178,7 +175,7 @@ end
 #                     not_the_tidbit_were_looking_for ->
 #                         not_the_tidbit_were_looking_for # no modifications
 #                 end)
-        
+
 #         new_radix_state = radix_state
 #         |> put_in([:memex, :story_river, :open_tidbits], updated_tidbits_list)
 
@@ -195,7 +192,7 @@ end
 #                     not_the_tidbit_were_looking_for ->
 #                         not_the_tidbit_were_looking_for # no modifications
 #                 end)
-        
+
 #         new_radix_state = radix_state
 #         |> put_in([:memex, :story_river, :open_tidbits], updated_tidbits_list)
 
@@ -251,8 +248,6 @@ end
 #         {:ok, new_radix_state}
 #     end
 
-
-
 #     # # <3 @vacarsu
 #     # defp cap_position(%{assigns: %{frame: frame}} = scene, coord) do
 #     #     # NOTE: We must keep track of components, because one could
@@ -290,4 +285,3 @@ end
 #     # defp calc_ceil({x, y}, {max_x, max_y}), do: {min(x, max_x), min(y, max_y)}
 
 # end
-  
