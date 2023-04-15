@@ -1,90 +1,85 @@
-defmodule Flamelex.Fluxus.UserInputHandler do #TODO rename just InputHandler to make it easier to find
-   @moduledoc """
-   This is the highest-level input handler. All user-input gets routed
-   through this module.
-   """
-   use Flamelex.Keymaps.Editor.GlobalBindings
-   require Logger
+# TODO rename just InputHandler to make it easier to find
+defmodule Flamelex.Fluxus.UserInputHandler do
+  @moduledoc """
+  This is the highest-level input handler. All user-input gets routed
+  through this module.
+  """
+  use Flamelex.Keymaps.Editor.GlobalBindings
+  require Logger
 
+  # NOTE: kommander.hidden? == false, means it is NOT hidden, i.e. KommandBuffer is visible
+  def process(%{kommander: %{hidden?: false}} = radix_state, input) do
+    Flamelex.Keymaps.Kommander |> process_with_rescue(radix_state, input)
+  end
 
-   #NOTE: kommander.hidden? == false, means it is NOT hidden, i.e. KommandBuffer is visible
-   def process(%{kommander: %{hidden?: false}} = radix_state, input) do
-      Flamelex.Keymaps.Kommander |> process_with_rescue(radix_state, input)
-   end
+  def process(%{root: %{active_app: :desktop}} = radix_state, input) do
+    Flamelex.Keymaps.Desktop |> process_with_rescue(radix_state, input)
+  end
 
-   def process(%{root: %{active_app: :desktop}} = radix_state, input) do
-      Flamelex.Keymaps.Desktop |> process_with_rescue(radix_state, input)
-   end
+  def process(%{root: %{active_app: :editor}} = radix_state, input) do
+    # TODO route this to QuillEx
+    # QuillEx.Fluxus.input(input)
+    Flamelex.Keymaps.Editor |> process_with_rescue(radix_state, input)
+  end
 
-   def process(%{root: %{active_app: :editor}} = radix_state, input) do
-      #TODO route this to QuillEx
-      # QuillEx.Fluxus.input(input)
-      Flamelex.Keymaps.Editor |> process_with_rescue(radix_state, input)
-   end
+  def process(%{root: %{active_app: :memex}} = radix_state, input) do
+    # fire it off to Memelex, they can worry about this one...
+    Memelex.Fluxus.input(input)
+    :ignore
+  end
 
-   def process(%{root: %{active_app: :memex}} = radix_state, input) do
-      # fire it off to Memelex, they can worry about this one...
-      Memelex.Fluxus.input(input)
-      :ignore
-   end
+  def process(_radix_state, input) do
+    Logger.warn("ignoring input: #{inspect(input)}")
+    :ignore
+  end
 
-   def process(_radix_state, input) do
-      Logger.warn "ignoring input: #{inspect input}"
-      :ignore
-   end
+  # ------
 
+  defp process_with_rescue(reducer, radix_state, input) do
+    try do
+      reducer.process(radix_state, input)
+    rescue
+      FunctionClauseError ->
+        Logger.warn("input: #{inspect(input)} not handled by Reducer `#{inspect(reducer)}`")
+        # TODO should we still record this input??
+        # {:ok, radix_state |> record_input(input)}
+        :ignore
+    else
+      :ok ->
+        {:ok, radix_state |> record_input(input)}
 
-   #------
+      # TODO I don't think we should allow any InputHandler to return a RadixState, since we dont broadcast out from them...
+      # {:ok, new_radix_state} ->
+      #    {:ok, new_radix_state |> record_input(input)}
+      :ignore ->
+        :ignore
+    end
+  end
 
+  defp record_input(radix_state, {:key, {key, @key_pressed, []}} = input)
+       when input in @valid_text_input_characters do
+    # Logger.debug "-- Recording INPUT: #{inspect key}"
+    # NOTE: We store the latest keystroke at the front of the list, not the back
+    radix_state
+    |> put_in([:history, :keystrokes], radix_state.history.keystrokes |> List.insert_at(0, input))
+  end
 
-   defp process_with_rescue(reducer, radix_state, input) do
-      try do
-         reducer.process(radix_state, input)
-      rescue
-         FunctionClauseError ->
-               Logger.warn "input: #{inspect input} not handled by Reducer `#{inspect reducer}`"
-               #TODO should we still record this input??
-               # {:ok, radix_state |> record_input(input)}
-               :ignore
-      else
-         :ok ->
-            {:ok, radix_state |> record_input(input)}
-         #TODO I don't think we should allow any InputHandler to return a RadixState, since we dont broadcast out from them...
-         # {:ok, new_radix_state} ->
-         #    {:ok, new_radix_state |> record_input(input)}
-         :ignore ->
-            :ignore
-      end
-   end
-
-   defp record_input(radix_state, {:key, {key, @key_pressed, []}} = input) when input in @valid_text_input_characters do
-      # Logger.debug "-- Recording INPUT: #{inspect key}"
-      #NOTE: We store the latest keystroke at the front of the list, not the back
-      radix_state
-      |> put_in([:history, :keystrokes], radix_state.history.keystrokes |> List.insert_at(0, input))
-   end
-
-   defp record_input(radix_state, input) do
-      # Logger.debug "NOT recording: #{inspect input} as input..."
-      radix_state
-   end
+  defp record_input(radix_state, input) do
+    # Logger.debug "NOT recording: #{inspect input} as input..."
+    radix_state
+  end
 end
-  
-
-
 
 #   # IN THE FUTURE - we route all input to the GUI.Controller
 #   # - this is the process which is able to understand the state of the GUI
 #   # (as it holds the "frame", "active_buffer" and other such things in it)
 #   # - 
 
-
 #   # # def handle_input(%Flamelex.Fluxus.Structs.RadixState{mode: :insert} = state, input) when input in @all_letters do
 #   # #   cursor_pos =
 #   # #     {:gui_component, state.active_buffer}
 #   # #     |> ProcessRegistry.find!()
 #   # #     |> GenServer.call(:get_cursor_position)
-
 
 #   # #   {:codepoint, {letter, _num}} = input
 
@@ -97,7 +92,6 @@ end
 #   # #   Logger.debug "received some input whilst in :insert mode"
 #   # #   state |> RadixState.add_to_history(input)
 #   # # end
-
 
 #   #   # def handle_input(%Flamelex.Fluxus.Structs.RadixState{mode: mode} = state, @escape_key) when mode in [:kommand, :insert] do
 #   #   #   Flamelex.API.CommandBuffer.deactivate()
@@ -115,7 +109,6 @@ end
 #   #   #   Flamelex.API.CommandBuffer.deactivate()
 #   #   #   state |> RadixState.set(mode: :normal)
 #   #   # end
-
 
 #   #   # ## -------------------------------------------------------------------
 #   #   # ## Normal mode
@@ -156,7 +149,6 @@ end
 #   #   #     |> ProcessRegistry.find!()
 #   #   #     |> GenServer.call(:get_cursor_position)
 
-
 #   #   #   {:codepoint, {letter, _num}} = input
 
 #   #   #   Buffer.modify(state.active_buffer, {:insert, letter, cursor_pos})
@@ -169,9 +161,6 @@ end
 #   #   #   state |> RadixState.add_to_history(input)
 #   #   # end
 
-
-
-
 #   #   # def handle_input(%Flamelex.Fluxus.Structs.RadixState{mode: :normal} = state, @lowercase_h) do
 #   #   #   Logger.info "Lowercase h was pressed !!"
 #   #   #   Flamelex.Buffer.load(type: :text, file: @readme)
@@ -183,17 +172,6 @@ end
 #   #   #   Flamelex.Buffer.load(type: :text, file: @dev_tools)
 #   #   #   state
 #   #   # end
-
-
-
-
-
-
-
-
-
-
-
 
 #   def handle(radix_state, {:user_input, ii}) do
 #     #Logger.debug "#{__MODULE__} handling some user input: #{inspect ii}"
@@ -210,7 +188,6 @@ end
 #           [radix_state, ii]                 # args
 #     )
 #   end
-
 
 #   #NOTE: this function is defined here, but it is run in it's own process...
 #   def lookup_action_for_input_async(%{mode: m} = radix_state, user_input)
@@ -273,7 +250,6 @@ end
 
 #   def handle_lookup(:ok, _radix_state), do: :ok
 
-
 #   def handle_lookup({:execute_function, f}, _radix_state) when is_function(f) do
 #     f.()
 #   end
@@ -283,8 +259,6 @@ end
 #   end
 
 #   def handle_lookup(:ignore_input, _radix_state), do: :ok
-
-
 
 # #   case key_mapping.lookup(radix_state, user_input.input) do #TODO this is not grat, probably need to ditch the rest first
 # #   nil ->
@@ -312,7 +286,6 @@ end
 # #   {:execute_function, f} when is_function(f) ->
 # #       f.()
 # # end
-
 
 #   #NOTE: Keep this wrapper, incase we ever want to re-visit the Exception
 #   #      catching stuff.

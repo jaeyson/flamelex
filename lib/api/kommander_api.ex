@@ -9,14 +9,12 @@ defmodule Flamelex.API.Kommander do
   start to use module alias'... it's just better this way.
   """
 
-
   @doc """
   Make the KommandBuffer visible.
   """
   def show do
     Flamelex.Fluxus.action({Flamelex.Fluxus.Reducers.Kommander, :show})
   end
-
 
   @doc """
   Same as show/0
@@ -25,14 +23,12 @@ defmodule Flamelex.API.Kommander do
     show()
   end
 
-
   @doc """
   Make the KommandBuffer not-visible, and put us in :normal mode.
   """
   def hide do
     Flamelex.Fluxus.action({Flamelex.Fluxus.Reducers.Kommander, :hide})
   end
-
 
   @doc """
   Resets the text field to an empty string.
@@ -41,12 +37,13 @@ defmodule Flamelex.API.Kommander do
     Flamelex.Fluxus.action({Flamelex.Fluxus.Reducers.Kommander, :clear})
   end
 
-
   @doc """
   Modify the KommandBuffer.
   """
   def modify(modification) do
-    Flamelex.Fluxus.action({Flamelex.Fluxus.Reducers.Kommander, {:modify_kommander, modification}})
+    Flamelex.Fluxus.action(
+      {Flamelex.Fluxus.Reducers.Kommander, {:modify_kommander, modification}}
+    )
   end
 
   @doc """
@@ -59,7 +56,6 @@ defmodule Flamelex.API.Kommander do
     clear()
     hide()
   end
-
 
   @doc """
   Execute the command in the API.CommandBuffer

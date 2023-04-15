@@ -1,27 +1,32 @@
 defmodule Flamelex.API.Buffer do
-   @moduledoc """
-   The interface to all the Buffer commands.
-   """
-   use Flamelex.Lib.ProjectAliases
-   alias Flamelex.BufferManager
-   alias QuillEx.Reducers.BufferReducer, as: QuillExBufrReducer # NOTE: We use the QuillEx QuillExBufrReducer...
-   alias Flamelex.Fluxus.RadixStore
+  @moduledoc """
+  The interface to all the Buffer commands.
+  """
+  use Flamelex.Lib.ProjectAliases
+  alias Flamelex.BufferManager
+  # NOTE: We use the QuillEx QuillExBufrReducer...
+  alias QuillEx.Reducers.BufferReducer, as: QuillExBufrReducer
+  alias Flamelex.Fluxus.RadixStore
 
-   @doc """
-   List all the open buffers.
-   """
-   def list do
-      RadixStore.get().editor.buffers
-   end
+  @doc """
+  List all the open buffers.
+  """
+  def list do
+    RadixStore.get().editor.buffers
+  end
 
-   def new do
-      new("")
-   end
+  def new do
+    new("")
+  end
 
-   def new(data) when is_bitstring(data) do
-      {:ok, radix_state} = Flamelex.Fluxus.declare({QuillExBufrReducer, {:open_buffer, %{data: data, mode: {:vim, :normal}}}})
-      radix_state.editor.active_buf
-   end
+  def new(data) when is_bitstring(data) do
+    {:ok, radix_state} =
+      Flamelex.Fluxus.declare(
+        {QuillExBufrReducer, {:open_buffer, %{data: data, mode: {:vim, :normal}}}}
+      )
+
+    radix_state.editor.active_buf
+  end
 
   @doc """
   Open a file and load the contents into a buffer.
@@ -34,10 +39,14 @@ defmodule Flamelex.API.Buffer do
   iex> Buffer.open("README.md")
   {:buffer, {:file, "README.md"}}
   """
-  
-  #TODO THIS NEEDS TO CHECK IF THE buffer is already open or not
+
+  # TODO THIS NEEDS TO CHECK IF THE buffer is already open or not
   def open(filename) when is_bitstring(filename) do
-    {:ok, radix_state} = Flamelex.Fluxus.declare({QuillExBufrReducer, {:open_buffer, %{file: filename, mode: {:vim, :normal}}}})
+    {:ok, radix_state} =
+      Flamelex.Fluxus.declare(
+        {QuillExBufrReducer, {:open_buffer, %{file: filename, mode: {:vim, :normal}}}}
+      )
+
     radix_state.editor.active_buf
   end
 
@@ -63,7 +72,7 @@ defmodule Flamelex.API.Buffer do
 
   def switch(n) when n >= 1 do
     RadixStore.get().editor.buffers
-    |> Enum.at(n-1)
+    |> Enum.at(n - 1)
     |> switch()
   end
 
@@ -90,7 +99,6 @@ defmodule Flamelex.API.Buffer do
     # end
   end
 
-
   @doc """
   Return the contents of a buffer.
   """
@@ -98,7 +106,6 @@ defmodule Flamelex.API.Buffer do
     [buf] = list() |> Enum.filter(&(&1.id == buf))
     buf.data
   end
-
 
   @doc """
   Make modifications or edits, to a buffer. e.g.
@@ -124,13 +131,12 @@ defmodule Flamelex.API.Buffer do
     Flamelex.Fluxus.action({QuillExBufrReducer, {:modify_buf, buffer, modification}})
   end
 
-
-   @doc """
-   Scroll the buffer around.
-   """
-   def scroll({_x_scroll, _y_scroll} = scroll_delta) do
-      Flamelex.Fluxus.action({QuillExBufrReducer, {:scroll, :active_buf, {:delta, scroll_delta}}})
-   end
+  @doc """
+  Scroll the buffer around.
+  """
+  def scroll({_x_scroll, _y_scroll} = scroll_delta) do
+    Flamelex.Fluxus.action({QuillExBufrReducer, {:scroll, :active_buf, {:delta, scroll_delta}}})
+  end
 
   @doc """
   Scroll the buffer around.
@@ -155,8 +161,7 @@ defmodule Flamelex.API.Buffer do
     Flamelex.Fluxus.action({QuillExBufrReducer, {:save, buf}})
   end
 
-
-  #TODO
+  # TODO
   # @doc """
   # All Buffers support show/hide
   # """
@@ -176,7 +181,7 @@ defmodule Flamelex.API.Buffer do
   end
 
   def close(buf) do
-    #TODO this is causing GUI controller & VimServer to also restart??
+    # TODO this is causing GUI controller & VimServer to also restart??
     Flamelex.Fluxus.action({QuillExBufrReducer, {:close_buffer, buf}})
   end
 
@@ -184,15 +189,7 @@ defmodule Flamelex.API.Buffer do
     # raise "this should work, but is it too dangerous??"
     list() |> Enum.each(&close(&1))
   end
-
 end
-
-
-
-
-
-
-
 
 # def handle_call({:find_buffer, search_term}, _from, state) do
 
@@ -223,7 +220,6 @@ end
 
 #   {:reply, results, state}
 # end
-
 
 # def handle_call(:count_buffers, _from, state) do
 #   count = Enum.count(state)

@@ -13,7 +13,7 @@ defmodule Flamelex.GUI.VimSupervisor do
   @impl true
   def init(_init_arg) do
     children = [
-      #TODO probably needs a Task.Supervisor, and then we get VimServer to run updates in those...
+      # TODO probably needs a Task.Supervisor, and then we get VimServer to run updates in those...
       Flamelex.GUI.VimServer
     ]
 
