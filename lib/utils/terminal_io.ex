@@ -41,7 +41,7 @@ defmodule Flamelex.Lib.Utils.TerminalIO do
     {output, exit_code} = System.cmd("bash", ["-c", shell_command])
 
     if exit_code == 0 do
-      IO.puts("Alias 'flx' created successfully.")
+      IO.puts("Alias 'flx' created successfully. Reload your shell for changes to take effect.")
     else
       IO.puts("Failed to create alias 'flx'.")
     end

@@ -9,14 +9,14 @@ defmodule IExAutoRun do
   Note that it is a *quote*, not a function. This code
   """
 
-
   # this macto gets executed whenever the application is started in IEx
   # via the `.iex.exs` file
   defmacro __using__(_) do
     quote do
       # IO.puts "Executing the code in `Flamelex.IExAutoRun`, via the `.iex.exs` file..."
       use Flamelex.Lib.ProjectAliases
-      import Flamelex # these are the highest level functions, they are automatically available
+      # these are the highest level functions, they are automatically available
+      import Flamelex
       IExAutoRun.print_welcome_msg()
     end
   end

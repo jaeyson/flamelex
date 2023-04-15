@@ -1,13 +1,13 @@
 use Mix.Config
 
-memex = "Paracelcus27"
+memex_env = "Paracelcus"
 
 config :memelex,
-  active?: true,
+  active?: false,
   environment: %{
-    name: memex,
-    memex_directory: "/Users/luke/memex/#{memex}",
-    backups_directory: "/Users/luke/memex/backups/#{memex}"
+    name: memex_env,
+    memex_directory: "/Users/luke/memex/#{memex_env}",
+    backups_directory: "/Users/luke/memex/backups/#{memex_env}"
   }
 
 config :logger, level: :debug
@@ -15,7 +15,6 @@ config :logger, level: :debug
 config :logger, truncate: :infinity
 
 config :logger,
-    :console,
-        format: "[$level] $message $metadata\n",
-        metadata: []
-        
+       :console,
+       format: "[$level] $message $metadata\n",
+       metadata: []
