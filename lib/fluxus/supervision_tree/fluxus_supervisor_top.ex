@@ -3,16 +3,16 @@ defmodule Flamelex.Fluxus.TopLevelSupervisor do
   use Supervisor
   require Logger
 
-  def start_link(params) do
-    Supervisor.start_link(__MODULE__, params, name: __MODULE__)
+  def start_link(init_radix_state) do
+    Supervisor.start_link(__MODULE__, init_radix_state, name: __MODULE__)
   end
 
-  def init(_params) do
+  def init(init_rdx) do
     # Logger.debug "#{__MODULE__} initializing..."
 
     children = [
       {Registry, keys: :duplicate, name: Fluxus.PubSub}, # https://hexdocs.pm/elixir/1.12/Registry.html#module-using-as-a-dispatcher
-      Flamelex.Fluxus.RadixStore,
+      {Flamelex.Fluxus.RadixStore, init_rdx},
       Flamelex.Fluxus.ActionListener,
       Flamelex.Fluxus.UserInputListener,
 

@@ -49,20 +49,25 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
   @max_action_history_limit 50
 
   @doc """
-  This function calculates & returns the default RadixState - the one
-  that is populated upon applications startup.
+  This function calculates & returns the default RadixState -
+  the one that is populated upon applications startup.
   """
-  def initialize do
+  def initialize(args) do
+    base_radix_state()
+    |> calc_menu_map(args)
+  end
+
+  def base_radix_state do
+
+    # TODO initialize the whole all with some default layer states
+
     {:ok, ibm_plex_mono_font_metrics} =
       TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
 
-    # TODO initialize the whole all with some default layer states
 
     %{
       root: %{
         active_app: :desktop,
-        # active_app: :renseijin,
-        # This holds the layers construct
         graph: nil,
         layers: %{
           one: %{
@@ -93,17 +98,17 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
         renseijin: %{
           visible?: true,
           animate?: false
-        }
-      },
-      # TODO move this into desktop...
-      menu_bar: %{
-        font: :ibm_plex_mono,
-        height: 60,
-        show?: true,
-        font_size: 36,
-        sub_menu: %{
-          height: 40,
-          font_size: 22
+        },
+        menu_bar: %{
+          font: :ibm_plex_mono,
+          # menu_map: Flamelex.GUI.TopMenuBar.calc_menu_map(radix_state)
+          height: 60,
+          show?: true,
+          font_size: 36,
+          sub_menu: %{
+            height: 40,
+            font_size: 22
+          }
         }
       },
       projects: %{
@@ -160,6 +165,11 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
         # actions:      []
       }
     }
+  end
+
+  def calc_menu_map(rdx, args) do
+    menu_map = Flamelex.GUI.TopMenuBar.calc_menu_map(rdx, args)
+    put_in(rdx, [:desktop, :menu_bar, :menu_map], menu_map)
   end
 
   # defdelegate change_font(radix_state, new_font),

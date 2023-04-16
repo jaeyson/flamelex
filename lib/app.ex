@@ -4,46 +4,34 @@ defmodule Flamelex.App do
   require Logger
 
   def start(_type, _args) do
-    # Logger.debug "#{__MODULE__} initializing..."
+    Logger.info "#{__MODULE__} initializing..."
 
-    children = [
-      # NOTE: Fluxus has to come before the GUI because
-      # GUI calls RadixStore to get it's init state
-      # TODO maybe we should pass it in to both from this top level??
-      Flamelex.Fluxus.TopLevelSupervisor,
-      {Scenic, [viewport_config()]}
-    ]
+    rdx = Flamelex.Fluxus.Structs.RadixState.initialize(%{
+      boot_memelex?: boot_memelex?()
+    })
 
     children =
       if boot_memelex?(),
-        do: children ++ [Memelex.App.BootLoader],
-        else: children
+        do: start_memelex_first(rdx),
+        else: start_flamelex(rdx)
 
     opts = [strategy: :one_for_one, name: __MODULE__]
     Supervisor.start_link(children, opts)
   end
 
-  @macbook_pro {1440, 855}
-  @window_size_macbook_pro_2 {1680, 1005}
-  @window_size_monitor_32inch {2560, 1395}
-  # @window_size_terminal_80col {800, 600}   # with size 24 font
-
-  def viewport_config do
-    [
-      name: :main_viewport,
-      size: @macbook_pro,
-      default_scene: {Flamelex.GUI.RootScene, nil},
-      drivers: [
-        [
-          module: Scenic.Driver.Local,
-          window: [title: "Flamelex", resizeable: true],
-          on_close: :stop_system
-        ]
-      ]
-    ]
-  end
 
   def boot_memelex? do
     Application.get_env(:memelex, :active?, false)
+  end
+
+  defp start_memelex_first(rdx) do
+    [Memelex.App.BootLoader] ++ start_flamelex(rdx)
+  end
+
+  defp start_flamelex(radix_state) do
+    [
+      {Flamelex.Fluxus.TopLevelSupervisor, radix_state},
+      {Scenic, [Flamelex.GUI.viewport_config()]}
+    ]
   end
 end

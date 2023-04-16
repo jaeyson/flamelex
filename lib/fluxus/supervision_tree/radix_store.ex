@@ -27,8 +27,8 @@ defmodule Flamelex.Fluxus.RadixStore do
 
   #TODO make this a GenServer & do all edits in the context of the GenServer
 
-  def start_link(_params) do
-    radix_state = Flamelex.Fluxus.Structs.RadixState.initialize()
+  def start_link(radix_state) do
+    # radix_state = Flamelex.Fluxus.Structs.RadixState.initialize()
     Agent.start_link(fn -> radix_state end, name: RadixStore)
   end
 
@@ -49,14 +49,14 @@ defmodule Flamelex.Fluxus.RadixStore do
     end)
   end
 
-  #NOTE: When `Flamelex.GUI.RootScene` boots, it calls this function.
-  #      We don't want to broadcast these changes out.
-  def put_root_graph(new_graph) do
-    Agent.update(RadixStore, fn radix_state ->
-      radix_state
-      |> put_in([:root, :graph], new_graph)
-    end)
-  end
+  # #NOTE: When `Flamelex.GUI.RootScene` boots, it calls this function.
+  # #      We don't want to broadcast these changes out.
+  # def put_root_graph(new_graph) do
+  #   Agent.update(RadixStore, fn radix_state ->
+  #     radix_state
+  #     |> put_in([:root, :graph], new_graph)
+  #   end)
+  # end
 
   # update/1 also broadcasts changes to the rest of the app
   def update(new_state) do
@@ -72,7 +72,7 @@ defmodule Flamelex.Fluxus.RadixStore do
 
   def update_viewport(%Scenic.ViewPort{} = new_vp) do
     Agent.update(RadixStore, fn radix_state ->
-      
+
       new_radix_state =
         radix_state |> put_in([:gui, :viewport], new_vp)
 
