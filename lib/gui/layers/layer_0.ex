@@ -8,7 +8,7 @@ defmodule Flamelex.GUI.Layers.LayerZero do
     %{framestack: [_menubar_f | editor_f]} =
       ScenicWidgets.Core.Utils.FlexiFrame.calc(
         radix_state.gui.viewport,
-        {:standard_rule, linemark: radix_state.menu_bar.height}
+        {:standard_rule, linemark: radix_state.desktop.menu_bar.height}
       )
 
     state |> Map.merge(%{frame: hd(editor_f)})

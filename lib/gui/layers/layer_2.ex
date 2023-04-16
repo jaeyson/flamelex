@@ -1,6 +1,6 @@
 defmodule Flamelex.GUI.Layers.LayerTwo do
   # NOTE: Something in here has to be about layouts
-  # NOTE: Layer 2 is the MenuBar component
+  # NOTE: Layer 2 is the MenuBar/Desktop component
 
   @behaviour Flamelex.GUI.Layer.Behaviour
 
@@ -10,14 +10,14 @@ defmodule Flamelex.GUI.Layers.LayerTwo do
     %{framestack: [menubar_f | _editor_f]} =
       ScenicWidgets.Core.Utils.FlexiFrame.calc(
         radix_state.gui.viewport,
-        {:standard_rule, linemark: radix_state.menu_bar.height}
+        {:standard_rule, linemark: radix_state.desktop.menu_bar.height}
       )
 
     %{
       layer: 2,
       frame: menubar_f,
-      menu_map: Flamelex.GUI.TopMenuBar.calc_menu_map(radix_state),
-      font: radix_state.menu_bar.font
+      menu_map: radix_state.desktop.menu_bar.menu_map,
+      font: radix_state.desktop.menu_bar.font
     }
   end
 

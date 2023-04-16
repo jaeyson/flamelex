@@ -14,7 +14,7 @@ defmodule Flamelex.GUI.Layers.LayerOne do
     %{framestack: [_menubar_f | editor_f]} =
       FlexiFrame.calc(
         radix_state.gui.viewport,
-        {:standard_rule, linemark: radix_state.menu_bar.height}
+        {:standard_rule, linemark: radix_state.desktop.menu_bar.height}
       )
 
     frames = FlexiFrame.split(hd(editor_f))
@@ -32,7 +32,7 @@ defmodule Flamelex.GUI.Layers.LayerOne do
   def calc_state(%{root: %{layers: %{one: %{explorer: %{active?: true}}}}} = radix_state) do
     main_pane =
       FlexiFrame.main_pane_frame(radix_state.gui.viewport,
-        menu_bar_height: radix_state.menu_bar.height
+        menu_bar_height: radix_state.desktop.menu_bar.height
       )
 
     # FlexiFrame.split(main_pane, horizontal: {32, :percent})
@@ -53,7 +53,7 @@ defmodule Flamelex.GUI.Layers.LayerOne do
     %{framestack: [_menubar_f | editor_f]} =
       FlexiFrame.calc(
         radix_state.gui.viewport,
-        {:standard_rule, linemark: radix_state.menu_bar.height}
+        {:standard_rule, linemark: radix_state.desktop.menu_bar.height}
       )
 
     %{

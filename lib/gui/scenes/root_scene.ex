@@ -32,8 +32,11 @@ defmodule Flamelex.GUI.RootScene do
   # the graphs in. When a layer needs to change, it get's picked up by the
   # %Layer{} component, not the RootScene
 
-  def init(init_scene, _args, opts) do
+  def init(init_scene, args, opts) do
     # Logger.debug("#{__MODULE__} initializing...")
+
+    #NOTE - due to the way Scenic works right now, it's not practical to pass in the RadixState from the highest level of the SUpervision tree
+    # Maybe in the future this could change but for now just fetch this data when the Scenc boots... this is also kind of nice incase the GUI gets reset
 
     # TODO we should return the radix_state here to save us from having to fetch it again in like 5 lines time
     Flamelex.Fluxus.RadixStore.put_viewport(init_scene.viewport)
@@ -45,7 +48,7 @@ defmodule Flamelex.GUI.RootScene do
     # force-refreshed due to this process starting up
     {:ok, root_graph} = render_layers(radix_state)
 
-    Flamelex.Fluxus.RadixStore.put_root_graph(graph: root_graph)
+    # Flamelex.Fluxus.RadixStore.put_root_graph(graph: root_graph)
 
     new_scene =
       init_scene

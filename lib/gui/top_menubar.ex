@@ -4,9 +4,21 @@ defmodule Flamelex.GUI.TopMenuBar do
   # note that although it can never be committed, we also make a my_secretz.ex file
 
   # TODO here, we could look into the Memex & conditionally add a custom menu
-  def calc_menu_map(radix_state) do
+  def calc_menu_map(radix_state, args) do
     [
-      {:sub_menu, "Flamelex",
+      flamelex_menu(),
+      {:sub_menu, "Buffer", buffer_menu(radix_state)},
+      memex_top_level_menu(radix_state, args),
+      {:sub_menu, "API",
+       ScenicWidgets.MenuBar.modules_and_zero_arity_functions("Elixir.Flamelex.API")}
+      # {"Help", [
+      # GettingStarted
+      # {"About Flamelex", &Flamelex.API.Misc.makers_mark/0}]},
+    ]
+  end
+
+  def flamelex_menu do
+    {:sub_menu, "Flamelex",
        [
          {:sub_menu, "Editor",
           [
@@ -29,18 +41,10 @@ defmodule Flamelex.GUI.TopMenuBar do
          widget_workbench(),
          re_source_shell(),
          quit()
-       ]},
-      {:sub_menu, "Buffer", buffer_menu(radix_state)},
-      memex_top_level_menu(),
-      {:sub_menu, "API",
-       ScenicWidgets.MenuBar.modules_and_zero_arity_functions("Elixir.Flamelex.API")}
-      # {"Help", [
-      # GettingStarted
-      # {"About Flamelex", &Flamelex.API.Misc.makers_mark/0}]},
-    ]
+       ]}
   end
 
-  def memex_top_level_menu do
+  def memex_top_level_menu(radix_state, %{boot_memelex?: true}) do
     {:sub_menu, "Memex",
        [
          {"open", &Flamelex.API.Diary.open/0},
@@ -48,6 +52,13 @@ defmodule Flamelex.GUI.TopMenuBar do
          {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end}
          # random
          # journal
+       ]}
+  end
+
+  def memex_top_level_menu(radix_state, %{boot_memelex?: false}) do
+    {:sub_menu, "Memex",
+       [
+         {"new", fn -> IO.puts "CLicked new memex!" end}
        ]}
   end
 
