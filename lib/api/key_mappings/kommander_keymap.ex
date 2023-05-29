@@ -63,7 +63,7 @@ defmodule Flamelex.Keymaps.Kommander do
 
   def process(radix_state, key) do
     IO.puts("#{__MODULE__} failed to process input: #{inspect(key)}")
-    dbg()
+    :error
   end
 end
 

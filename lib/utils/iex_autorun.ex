@@ -13,10 +13,30 @@ defmodule IExAutoRun do
   # via the `.iex.exs` file
   defmacro __using__(_) do
     quote do
-      # IO.puts "Executing the code in `Flamelex.IExAutoRun`, via the `.iex.exs` file..."
-      use Flamelex.Lib.ProjectAliases
-      # these are the highest level functions, they are automatically available
+      IO.puts("Executing the code in `Flamelex.IExAutoRun`, via the `.iex.exs` file...")
+
+      # these are the highest level functions, make them available to the CLI user directly
       import Flamelex
+
+      # require AutoAlias
+      # AutoAlias.alias_modules(Flamelex.API)
+      # AutoAlias.alias_modules(Memelex.My)
+
+      alias Flamelex.API.{
+        Buffer,
+        Kommander,
+        GUI,
+        Diary
+      }
+
+      alias Memelex.My
+
+      alias Memelex.My.{
+        Journal,
+        Wiki,
+        TODOs
+      }
+
       IExAutoRun.print_welcome_msg()
     end
   end

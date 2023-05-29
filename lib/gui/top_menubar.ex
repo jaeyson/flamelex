@@ -1,14 +1,26 @@
 defmodule Flamelex.GUI.TopMenuBar do
-
   # TODO automatically add a .gitignore into each memex directory so it's impossible to accidentally commit the memex - anything except the my_modz.ex file
   # note that although it can never be committed, we also make a my_secretz.ex file
 
   # TODO here, we could look into the Memex & conditionally add a custom menu
-  def calc_menu_map(radix_state, args) do
+  def calc_menu_map(%{memex: %{active?: true}} = radix_state) do
     [
       flamelex_menu(),
       {:sub_menu, "Buffer", buffer_menu(radix_state)},
-      memex_top_level_menu(radix_state, args),
+      memex_top_level_menu(radix_state),
+      {:sub_menu, "API",
+       ScenicWidgets.MenuBar.modules_and_zero_arity_functions("Elixir.Flamelex.API")}
+      # {"Help", [
+      # GettingStarted
+      # {"About Flamelex", &Flamelex.API.Misc.makers_mark/0}]},
+    ]
+  end
+
+  def calc_menu_map(%{memex: %{active?: false}} = radix_state) do
+    [
+      flamelex_menu(),
+      {:sub_menu, "Buffer", buffer_menu(radix_state)},
+      # TODO remove `Diary` from this list if memex is inactive, since we dont want the user trying to open it (the Diary is what I'm calling the Memex screen)
       {:sub_menu, "API",
        ScenicWidgets.MenuBar.modules_and_zero_arity_functions("Elixir.Flamelex.API")}
       # {"Help", [
@@ -19,47 +31,99 @@ defmodule Flamelex.GUI.TopMenuBar do
 
   def flamelex_menu do
     {:sub_menu, "Flamelex",
-       [
-         {:sub_menu, "Editor",
-          [
-            {"toggle line nums", fn -> raise "no" end},
-            {"toggle file tray", fn -> raise "no" end},
-            {"toggle tab bar", fn -> raise "no" end},
-            font_sub_menu()
-          ]},
-         {:sub_menu, "Kommander",
-          [
-            {"show", &Flamelex.API.Kommander.show/0},
-            {"hide", &Flamelex.API.Kommander.hide/0}
-          ]},
-         {:sub_menu, "DevTools",
-          [
-            {"get radix state",
-             fn -> Flamelex.API.DevTools.get_radix_state() |> IO.inspect() end},
-            {"temet nosce", &Flamelex.temet_nosce/0}
-          ]},
-         widget_workbench(),
-         re_source_shell(),
-         quit()
-       ]}
+     [
+       {:sub_menu, "Editor",
+        [
+          {"toggle line nums", fn -> raise "no" end},
+          {"toggle file tray", fn -> raise "no" end},
+          {"toggle tab bar", fn -> raise "no" end},
+          font_sub_menu()
+        ]},
+       {:sub_menu, "Kommander",
+        [
+          {"show", &Flamelex.API.Kommander.show/0},
+          {"hide", &Flamelex.API.Kommander.hide/0}
+        ]},
+       devtools(),
+       widget_workbench(),
+       re_source_shell(),
+       quit()
+     ]}
   end
 
-  def memex_top_level_menu(radix_state, %{boot_memelex?: true}) do
+  # def memex_top_level_menu(%{memex: %{active?: false}}) do
+  #   {:sub_menu, "Memex",
+  #    [
+  #      {"new", fn -> IO.puts("CLicked new memex!") end}
+  #    ]}
+  # end
+
+  def do_memex_top_level_menu({env_name, custom_menu}) when is_binary(env_name) do
     {:sub_menu, "Memex",
-       [
-         {"open", &Flamelex.API.Diary.open/0},
-         {"close", &Flamelex.API.Diary.close/0},
-         {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end}
-         # random
-         # journal
-       ]}
+     [
+       {"open", &Flamelex.API.Diary.open/0},
+       {"close", &Flamelex.API.Diary.close/0},
+       {env_name, custom_menu},
+       {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end},
+       # random
+       {"journal", fn -> Memelex.My.Journal.today() end}
+     ]}
   end
 
-  def memex_top_level_menu(radix_state, %{boot_memelex?: false}) do
+  def do_memex_top_level_menu(_default) do
     {:sub_menu, "Memex",
-       [
-         {"new", fn -> IO.puts "CLicked new memex!" end}
-       ]}
+     [
+       {"open", &Flamelex.API.Diary.open/0},
+       {"close", &Flamelex.API.Diary.close/0},
+       {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end}
+       # random
+       # journal
+     ]}
+  end
+
+  def memex_top_level_menu(%{memex: %{active?: true, env: memex_env}})
+      when not is_nil(memex_env) do
+    IO.puts("~~~~ LOADING A CUSTOM MENU!~!! FANCY!!$&U ~~~")
+
+    Memelex.Environment.custom_menu()
+    |> do_memex_top_level_menu()
+  end
+
+  def memex_top_level_menu(_radix_state) do
+    {:sub_menu, "Memex",
+     [
+       {"new", fn -> IO.puts("CLicked new memex! THis doesn't do anything yet :)") end}
+       #  {"open", fn -> IO.puts("CLicked open memex!") end},
+     ] ++ load_jedilukes()}
+  end
+
+  def load_jedilukes do
+    [
+      {
+        "load JediLuke",
+        # put us in the test environment / dream world
+        fn ->
+          Memelex.deactivate()
+
+          Memelex.load_env(%{
+            name: "JediLuke",
+            memex_directory: "/home/luke/memex/JediLuke"
+          })
+        end
+      },
+      {
+        "load old JediLuke",
+        # put us in the test environment / dream world
+        fn ->
+          Memelex.deactivate()
+
+          Memelex.load_env(%{
+            name: "old JediLuke",
+            memex_directory: "/home/luke/backups/dubber_one/memex/JediLuke"
+          })
+        end
+      }
+    ]
   end
 
   def buffer_menu(%{editor: %{buffers: []}} = _radix_state) do
@@ -70,67 +134,88 @@ defmodule Flamelex.GUI.TopMenuBar do
     ]
   end
 
+  def devtools do
+    {:sub_menu, "DevTools",
+     [
+       {"get radix state", fn -> Flamelex.API.DevTools.get_radix_state() |> IO.inspect() end},
+       {"temet nosce", &Flamelex.temet_nosce/0},
+       {
+         "load Telaranrhiod",
+         # put us in the test environment / dream world
+         fn ->
+           Memelex.deactivate()
+
+           Memelex.load_env(%{
+             name: "Telaranrhiod",
+             memex_directory: "/home/luke/memex/Telaranrhiod"
+           })
+         end
+       }
+     ]}
+  end
+
   def font_sub_menu do
     {:sub_menu, "font",
-             [
-               {:sub_menu, "primary font",
-                [
-                  {"ibm plex mono",
-                   fn ->
-                     Flamelex.Fluxus.RadixStore.get()
-                     |> QuillEx.Reducers.RadixReducer.change_font(:ibm_plex_mono)
-                     |> Flamelex.Fluxus.RadixStore.update()
-                   end},
-                  {"roboto",
-                   fn ->
-                     Flamelex.Fluxus.RadixStore.get()
-                     |> QuillEx.Reducers.RadixReducer.change_font(:roboto)
-                     |> Flamelex.Fluxus.RadixStore.update()
-                   end},
-                  {"roboto mono",
-                   fn ->
-                     Flamelex.Fluxus.RadixStore.get()
-                     |> QuillEx.Reducers.RadixReducer.change_font(:roboto_mono)
-                     |> Flamelex.Fluxus.RadixStore.update()
-                   end},
-                  {"iosevka",
-                   fn ->
-                     Flamelex.Fluxus.RadixStore.get()
-                     |> QuillEx.Reducers.RadixReducer.change_font(:iosevka)
-                     |> Flamelex.Fluxus.RadixStore.update()
-                   end},
-                  {"source code pro",
-                   fn ->
-                     Flamelex.Fluxus.RadixStore.get()
-                     |> QuillEx.Reducers.RadixReducer.change_font(:source_code_pro)
-                     |> Flamelex.Fluxus.RadixStore.update()
-                   end},
-                  {"fira code",
-                   fn ->
-                     Flamelex.Fluxus.RadixStore.get()
-                     |> QuillEx.Reducers.RadixReducer.change_font(:fira_code)
-                     |> Flamelex.Fluxus.RadixStore.update()
-                   end},
-                  {"bitter",
-                   fn ->
-                     Flamelex.Fluxus.RadixStore.get()
-                     |> QuillEx.Reducers.RadixReducer.change_font(:bitter)
-                     |> Flamelex.Fluxus.RadixStore.update()
-                   end}
-                ]},
-               {"make bigger",
-                fn ->
-                  Flamelex.Fluxus.RadixStore.get()
-                  |> QuillEx.Reducers.RadixReducer.change_font_size(:increase)
-                  |> Flamelex.Fluxus.RadixStore.update()
-                end},
-               {"make smaller",
-                fn ->
-                  Flamelex.Fluxus.RadixStore.get()
-                  |> QuillEx.Reducers.RadixReducer.change_font_size(:decrease)
-                  |> Flamelex.Fluxus.RadixStore.update()
-                end}
-             ]}
+     [
+       {:sub_menu, "primary font",
+        [
+          {"ibm plex mono",
+           fn ->
+             Flamelex.Fluxus.RadixStore.get()
+             |> QuillEx.Reducers.RadixReducer.change_font(:ibm_plex_mono)
+             |> Flamelex.Fluxus.RadixStore.update()
+           end},
+          {"roboto",
+           fn ->
+             Flamelex.Fluxus.RadixStore.get()
+             |> QuillEx.Reducers.RadixReducer.change_font(:roboto)
+             |> Flamelex.Fluxus.RadixStore.update()
+           end},
+          {"roboto mono",
+           fn ->
+             Flamelex.Fluxus.RadixStore.get()
+             |> QuillEx.Reducers.RadixReducer.change_font(:roboto_mono)
+             |> Flamelex.Fluxus.RadixStore.update()
+           end},
+          {"iosevka",
+           fn ->
+             Flamelex.Fluxus.RadixStore.get()
+
+             QuillEx.Reducers.RadixReducer.change_font(:iosevka)
+             |> Flamelex.Fluxus.RadixStore.update()
+           end},
+          {"source code pro",
+           fn ->
+             Flamelex.Fluxus.RadixStore.get()
+             |> QuillEx.Reducers.RadixReducer.change_font(:source_code_pro)
+             |> Flamelex.Fluxus.RadixStore.update()
+           end},
+          {"fira code",
+           fn ->
+             Flamelex.Fluxus.RadixStore.get()
+             |> QuillEx.Reducers.RadixReducer.change_font(:fira_code)
+             |> Flamelex.Fluxus.RadixStore.update()
+           end},
+          {"bitter",
+           fn ->
+             Flamelex.Fluxus.RadixStore.get()
+             |> QuillEx.Reducers.RadixReducer.change_font(:bitter)
+             |> Flamelex.Fluxus.RadixStore.update()
+           end}
+        ]},
+       {"make bigger",
+        fn ->
+          Flamelex.Fluxus.RadixStore.get()
+          |> QuillEx.Reducers.RadixReducer.change_font_size(:increase)
+          |> Flamelex.Fluxus.RadixStore.update()
+        end},
+       {"make smaller",
+        fn ->
+          Flamelex.Fluxus.RadixStore.get()
+          |> QuillEx.Reducers.RadixReducer.change_font_size(:decrease)
+          |> Flamelex.Fluxus.RadixStore.update()
+        end}
+     ]}
   end
 
   def buffer_menu(%{editor: %{buffers: open_buffers}} = _radix_state) do
@@ -163,5 +248,4 @@ defmodule Flamelex.GUI.TopMenuBar do
   def quit do
     {"quit", &Flamelex.API.quit/0}
   end
-
 end

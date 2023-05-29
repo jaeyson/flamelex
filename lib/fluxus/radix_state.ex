@@ -47,23 +47,32 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
 
   @max_keystroke_history_limit 50
   @max_action_history_limit 50
+  require Logger
 
   @doc """
   This function calculates & returns the default RadixState -
   the one that is populated upon applications startup.
   """
-  def initialize(args) do
+  def initialize(%{memex: %{active?: true}}) do
+    # REMINDER: if memex is not active, this call will print nasty errors in the console...
+    memex_env = Memelex.environment_details()
+
     base_radix_state()
-    |> calc_menu_map(args)
+    |> Map.merge(%{memex: %{active?: true, env: memex_env}})
+    |> calc_menu_map()
+  end
+
+  def initialize(%{memex: %{active?: false}}) do
+    base_radix_state()
+    |> Map.merge(%{memex: %{active?: false}})
+    |> calc_menu_map()
   end
 
   def base_radix_state do
-
     # TODO initialize the whole all with some default layer states
 
     {:ok, ibm_plex_mono_font_metrics} =
       TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
-
 
     %{
       root: %{
@@ -145,7 +154,7 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
         hidden?: true,
         buffer:
           QuillEx.Structs.Buffer.new(%{
-            id: {:buffer, Kommander},
+            id: {:buffer, Flamelex.API.Kommander},
             type: :text,
             data: "",
             mode: :edit
@@ -163,12 +172,13 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
       history: %{
         keystrokes: []
         # actions:      []
-      }
+      },
+      memex: nil
     }
   end
 
-  def calc_menu_map(rdx, args) do
-    menu_map = Flamelex.GUI.TopMenuBar.calc_menu_map(rdx, args)
+  def calc_menu_map(rdx) do
+    menu_map = Flamelex.GUI.TopMenuBar.calc_menu_map(rdx)
     put_in(rdx, [:desktop, :menu_bar, :menu_map], menu_map)
   end
 

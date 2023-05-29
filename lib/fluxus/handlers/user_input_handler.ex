@@ -53,6 +53,9 @@ defmodule Flamelex.Fluxus.UserInputHandler do
       #    {:ok, new_radix_state |> record_input(input)}
       :ignore ->
         :ignore
+
+      :error ->
+        :error
     end
   end
 
@@ -73,7 +76,7 @@ end
 #   # IN THE FUTURE - we route all input to the GUI.Controller
 #   # - this is the process which is able to understand the state of the GUI
 #   # (as it holds the "frame", "active_buffer" and other such things in it)
-#   # - 
+#   # -
 
 #   # # def handle_input(%Flamelex.Fluxus.Structs.RadixState{mode: :insert} = state, input) when input in @all_letters do
 #   # #   cursor_pos =
@@ -206,7 +209,7 @@ end
 
 #     # #TODO this should probably be a lookup inside the module?
 #     # #     or rather, maybe we pass the module into the lookup function?
-#     # 
+#     #
 #     # case key_mapping.lookup(radix_state, user_input.input) do #TODO this is not grat, probably need to ditch the rest first
 #     #   nil ->
 #     #       _details = %{radix_state: radix_state, key_mapping: key_mapping, user_input: user_input}
@@ -273,7 +276,7 @@ end
 # #       Logger.debug " -- FIRING ACTION --> #{inspect a}"
 # #       Flamelex.Fluxus.fire_action(a)
 # #   {:fire_actions, action_list} when is_list(action_list) and length(action_list) > 0 ->
-# #       action_list |> Enum.map(fn (m) -> 
+# #       action_list |> Enum.map(fn (m) ->
 # #         Flamelex.Fluxus.fire_action(m)
 # #     end)
 # #   #TODO deprecate it, just have 1 pattern match for vim_lang here

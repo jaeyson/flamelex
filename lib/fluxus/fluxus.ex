@@ -13,7 +13,7 @@ defmodule Flamelex.Fluxus do
    https://medium.com/grandcentrix/state-management-with-phoenix-liveview-and-liveex-f53f8f1ec4d7
    """
 
-  
+
    # called to fire off an action
    def action(a) do
       #Logger.debug "Fluxus handling action `#{inspect a}`..."
@@ -21,6 +21,15 @@ defmodule Flamelex.Fluxus do
          id: UUID.uuid4(),
          topic: :general,
          data: {:action, a}
+      })
+   end
+
+   def event(topic, e) do
+      Logger.debug "pushing event for topic: #{inspect topic}, event: #{inspect e}"
+      :ok = EventBus.notify(%EventBus.Model.Event{
+         id: UUID.uuid4(),
+         topic: topic,
+         data: {:event, e}
       })
    end
 
@@ -119,7 +128,7 @@ defmodule Flamelex.Fluxus do
 
   # # handle all other (not-ignored) input...
   # def handle_event(input, _context, scene) do
-  #   IO.puts "SOME NON IGNORED INPUT 
+  #   IO.puts "SOME NON IGNORED INPUT
   #   # Flamelex.Fluxus.handle_user_input(input)
   #   {:noreply, scene}
   # end
@@ -127,12 +136,12 @@ defmodule Flamelex.Fluxus do
 
 
   """
-  def input(ii) do
-    EventBus.notify(%EventBus.Model.Event{
-      id: UUID.uuid4(),
-      topic: :general,
-      data: {:input, ii}
-    })
-  end
+   def input(ii) do
+      EventBus.notify(%EventBus.Model.Event{
+         id: UUID.uuid4(),
+         topic: :general,
+         data: {:input, ii}
+      })
+   end
 
 end

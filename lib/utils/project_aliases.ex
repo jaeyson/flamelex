@@ -5,20 +5,23 @@ defmodule Flamelex.Lib.ProjectAliases do
   """
 
   defmacro __using__(_opts) do
+    # default_my_modules = find_modules_with_prefix("Memelex.My.")
+
     quote do
-      alias Flamelex.API.{
-        Buffer,
-        Kommander,
-        GUI,
-        Diary
-      }
+      # alias Memelex.My
 
-      alias Memelex.My
+      # alias Flamelex.API.{
+      #   Buffer,
+      #   Kommander,
+      #   GUI,
+      #   Diary
+      # }
 
-      alias Memelex.My.{
-        Journal,
-        Wiki
-      }
+      # alias Memelex.My.{
+      #   Journal,
+      #   Wiki,
+      #   TODOs
+      # }
 
       alias Flamelex.Fluxus
 
@@ -31,8 +34,6 @@ defmodule Flamelex.Lib.ProjectAliases do
 
       alias Flamelex.Lib.Utils.ProcessRegistry
       alias Flamelex.Lib.Utils.PubSub
-
-      # use IceCream # https://github.com/joseph-lozano/ice_cream
 
       import Memelex.Environment, only: [reload_modz: 0]
     end

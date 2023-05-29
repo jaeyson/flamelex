@@ -11,19 +11,21 @@ defmodule Flamelex.Fluxus.TopLevelSupervisor do
     # Logger.debug "#{__MODULE__} initializing..."
 
     children = [
-      {Registry, keys: :duplicate, name: Fluxus.PubSub}, # https://hexdocs.pm/elixir/1.12/Registry.html#module-using-as-a-dispatcher
+      # https://hexdocs.pm/elixir/1.12/Registry.html#module-using-as-a-dispatcher
+      {Registry, keys: :duplicate, name: Fluxus.PubSub},
       {Flamelex.Fluxus.RadixStore, init_rdx},
       Flamelex.Fluxus.ActionListener,
       Flamelex.Fluxus.UserInputListener,
+      Flamelex.Fluxus.MemelexListener
 
       # Memelex Fluxus processes
-      {Registry, keys: :duplicate, name: Memelex.PubSub},
-      Memelex.Fluxus.RadixStore,
-      Memelex.Fluxus.ActionListener,
-      Memelex.Fluxus.UserInputListener
+      # {Registry, keys: :duplicate, name: Memelex.PubSub},
+      # Memelex.Fluxus.RadixStore,
+      # Memelex.Fluxus.ActionListener,
+      # Memelex.Fluxus.UserInputListener
     ]
 
-    Supervisor.init(children, strategy: :one_for_all) #TODO make this :rest_for_one?
+    # TODO make this :rest_for_one?
+    Supervisor.init(children, strategy: :one_for_all)
   end
-
 end
