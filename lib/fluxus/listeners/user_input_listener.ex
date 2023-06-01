@@ -65,6 +65,7 @@ defmodule Flamelex.Fluxus.UserInputListener do
 
       {:ok, new_radix_state} ->
         # Logger.debug "#{Memelex.My.Modz.CustomInputHandler} processed event, state changed..."
+        # NOTE - we only need to `put` user input into the store, dont call `update` because we dont need to broadcast this out to all components...
         Flamelex.Fluxus.RadixStore.put(new_radix_state)
         EventBus.mark_as_completed({__MODULE__, event_shadow})
     end

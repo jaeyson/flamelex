@@ -16,11 +16,13 @@ defmodule Flamelex.Fluxus.TopLevelSupervisor do
       {Flamelex.Fluxus.RadixStore, init_rdx},
       Flamelex.Fluxus.ActionListener,
       Flamelex.Fluxus.UserInputListener,
-      Flamelex.Fluxus.MemelexListener
+      # TODO this will probably blow up but whatever
+      {Flamelex.Fluxus.MemexStore, init_rdx},
+      {Flamelex.Fluxus.MemelexListener, init_rdx.memex}
 
       # Memelex Fluxus processes
       # {Registry, keys: :duplicate, name: Memelex.PubSub},
-      # Memelex.Fluxus.RadixStore,
+      # Flamelex.Fluxus.MemexStore,
       # Memelex.Fluxus.ActionListener,
       # Memelex.Fluxus.UserInputListener
     ]

@@ -1,424 +1,424 @@
 defmodule Memelex.GUI.Components.StoryRiver do
-   use Scenic.Component
-   alias ScenicWidgets.Core.Structs.Frame
-   require Logger
-   #TODO when we need to render a list, need to stash them inside temp state memory until we get "next render" msg from last HyperCard
-   # just stash them all in memory & call :render_next_component once, that should do it
+  use Scenic.Component
+  alias ScenicWidgets.Core.Structs.Frame
+  require Logger
 
-   # has input params: Frame, & layout type (axis)
-   # then, renders a list of components (another input) with their
-   # params (from input), inside this frame-based component which keeps
-   # track of how large each rendered, and is able to add/remove them
-   # from the screen aswell. We also handle scroll here.
+  # TODO when we need to render a list, need to stash them inside temp state memory until we get "next render" msg from last HyperCard
+  # just stash them all in memory & call :render_next_component once, that should do it
 
-   #NOTE - here's the idea - we have a group that we can add &
-   #       subtract to, and a "render list" - we render an item,
-   #       it calculates it's own height/length, and the story river
-   #       (or whatever) stashes it inside itself as "unrendered" or
-   #       something. Then, the first component loads, casts back
-   #       "hey, I rendeered, I'm xyz long/high" - this will trigger
-   #       the rendering of the next component, and we have all the
-   #       data we need!
+  # has input params: Frame, & layout type (axis)
+  # then, renders a list of components (another input) with their
+  # params (from input), inside this frame-based component which keeps
+  # track of how large each rendered, and is able to add/remove them
+  # from the screen aswell. We also handle scroll here.
 
-   @spacing_buffer 20 # the space between TidBits
+  # NOTE - here's the idea - we have a group that we can add &
+  #       subtract to, and a "render list" - we render an item,
+  #       it calculates it's own height/length, and the story river
+  #       (or whatever) stashes it inside itself as "unrendered" or
+  #       something. Then, the first component loads, casts back
+  #       "hey, I rendeered, I'm xyz long/high" - this will trigger
+  #       the rendering of the next component, and we have all the
+  #       data we need!
 
-   def validate(%{
-      frame: %Frame{} = _f,
-      state: %{
-         open_tidbits: _open_tidbits_list,
-         scroll: {_x, _y}
-      }
-   } = data) do
-      Logger.debug "#{__MODULE__} accepted params: #{inspect data}"
-      {:ok, data}
-   end
+  # the space between TidBits
+  @spacing_buffer 20
 
-   # NOTE - it is definitely easier to just get "add_tidbit"
-   # here & then update the state that way... if we just accept
-   # a state and try to render it, we either need to drop all the old ones,
-   # or need to try and compute some kind of diff...
+  def validate(
+        %{
+          frame: %Frame{} = _f,
+          state: %{
+            open_tidbits: _open_tidbits_list,
+            scroll: {_x, _y}
+          }
+        } = data
+      ) do
+    Logger.debug("#{__MODULE__} accepted params: #{inspect(data)}")
+    {:ok, data}
+  end
 
-   def init(scene, args, opts) do
-      Logger.debug "#{__MODULE__} initializing..."
-      
-      init_graph = render(args)
+  # NOTE - it is definitely easier to just get "add_tidbit"
+  # here & then update the state that way... if we just accept
+  # a state and try to render it, we either need to drop all the old ones,
+  # or need to try and compute some kind of diff...
 
-      # we have to start out the rendering by moving all
-      # open TidBits into the render_queue. Then, we render
-      # them one at a time, and then as each one renders it
-      # sends this Component, the StoryRiver, an update with it's
-      # final height - then, knowing the height of the components
-      # it has rendered so far (which are variable in height), the
-      # StoryRiver is able to accuractely lay out all the other
-      # Hypercards it still has yet to draw
-      
-      #TODO actually when initializing, we should probably render all the open tidbits...
+  def init(scene, args, opts) do
+    Logger.debug("#{__MODULE__} initializing...")
 
-      init_state =
-         args.state
-         # |> Map.merge(%{scroll: {0, 0}})
-         #TODO this might not work with radix_state changes coming in at the same time...
-         |> put_in([:open_tidbits], []) # start with no tidbits open, instead we load them into the render queue
+    init_graph = render(args)
 
-         #     state = %{
-#       # first_render?: true, #NOTE: We can do everything for the "first render" in the init/3 function
-#       active_tidbit: [], # we haven't rendered any yet, so none are active
-#       render_queue: [] = params.components, # we will go through this list very soon & render them...
-#       scroll: {0, 0}
-#     }
+    # we have to start out the rendering by moving all
+    # open TidBits into the render_queue. Then, we render
+    # them one at a time, and then as each one renders it
+    # sends this Component, the StoryRiver, an update with it's
+    # final height - then, knowing the height of the components
+    # it has rendered so far (which are variable in height), the
+    # StoryRiver is able to accuractely lay out all the other
+    # Hypercards it still has yet to draw
 
-      init_scene = scene
+    # TODO actually when initializing, we should probably render all the open tidbits...
+
+    init_state =
+      args.state
+      # |> Map.merge(%{scroll: {0, 0}})
+      # TODO this might not work with radix_state changes coming in at the same time...
+      # start with no tidbits open, instead we load them into the render queue
+      |> put_in([:open_tidbits], [])
+
+    #     state = %{
+    #       # first_render?: true, #NOTE: We can do everything for the "first render" in the init/3 function
+    #       active_tidbit: [], # we haven't rendered any yet, so none are active
+    #       render_queue: [] = params.components, # we will go through this list very soon & render them...
+    #       scroll: {0, 0}
+    #     }
+
+    init_scene =
+      scene
       |> assign(graph: init_graph)
       |> assign(frame: args.frame)
       |> assign(state: init_state)
-      #TODO we should render the open tidbits in the init state
-      |> assign(render_queue: args.state.open_tidbits) # used to buffer the rendering of flexible components (because they're flexible, so we can't render/position the next one until we know how tall the previous one is)
+      # TODO we should render the open tidbits in the init state
+      # used to buffer the rendering of flexible components (because they're flexible, so we can't render/position the next one until we know how tall the previous one is)
+      |> assign(render_queue: args.state.open_tidbits)
       |> push_graph(init_graph)
-      
-      Memelex.Utils.PubSub.subscribe()
-      # pubsub_mod = Module.concat(args.app, Utils.PubSub)
-      # pubsub_mod.subscribe(topic: :radix_state_change)
 
-      request_input(init_scene, [:cursor_scroll])
+    # Memelex.Utils.PubSub.subscribe()
+    # pubsub_mod = Module.concat(args.app, Utils.PubSub)
+    # pubsub_mod.subscribe(topic: :memex_state_change)
+    Flamelex.Lib.Utils.PubSub.subscribe(topic: :memex_state_change)
 
-      GenServer.cast(self(), :render_next_component) # kick-start the rendering here, it will take first item in the queue & render it
+    request_input(init_scene, [:cursor_scroll])
 
-      {:ok, init_scene}
-   end
+    # kick-start the rendering here, it will take first item in the queue & render it
+    GenServer.cast(self(), :render_next_component)
 
-   def handle_input(
-      {:cursor_scroll, {{_x_scroll, y_scroll} = delta_scroll, coords}},
-      _context,
+    {:ok, init_scene}
+  end
+
+  def handle_input(
+        {:cursor_scroll, {{_x_scroll, y_scroll} = delta_scroll, coords}},
+        _context,
+        scene
+      ) do
+    # TODO handle all this via a Reducer?? Or just keep it in the component??
+    # Flamelex.Fluxus.action({Flamelex.Fluxus.Reducers.Memex, {:scroll, delta_scroll, __MODULE__}})
+
+    fast_scroll = {0, 3 * y_scroll}
+    # TODO cap scroll
+    # new_cumulative_scroll =
+    #     cap_position(scene, Scenic.Math.Vector2.add(scene.assigns.state.scroll, fast_scroll))
+    new_cumulative_scroll = Scenic.Math.Vector2.add(scene.assigns.state.scroll, fast_scroll)
+
+    new_graph =
+      scene.assigns.graph
+      |> Scenic.Graph.modify(
+        :river_pane,
+        &Scenic.Primitives.update_opts(&1, translate: new_cumulative_scroll)
+      )
+
+    new_state =
+      scene.assigns.state
+      |> put_in([:scroll], new_cumulative_scroll)
+
+    new_scene =
       scene
-   ) do
-         
-      #TODO handle all this via a Reducer?? Or just keep it in the component??
-      # Flamelex.Fluxus.action({Flamelex.Fluxus.Reducers.Memex, {:scroll, delta_scroll, __MODULE__}})
-      
-      fast_scroll = {0, 3*y_scroll}
-      #TODO cap scroll
-      # new_cumulative_scroll =
-      #     cap_position(scene, Scenic.Math.Vector2.add(scene.assigns.state.scroll, fast_scroll))
-      new_cumulative_scroll =
-          Scenic.Math.Vector2.add(scene.assigns.state.scroll, fast_scroll)
+      |> assign(graph: new_graph)
+      |> assign(state: new_state)
+      |> push_graph(new_graph)
 
-      new_graph =
-         scene.assigns.graph
-         |> Scenic.Graph.modify(:river_pane, &Scenic.Primitives.update_opts(&1, translate: new_cumulative_scroll))
+    {:noreply, new_scene}
+  end
 
-      new_state =
-         scene.assigns.state
-         |> put_in([:scroll], new_cumulative_scroll)
+  def handle_cast(:render_next_component, %{assigns: %{render_queue: []}} = scene) do
+    # Logger.debug "#{__MODULE__} ignoring a request to render a component, there's nothing to render"
+    {:noreply, scene}
+  end
 
-      new_scene =
-         scene
-         |> assign(graph: new_graph)
-         |> assign(state: new_state)
-         |> push_graph(new_graph)
+  def handle_cast(:render_next_component, %{assigns: %{render_queue: [tidbit | rest]}} = scene) do
+    Logger.debug("#{__MODULE__} attempting to render an additional component...")
 
-      {:noreply, new_scene}
-   end
+    # NOTE - pick up here tomorrow,
+    # -  basically add the new Hypercard to the graph
+    # - push a new graph
+    # - remember to take this component out of the render render_queu
+    # - next hypercard will kick off next render
 
-   def handle_cast(:render_next_component, %{assigns: %{render_queue: []}} = scene) do
-      #Logger.debug "#{__MODULE__} ignoring a request to render a component, there's nothing to render"
-      {:noreply, scene}
-   end
+    #     #NOTE: My original idea was to send all these re-render messages at once,
+    #      the problem with that is that then they all render before any
+    #      of them have called back with their height!! The solution is
+    #      to only render one, let it go through it's cycle (calling back
+    #      with it's own bounds) and then if we still have things in the
+    #      render_queue, re-drawing those too
 
-   def handle_cast(:render_next_component, %{assigns: %{render_queue: [tidbit|rest]}} = scene) do
-      Logger.debug "#{__MODULE__} attempting to render an additional component..."
+    # margin_buf = 2*@spacing_buffer # this is how much margin we render around each HyperCard
 
-      #NOTE - pick up here tomorrow,
-      # -  basically add the new Hypercard to the graph
-      # - push a new graph
-      # - remember to take this component out of the render render_queu
-      # - next hypercard will kick off next render
+    # frame = scene.assigns.frame
+    # state = scene.assigns.state
+    # new_state = %{state | render_queue: rest}
 
-      #     #NOTE: My original idea was to send all these re-render messages at once,
-      #      the problem with that is that then they all render before any
-      #      of them have called back with their height!! The solution is
-      #      to only render one, let it go through it's cycle (calling back
-      #      with it's own bounds) and then if we still have things in the
-      #      render_queue, re-drawing those too
+    # acc_height = calc_acc_height(scene) #TODO loop through active components, calc height, including all spaced offsets!
 
+    # #NOTE - margin ought to be managed by the component itself - dont
+    # #       adjust the frame & pass it in, pass in margin as a prop
 
-      # margin_buf = 2*@spacing_buffer # this is how much margin we render around each HyperCard
+    # #TODO get current scroll for the river_pane, so we can use it again
+    # #     as an option when we add the new HyperCard to the graph - I feel
+    # #     like Scenic should have respected my initial options, but anyway...
 
-      # frame = scene.assigns.frame
-      # state = scene.assigns.state
-      # new_state = %{state | render_queue: rest}
-
-      # acc_height = calc_acc_height(scene) #TODO loop through active components, calc height, including all spaced offsets!
-
-      # #NOTE - margin ought to be managed by the component itself - dont
-      # #       adjust the frame & pass it in, pass in margin as a prop
-
-      # #TODO get current scroll for the river_pane, so we can use it again
-      # #     as an option when we add the new HyperCard to the graph - I feel
-      # #     like Scenic should have respected my initial options, but anyway...
-   
-
-
-
-
-      new_graph = scene.assigns.graph
+    new_graph =
+      scene.assigns.graph
       |> Scenic.Graph.add_to(:river_pane, fn graph ->
-         graph
-         # |> ScenicWidgets.FrameBox.add_to_graph(%{frame: Frame.new(%{pin: {400, 400}, size: {400, 400}}), fill: :blue})
-         # |> ScenicWidgets.FrameBox.add_to_graph(%{frame: calc_hypercard_frame(scene), fill: :blue})
-         |> Memelex.GUI.Components.HyperCard.add_to_graph(%{
-                  # id: tidbit.uuid,
-                  frame: calc_hypercard_frame(scene),
-                  # frame: Frame.new(%{pin: {400, 400}, size: {400, 400}}),
-                  state: tidbit
-                  # state: %{uuid: "123"}
-               }) #TODO pass id in the opts
-         end)
+        graph
+        # |> ScenicWidgets.FrameBox.add_to_graph(%{frame: Frame.new(%{pin: {400, 400}, size: {400, 400}}), fill: :blue})
+        # |> ScenicWidgets.FrameBox.add_to_graph(%{frame: calc_hypercard_frame(scene), fill: :blue})
+        |> Memelex.GUI.Components.HyperCard.add_to_graph(%{
+          # id: tidbit.uuid,
+          frame: calc_hypercard_frame(scene),
+          # frame: Frame.new(%{pin: {400, 400}, size: {400, 400}}),
+          state: tidbit
+          # state: %{uuid: "123"}
+        })
 
-      
+        # TODO pass id in the opts
+      end)
 
+    # #NOTE this is supposed to get the existing scroll but we need to cann it for now
+    # # [%{transforms: %{translate: scroll_coords}}] = Scenic.Graph.get(scene.assigns.graph, :river_pane)
 
+    # #NOTE this seems to have basically no effect on counter-acting the scroll reset when we open a new tidbit problem...
+    # # |> Scenic.Graph.modify(:river_pane, &Scenic.Primitives.update_opts(&1, translate: scroll_coords))
 
-      # #NOTE this is supposed to get the existing scroll but we need to cann it for now
-      # # [%{transforms: %{translate: scroll_coords}}] = Scenic.Graph.get(scene.assigns.graph, :river_pane)
-
-      # #NOTE this seems to have basically no effect on counter-acting the scroll reset when we open a new tidbit problem...
-      # # |> Scenic.Graph.modify(:river_pane, &Scenic.Primitives.update_opts(&1, translate: scroll_coords))
-
-
-
-
-
-
-      new_state = scene.assigns.state
+    new_state =
+      scene.assigns.state
       |> put_in([:open_tidbits], scene.assigns.state.open_tidbits ++ [tidbit])
 
-      new_scene = scene
+    new_scene =
+      scene
       |> assign(graph: new_graph)
       |> assign(state: new_state)
       |> assign(render_queue: rest)
       |> push_graph(new_graph)
 
-      GenServer.cast(self(), :render_next_component) # keep rendering all the components...
+    # keep rendering all the components...
+    GenServer.cast(self(), :render_next_component)
 
-      {:noreply, new_scene}
-   end
- 
+    {:noreply, new_scene}
+  end
 
+  #   def handle_cast(:render_next_component, scene = %{assigns: %{state: %{
+  #                     #  active_tidbits: [],
+  #                      render_queue: [c|rest]}}}) do
+  #     Logger.debug "Attempting to render an additional component in the LayoutList..."
+  #     # Logger.warn "IN THE RENDER LIST YES"
 
-#   def handle_cast(:render_next_component, scene = %{assigns: %{state: %{
-#                     #  active_tidbits: [],
-#                      render_queue: [c|rest]}}}) do
-#     Logger.debug "Attempting to render an additional component in the LayoutList..."
-#     # Logger.warn "IN THE RENDER LIST YES"
+  #     margin_buf = 2*@spacing_buffer # this is how much margin we render around each HyperCard
+  #     {HyperCard, tidbit, opts} = c #TODO lol
 
-#     margin_buf = 2*@spacing_buffer # this is how much margin we render around each HyperCard
-#     {HyperCard, tidbit, opts} = c #TODO lol
+  #     frame = scene.assigns.frame
+  #     state = scene.assigns.state
+  #     new_state = %{state | render_queue: rest}
 
-#     frame = scene.assigns.frame
-#     state = scene.assigns.state
-#     new_state = %{state | render_queue: rest}
+  #     acc_height = calc_acc_height(scene) #TODO loop through active components, calc height, including all spaced offsets!
 
-#     acc_height = calc_acc_height(scene) #TODO loop through active components, calc height, including all spaced offsets!
+  #     #NOTE - margin ought to be managed by the component itself - dont
+  #     #       adjust the frame & pass it in, pass in margin as a prop
 
-#     #NOTE - margin ought to be managed by the component itself - dont
-#     #       adjust the frame & pass it in, pass in margin as a prop
+  #     #TODO get current scroll for the river_pane, so we can use it again
+  #     #     as an option when we add the new HyperCard to the graph - I feel
+  #     #     like Scenic should have respected my initial options, but anyway...
 
-#     #TODO get current scroll for the river_pane, so we can use it again
-#     #     as an option when we add the new HyperCard to the graph - I feel
-#     #     like Scenic should have respected my initial options, but anyway...
+  #     #NOTE this is supposed to get the existing scroll but we need to cann it for now
+  #     # [%{transforms: %{translate: scroll_coords}}] = Scenic.Graph.get(scene.assigns.graph, :river_pane)
 
-#     #NOTE this is supposed to get the existing scroll but we need to cann it for now
-#     # [%{transforms: %{translate: scroll_coords}}] = Scenic.Graph.get(scene.assigns.graph, :river_pane)
+  #     new_graph = scene.assigns.graph
+  #     |> Scenic.Graph.add_to(:river_pane, fn graph ->
+  #           args = %{
+  #             tidbit: tidbit,
+  #             frame: Frame.new(pin: {frame.top_left.x, frame.top_left.y+acc_height}, size: {frame.dimensions.width-(2*margin_buf), :flex})
+  #             # top_left: {frame.top_left.x+margin_buf, frame.top_left.y+margin_buf+acc_height},
+  #             # width: frame.dimensions.width-(2*margin_buf) # got to take off the margun_buf from each side...
+  #           }
+  #           # Kernel.apply(HyperCard, :add_to_graph, [graph, args, [translate: scroll_coords]]) #TODO I dont think this actually worked
+  #           Kernel.apply(HyperCard, :add_to_graph, [graph, args, opts]) #TODO this always resets us back moving the story river to default! Very annoying!!
+  #           # |> HyperCard.add_to_graph(%{
+  #           #     top_left: {},
+  #           #     width: {},
+  #           #     length: :flex,
+  #           #     # frame:  Frame.new(top_left: {frame.top_left.x+bm, existing_graph_height+bm}, dimensions: {frame.dimensions.width-(2*bm), 700}),
+  #           #     # frame:  Frame.new(top_left: {bottom+15, left}, dimensions: {400, 400}),
+  #           #     # frame: hypercard_frame(frame), # calculate hypercard based of story_river
+  #           #     tidbit: tidbit })
+  #     end)
+  #     #NOTE this seems to have basically no effect on counter-acting the scroll reset when we open a new tidbit problem...
+  #     # |> Scenic.Graph.modify(:river_pane, &Scenic.Primitives.update_opts(&1, translate: scroll_coords))
 
-#     new_graph = scene.assigns.graph
-#     |> Scenic.Graph.add_to(:river_pane, fn graph ->
-#           args = %{
-#             tidbit: tidbit,
-#             frame: Frame.new(pin: {frame.top_left.x, frame.top_left.y+acc_height}, size: {frame.dimensions.width-(2*margin_buf), :flex})
-#             # top_left: {frame.top_left.x+margin_buf, frame.top_left.y+margin_buf+acc_height},
-#             # width: frame.dimensions.width-(2*margin_buf) # got to take off the margun_buf from each side...
-#           }
-#           # Kernel.apply(HyperCard, :add_to_graph, [graph, args, [translate: scroll_coords]]) #TODO I dont think this actually worked
-#           Kernel.apply(HyperCard, :add_to_graph, [graph, args, opts]) #TODO this always resets us back moving the story river to default! Very annoying!!
-#           # |> HyperCard.add_to_graph(%{
-#           #     top_left: {},
-#           #     width: {},
-#           #     length: :flex,
-#           #     # frame:  Frame.new(top_left: {frame.top_left.x+bm, existing_graph_height+bm}, dimensions: {frame.dimensions.width-(2*bm), 700}),
-#           #     # frame:  Frame.new(top_left: {bottom+15, left}, dimensions: {400, 400}),
-#           #     # frame: hypercard_frame(frame), # calculate hypercard based of story_river
-#           #     tidbit: tidbit })
-#     end)
-#     #NOTE this seems to have basically no effect on counter-acting the scroll reset when we open a new tidbit problem...
-#     # |> Scenic.Graph.modify(:river_pane, &Scenic.Primitives.update_opts(&1, translate: scroll_coords))
+  #     # then, riht at the end, call itself again until there's no render queue components (!?!?)
+  #     # GenServer.cast(self(), :render_next_component)
 
-#     # then, riht at the end, call itself again until there's no render queue components (!?!?)
-#     # GenServer.cast(self(), :render_next_component)
+  #     new_scene = scene
+  #     |> assign(graph: new_graph)
+  #     |> assign(state: new_state)
+  #     |> push_graph(new_graph)
 
-#     new_scene = scene
-#     |> assign(graph: new_graph)
-#     |> assign(state: new_state)
-#     |> push_graph(new_graph)
+  #     {:noreply, new_scene}
+  #   end
 
-#     {:noreply, new_scene}
-#   end
-
- 
-   # def handle_info({:radix_state_change, %{memex: %{open_tidbits: new_open_tidbits} = new_memex_state}}, %{assigns: %{state: %{open_tidbits: currently_open_tidbits}}} = scene)
-   def handle_info({:radix_state_change, %{story_river: %{open_tidbits: new_open_tidbits} = incoming_story_river_state}}, %{assigns: %{state: %{open_tidbits: currently_open_tidbits}}} = scene)
-      when new_open_tidbits != currently_open_tidbits do
-
-         # new_tidbits_to_render = scene.assigns.state.open_tidbits 
-
-         new_story_river_state =
-            # reset open tidbits to zero, since we need to re-render them all...
-            incoming_story_river_state |> put_in([:open_tidbits], [])
-
-         new_graph = render(%{
-            frame: scene.assigns.frame,
-            state: new_story_river_state
-         })
-
-         #TODO add an optimization here, we dont need to destroy all the open tidbits & add *all* of them to the render buffer,
-         # most of the time we're just appending a single ne TidBit to the bottom...
-         new_scene = scene
-         |> assign(state: new_story_river_state) 
-         |> assign(graph: new_graph) 
-         |> assign(render_queue: new_open_tidbits)
-         |> push_graph(new_graph)
-
-         GenServer.cast(self(), :render_next_component)
-
-         {:noreply, new_scene}
-   end
-
-   #NOTE: If `story_river_state` binds on both variables here, then they are the same, no state-change occured and we can ignore this update
-   def handle_info({:radix_state_change, %{story_river: story_river_state}}, %{assigns: %{state: story_river_state}} = scene) do
-      {:noreply, scene}
-   end
-
-
-   def render(%{frame: frame, state: %{scroll: scroll} = _state}) do
-      # This way the graph has a Group with the right name already, so
-      # we can just use Scenic.Graph.add to add new HyperCards
-
-      Scenic.Graph.build()
-      |> Scenic.Primitives.group(fn graph ->
-            graph
-            |> ScenicWidgets.FrameBox.add_to_graph(%{frame: frame, fill: :pink})
-            #NOTE- make the container group, give it translation etc, just don't add any components yet
-            |> Scenic.Primitives.group(fn graph ->
-                  graph
-               end, [
-                  #NOTE: We will scroll this pane around later on, and need to
-                  #      add new TidBits to it with Modify
-                  id: :river_pane, # Scenic required we register groups/components with a name
-                  translate: scroll
-            ])
-         end, [
-            id: __MODULE__
-         ]
+  # def handle_info({:memex_state_change, %{memex: %{open_tidbits: new_open_tidbits} = new_memex_state}}, %{assigns: %{state: %{open_tidbits: currently_open_tidbits}}} = scene)
+  def handle_info(
+        {:memex_state_change,
+         %{story_river: %{open_tidbits: new_open_tidbits} = incoming_story_river_state}},
+        %{assigns: %{state: %{open_tidbits: currently_open_tidbits}}} = scene
       )
-   end
+      when new_open_tidbits != currently_open_tidbits do
+    # new_tidbits_to_render = scene.assigns.state.open_tidbits
 
+    # reset open tidbits to zero, since we need to re-render them all...
+    new_story_river_state = incoming_story_river_state |> put_in([:open_tidbits], [])
 
-   def handle_info({:wiki_server, :memex_saved_to_disc}, scene) do
-      {:noreply, scene}
-   end
+    new_graph =
+      render(%{
+        frame: scene.assigns.frame,
+        state: new_story_river_state
+      })
 
-   # def handle_info({:wiki_server, :memex_saved_to_disc}, scene) do
-   #    new_story_river_state = Memelex.Fluxus.RadixStore.get().story_river
+    # TODO add an optimization here, we dont need to destroy all the open tidbits & add *all* of them to the render buffer,
+    # most of the time we're just appending a single ne TidBit to the bottom...
+    new_scene =
+      scene
+      |> assign(state: new_story_river_state)
+      |> assign(graph: new_graph)
+      |> assign(render_queue: new_open_tidbits)
+      |> push_graph(new_graph)
 
-   #    next_state =
-   #       new_story_river_state
-   #       |> put_in([:open_tidbits], []) # start with no tidbits open, instead we load them into the render queue
+    GenServer.cast(self(), :render_next_component)
 
-   #    new_graph = render(%{
-   #       frame: scene.assigns.frame,
-   #       state: next_state
-   #    })
+    {:noreply, new_scene}
+  end
 
-   #    new_scene = scene
-   #    |> assign(state: next_state)
-   #    #TODO we should render the open tidbits in the init state
-   #    |> assign(render_queue: new_story_river_state.open_tidbits) # used to buffer the rendering of flexible components (because they're flexible, so we can't render/position the next one until we know how tall the previous one is)
-   #    |> push_graph(new_graph)
+  # NOTE: If `story_river_state` binds on both variables here, then they are the same, no state-change occured and we can ignore this update
+  def handle_info(
+        {:memex_state_change, %{story_river: story_river_state}},
+        %{assigns: %{state: story_river_state}} = scene
+      ) do
+    {:noreply, scene}
+  end
 
-   #    GenServer.cast(self(), :render_next_component) # kick-start the rendering here, it will take first item in the queue & render it
+  def render(%{frame: frame, state: %{scroll: scroll} = _state}) do
+    # This way the graph has a Group with the right name already, so
+    # we can just use Scenic.Graph.add to add new HyperCards
 
-   #    {:noreply, new_scene}
-   # end
+    Scenic.Graph.build()
+    |> Scenic.Primitives.group(
+      fn graph ->
+        graph
+        |> ScenicWidgets.FrameBox.add_to_graph(%{frame: frame, fill: :pink})
+        # NOTE- make the container group, give it translation etc, just don't add any components yet
+        |> Scenic.Primitives.group(
+          fn graph ->
+            graph
+          end,
+          # NOTE: We will scroll this pane around later on, and need to
+          #      add new TidBits to it with Modify
+          # Scenic required we register groups/components with a name
+          id: :river_pane,
+          translate: scroll
+        )
+      end,
+      id: __MODULE__
+    )
+  end
 
-   def calc_hypercard_frame(%{assigns: %{
-      frame: %Frame{coords: %{x: x, y: y}, dimens: %{width: w, height: h}},
-      state: %{
-          open_tidbits: open_tidbits_list
-   }}}) do
-      #TODO really calculate height
-      open_tidbits_offset = 500*Enum.count(open_tidbits_list)
-      extra_vertial_space = @spacing_buffer*Enum.count(open_tidbits_list)
-      Frame.new(
-          pin: {x+@spacing_buffer, y+@spacing_buffer+open_tidbits_offset+extra_vertial_space},
-         #  size: {w-(2*@spacing_buffer), {:flex_grow, %{min_height: 500}}})
-          size: {w-(2*@spacing_buffer), 500}) # TODO
-   end
+  def handle_info({:wiki_server, :memex_saved_to_disc}, scene) do
+    {:noreply, scene}
+  end
 
-   # # <3 @vacarsu
-   # def cap_position(%{assigns: %{frame: frame}} = scene, coord) do
-   #    # NOTE: We must keep track of components, because one could
-   #    #      get yanked out the middle.
-   #    height = calc_acc_height(scene)
-   #    # height = scene.assigns.state.scroll.acc_length
-   #    if height > frame.dimensions.height do
-   #       coord
-   #       |> calc_floor({0, -height + frame.dimensions.height / 2})
-   #       |> calc_ceil({0, 0})
-   #    else
-   #       coord
-   #       |> calc_floor(@min_position_cap)
-   #       |> calc_ceil(@min_position_cap)
-   #    end
-   # end
+  # def handle_info({:wiki_server, :memex_saved_to_disc}, scene) do
+  #    new_story_river_state = Flamelex.Fluxus.MemexStore.get().story_river
 
-   # defp calc_floor({x, y}, {min_x, min_y}), do: {max(x, min_x), max(y, min_y)}
+  #    next_state =
+  #       new_story_river_state
+  #       |> put_in([:open_tidbits], []) # start with no tidbits open, instead we load them into the render queue
 
-   # defp calc_ceil({x, y}, {max_x, max_y}), do: {min(x, max_x), min(y, max_y)}
-               
+  #    new_graph = render(%{
+  #       frame: scene.assigns.frame,
+  #       state: next_state
+  #    })
 
-   # def calc_acc_height(components) when is_list(components) do
-   #    do_calc_acc_height(0, components)
-   # end
+  #    new_scene = scene
+  #    |> assign(state: next_state)
+  #    #TODO we should render the open tidbits in the init state
+  #    |> assign(render_queue: new_story_river_state.open_tidbits) # used to buffer the rendering of flexible components (because they're flexible, so we can't render/position the next one until we know how tall the previous one is)
+  #    |> push_graph(new_graph)
 
-   # def calc_acc_height(%{assigns: %{state: %{open_tidbits: open_tidbits}}}) do
-   #     do_calc_acc_height(0, open_tidbits)
-   # end
+  #    GenServer.cast(self(), :render_next_component) # kick-start the rendering here, it will take first item in the queue & render it
 
-   # def do_calc_acc_height(acc, []), do: acc
+  #    {:noreply, new_scene}
+  # end
 
-   # def do_calc_acc_height(acc, [{_id, bounds} = c | rest]) do
-   #    # top is less than bottom, because the axis starts in top-left corner
-   #    {_left, top, _right, bottom} = bounds
-   #    component_height = bottom - top
+  def calc_hypercard_frame(%{
+        assigns: %{
+          frame: %Frame{coords: %{x: x, y: y}, dimens: %{width: w, height: h}},
+          state: %{
+            open_tidbits: open_tidbits_list
+          }
+        }
+      }) do
+    # TODO really calculate height
+    open_tidbits_offset = 500 * Enum.count(open_tidbits_list)
+    extra_vertial_space = @spacing_buffer * Enum.count(open_tidbits_list)
 
-   #    new_acc = acc + component_height + @spacing_buffer
-   #    do_calc_acc_height(new_acc, rest)
-   # end
+    Frame.new(
+      pin: {x + @spacing_buffer, y + @spacing_buffer + open_tidbits_offset + extra_vertial_space},
+      #  size: {w-(2*@spacing_buffer), {:flex_grow, %{min_height: 500}}})
+      # TODO
+      size: {w - 2 * @spacing_buffer, 500}
+    )
+  end
 
+  # # <3 @vacarsu
+  # def cap_position(%{assigns: %{frame: frame}} = scene, coord) do
+  #    # NOTE: We must keep track of components, because one could
+  #    #      get yanked out the middle.
+  #    height = calc_acc_height(scene)
+  #    # height = scene.assigns.state.scroll.acc_length
+  #    if height > frame.dimensions.height do
+  #       coord
+  #       |> calc_floor({0, -height + frame.dimensions.height / 2})
+  #       |> calc_ceil({0, 0})
+  #    else
+  #       coord
+  #       |> calc_floor(@min_position_cap)
+  #       |> calc_ceil(@min_position_cap)
+  #    end
+  # end
 
+  # defp calc_floor({x, y}, {min_x, min_y}), do: {max(x, min_x), max(y, min_y)}
 
+  # defp calc_ceil({x, y}, {max_x, max_y}), do: {min(x, max_x), min(y, max_y)}
 
-#   defp floor({x, y}, {min_x, min_y}), do: {max(x, min_x), max(y, min_y)}
+  # def calc_acc_height(components) when is_list(components) do
+  #    do_calc_acc_height(0, components)
+  # end
 
-#   defp ceil({x, y}, {max_x, max_y}), do: {min(x, max_x), min(y, max_y)}
+  # def calc_acc_height(%{assigns: %{state: %{open_tidbits: open_tidbits}}}) do
+  #     do_calc_acc_height(0, open_tidbits)
+  # end
 
+  # def do_calc_acc_height(acc, []), do: acc
 
+  # def do_calc_acc_height(acc, [{_id, bounds} = c | rest]) do
+  #    # top is less than bottom, because the axis starts in top-left corner
+  #    {_left, top, _right, bottom} = bounds
+  #    component_height = bottom - top
 
+  #    new_acc = acc + component_height + @spacing_buffer
+  #    do_calc_acc_height(new_acc, rest)
+  # end
+
+  #   defp floor({x, y}, {min_x, min_y}), do: {max(x, min_x), max(y, min_y)}
+
+  #   defp ceil({x, y}, {max_x, max_y}), do: {min(x, max_x), min(y, max_y)}
 end
-
-
-
-
-
 
 #     def handle_cast(
 #         {:new_component_bounds, {id, bounds} = new_component_bounds},
@@ -451,7 +451,7 @@ end
 #         {:noreply, new_scene}
 #     end
 
-#     def handle_info({:radix_state_change, %{memex: %{story_river: new_story_river_state}}}, %{assigns: %{state: current_state}} = scene)
+#     def handle_info({:memex_state_change, %{memex: %{story_river: new_story_river_state}}}, %{assigns: %{state: current_state}} = scene)
 #         when new_story_river_state != current_state do
 #             Logger.debug "#{__MODULE__} updating StoryRiver..."
 
@@ -465,16 +465,9 @@ end
 #             |> push_graph(new_graph)
 
 #             GenServer.cast(self(), :render_next_component) # kick-start the rendering here, it will take first item in the queue & render it
-    
+
 #             {:noreply, new_scene}
 #     end
-
-
-
-
-    
-
-
 
 #     # def hypercard_frame(%Frame{top_left: %{x: x, y: y}, dimensions: %{width: w, height: h}}) do
 #     #     bm = _buffer_margin = 50 # px
@@ -506,31 +499,7 @@ end
 #     #         ])
 #     # end
 
-
 # end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # defmodule Flamelex.GUI.Component.LayoutList do #TODO this will be LinearLayout
 #   use Scenic.Component
@@ -553,13 +522,11 @@ end
 #   #       the rendering of the next component, and we have all the
 #   #       data we need!
 
-
 #   # def render(list of components)
 #   # def add / remove
 
 #   @spacing_buffer 25 # how much gap to put between each item in the layout
 #   @min_position_cap {0, 0}
-
 
 #   def validate(%{
 #         id: _id,
@@ -584,8 +551,6 @@ end
 #   def init(scene, params, opts) do
 #     Logger.debug "#{__MODULE__} initializing..."
 
-
-
 #     Process.register(self(), __MODULE__) #TODO this is something that the old use Component system had - inbuilt process registration
 
 #     #NOTE- make the container group, give it translation etc, just don't add any components yet
@@ -608,8 +573,6 @@ end
 
 #     GenServer.cast(self(), :render_next_component) # trigger rendering of our (potential) backlog of components to render!
 #     # remember, they need to render "one at a time (yuck) - (or do they??) to get their positions"
-
-
 
 #       # def handle_cast({:add_tidbit, tidbit}, %{assigns: %{open_tidbits: ot}} = scene) when is_list(ot) do
 #     #     IO.puts "YES ADD TIDBIT"
@@ -692,9 +655,6 @@ end
 #     #     {:noreply, new_scene}
 #     # end
 
-
-
-
 #   def handle_call({:add_tidbit, tidbit}, _from, scene) do
 #     #TODO note this is pretty arbitrary!! What if we don't want to add a HyperCard??
 #     new_item = {HyperCard, tidbit, []}
@@ -717,7 +677,6 @@ end
 #   #   Logger.warn "Trying to add tidbit, bad bad"
 #   #   {:reply, :ok, scene}
 #   # end
-
 
 #     # def render_push_graph(scene) do
 #     #   new_scene = render(scene) # updates the graph
@@ -754,8 +713,6 @@ end
 
 #   #   {:noreply, scene}
 #   # end
-
-
 
 #   #TODO this should be called - register_component_bounds/size or something
 #   def handle_cast({:component_height, full_tidbit, bounds}, %{assigns: %{state: state}} = scene) do
@@ -807,16 +764,6 @@ end
 
 # end
 
-
-
-
-
-
-
-
-
-
-
 # defmodule Flamelex.GUI.Component.Memex.StoryRiverOld do
 #     use Scenic.Component
 #     use Flamelex.ProjectAliases
@@ -866,14 +813,6 @@ end
 #         [module: mod, params: p, opts: o]
 #     end
 
-
-
-
-
-
-
-
-
 #     def handle_cast({:add_tidbit, tidbit}, scene) do
 #         IO.puts "RECVd recuqest to add tidbit"
 #         # ic tidbit
@@ -882,21 +821,17 @@ end
 #     end
 
 #     def handle_cast({:clicked_edit_tidbit, title}, scene) do
-#         IO.puts "EDITING #{inspect title}" 
+#         IO.puts "EDITING #{inspect title}"
 #         GenServer.cast(title |> String.to_atom, :edit_mode)
 #         {:noreply, scene}
 #     end
 
 #     def handle_cast({:clicked_exxxxit_tidbit, title}, scene) do
-#         IO.puts "Leaving.... #{inspect title}" 
+#         IO.puts "Leaving.... #{inspect title}"
 #         # GenServer.cast(title |> String.to_atom, :edit_mode)
 #         GenServer.cast(Flamelex.GUI.Component.LayoutList, {:close_tidbit, title})
 #         {:noreply, scene}
 #     end
-
-
-
-
 
 #     # #NOTE - you know, this is really the only thing that changes... all
 #     # #       the above is Boilerplate
@@ -922,8 +857,7 @@ end
 #     #     new_scene = scene
 #     #     |> assign(frame: f)
 #     #     |> render_push_graph()
-        
+
 #     #     {:reply, :ok, new_scene}
 #     # end
 # end
-

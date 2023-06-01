@@ -24,6 +24,7 @@ defmodule Flamelex.Fluxus.MemelexListener do
 
     # TODO lock the store?
     radix_state = Flamelex.Fluxus.RadixStore.get()
+    memex_state = Flamelex.Fluxus.MemexStore.get()
 
     # TODO this is I think one of the sources of our errors, because we dont truly process events in sequence because a second event can come in while another event is processing
 
@@ -32,20 +33,28 @@ defmodule Flamelex.Fluxus.MemelexListener do
     # event2 arrives, gets copy of the store (same as what event1 has)
     #
 
-    case Flamelex.Fluxus.MemelexEventHandler.process(radix_state, memelex_event) do
+    case Flamelex.Fluxus.MemelexEventHandler.process(radix_state, memex_state, memelex_event) do
       :ignore ->
         # try_custom_input_handler(radix_state, input, event_shadow)
 
         # Logger.debug "#{__MODULE__} ignoring... #{inspect(%{radix_state: radix_state, action: action})}"
         EventBus.mark_as_completed({__MODULE__, event_shadow})
 
-      {:ok, ^radix_state} ->
+      {:ok, ^radix_state, ^memex_state} ->
         # Logger.debug "#{__MODULE__} ignoring (no state-change)..."
         EventBus.mark_as_completed({__MODULE__, event_shadow})
 
-      {:ok, new_radix_state} ->
+      {:ok, maybe_new_radix_state, maybe_new_memex_state} ->
         # Logger.debug "#{__MODULE__} processed event, state changed..."
-        Flamelex.Fluxus.RadixStore.put(new_radix_state)
+
+        if maybe_new_radix_state != radix_state do
+          Flamelex.Fluxus.RadixStore.update(maybe_new_radix_state)
+        end
+
+        if maybe_new_memex_state != memex_state do
+          Flamelex.Fluxus.MemexStore.update(maybe_new_memex_state)
+        end
+
         EventBus.mark_as_completed({__MODULE__, event_shadow})
     end
   end

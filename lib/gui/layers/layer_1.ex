@@ -122,7 +122,7 @@ defmodule Flamelex.GUI.Layers.LayerOne do
      Scenic.Graph.build()
      |> Memelex.GUI.Components.MemDesk.add_to_graph(%{
        frame: frame,
-       state: Memelex.Fluxus.RadixStore.get()
+       state: Flamelex.Fluxus.MemexStore.get()
      })}
   end
 

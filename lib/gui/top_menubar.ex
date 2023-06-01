@@ -2,31 +2,19 @@ defmodule Flamelex.GUI.TopMenuBar do
   # TODO automatically add a .gitignore into each memex directory so it's impossible to accidentally commit the memex - anything except the my_modz.ex file
   # note that although it can never be committed, we also make a my_secretz.ex file
 
-  # TODO here, we could look into the Memex & conditionally add a custom menu
-  def calc_menu_map(%{memex: %{active?: true}} = radix_state) do
-    [
+  def calc_menu_map(radix_state) do
+    # TODO add "help", "getting started", "about Flamelex" etc
+    base_menu_map = [
       flamelex_menu(),
-      {:sub_menu, "Buffer", buffer_menu(radix_state)},
-      memex_top_level_menu(radix_state),
-      {:sub_menu, "API",
-       ScenicWidgets.MenuBar.modules_and_zero_arity_functions("Elixir.Flamelex.API")}
-      # {"Help", [
-      # GettingStarted
-      # {"About Flamelex", &Flamelex.API.Misc.makers_mark/0}]},
+      buffer_menu(radix_state),
+      api_menu()
     ]
-  end
 
-  def calc_menu_map(%{memex: %{active?: false}} = radix_state) do
-    [
-      flamelex_menu(),
-      {:sub_menu, "Buffer", buffer_menu(radix_state)},
-      # TODO remove `Diary` from this list if memex is inactive, since we dont want the user trying to open it (the Diary is what I'm calling the Memex screen)
-      {:sub_menu, "API",
-       ScenicWidgets.MenuBar.modules_and_zero_arity_functions("Elixir.Flamelex.API")}
-      # {"Help", [
-      # GettingStarted
-      # {"About Flamelex", &Flamelex.API.Misc.makers_mark/0}]},
-    ]
+    if radix_state.memex.active? do
+      base_menu_map |> List.insert_at(2, memex_menu(radix_state))
+    else
+      base_menu_map
+    end
   end
 
   def flamelex_menu do
@@ -51,50 +39,94 @@ defmodule Flamelex.GUI.TopMenuBar do
      ]}
   end
 
-  # def memex_top_level_menu(%{memex: %{active?: false}}) do
-  #   {:sub_menu, "Memex",
-  #    [
-  #      {"new", fn -> IO.puts("CLicked new memex!") end}
-  #    ]}
-  # end
-
-  def do_memex_top_level_menu({env_name, custom_menu}) when is_binary(env_name) do
-    {:sub_menu, "Memex",
-     [
-       {"open", &Flamelex.API.Diary.open/0},
-       {"close", &Flamelex.API.Diary.close/0},
-       {env_name, custom_menu},
-       {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end},
-       # random
-       {"journal", fn -> Memelex.My.Journal.today() end}
-     ]}
+  def buffer_menu(radix_state) do
+    {:sub_menu, "Buffer", do_buffer_menu(radix_state)}
   end
 
-  def do_memex_top_level_menu(_default) do
-    {:sub_menu, "Memex",
-     [
-       {"open", &Flamelex.API.Diary.open/0},
-       {"close", &Flamelex.API.Diary.close/0},
-       {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end}
-       # random
-       # journal
-     ]}
+  def do_buffer_menu(%{editor: %{buffers: []}} = _radix_state) do
+    [
+      {"new", &Flamelex.API.Buffer.new/0},
+      {"save", &Flamelex.API.Buffer.save/0},
+      {"close", &Flamelex.API.Buffer.close/0}
+    ]
   end
 
-  def memex_top_level_menu(%{memex: %{active?: true, env: memex_env}})
-      when not is_nil(memex_env) do
-    IO.puts("~~~~ LOADING A CUSTOM MENU!~!! FANCY!!$&U ~~~")
-
-    Memelex.Environment.custom_menu()
-    |> do_memex_top_level_menu()
+  def do_buffer_menu(radix_state) do
+    [
+      do_open_buffers_menu(radix_state),
+      {"new", &Flamelex.API.Buffer.new/0},
+      #  {"list", &Flamelex.API.Buffer.new/0}, #TODO list should be an arrow-out menudown, that lists open buffers
+      {"save", &Flamelex.API.Buffer.save/0},
+      {"close", &Flamelex.API.Buffer.close/0}
+    ]
   end
 
-  def memex_top_level_menu(_radix_state) do
+  def do_open_buffers_menu(%{editor: %{buffers: open_buffers}}) when length(open_buffers) >= 1 do
+    # build the open-buffers sub-menu & open the buffer when we click on one
+    # TODO if the buffer is unsaved, put an * at the end of it
+    open_bufs_sub_menu =
+      open_buffers
+      |> Enum.map(fn %{id: {:buffer, name} = buf_id} ->
+        # NOTE: Wrap this call in it's closure so it's a function of arity /0
+        {name, fn -> Flamelex.API.Buffer.switch(buf_id) end}
+      end)
+
+    {:sub_menu, "open-buffers", open_bufs_sub_menu}
+  end
+
+  def api_menu do
+    {:sub_menu, "API",
+     ScenicWidgets.MenuBar.modules_and_zero_arity_functions("Elixir.Flamelex.API")}
+  end
+
+  def memex_menu(
+        # when we have an active memex & a custom mod, check for custom menu
+        %{
+          memex: %{active?: true, env: %{name: env_name, env_module: mod}}
+        } = radix_state
+      )
+      when is_binary(env_name) and is_atom(mod) do
+    # TODO we need to look in the environment, for if a specific fuinction is defined, inside their `my_modz.ex` module??
+    {:sub_menu, "Memex", base_memex_menu} = do_memex_menu(radix_state)
+
+    # TODO check if the function is exported first
+    my_menu = mod.my_menu(radix_state)
+
+    new_memex_menu =
+      base_memex_menu
+      |> List.insert_at(2, {env_name, my_menu})
+
+    {:sub_menu, "Memex", new_memex_menu}
+  end
+
+  def memex_menu(
+        %{
+          # if we have an active memex, but no customizations to load
+          memex: %{active?: true, env: %{name: env_name}}
+        } = radix_state
+      )
+      when is_binary(env_name) do
+    IO.puts("GOLD GOLD GOLD")
+    do_memex_menu(radix_state)
+  end
+
+  def memex_menu(_radix_state) do
+    # if the memex is active, but there's no environment loaded
     {:sub_menu, "Memex",
      [
        {"new", fn -> IO.puts("CLicked new memex! THis doesn't do anything yet :)") end}
-       #  {"open", fn -> IO.puts("CLicked open memex!") end},
      ] ++ load_jedilukes()}
+  end
+
+  def do_memex_menu(_radix_state) do
+    # TODO add random memex button
+    {:sub_menu, "Memex",
+     [
+       {"open", &Flamelex.API.Diary.open/0},
+       {"close", &Flamelex.API.Diary.close/0},
+       {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end},
+       {"journal", fn -> Memelex.My.Journal.today() end}
+     ]}
   end
 
   def load_jedilukes do
@@ -123,14 +155,6 @@ defmodule Flamelex.GUI.TopMenuBar do
           })
         end
       }
-    ]
-  end
-
-  def buffer_menu(%{editor: %{buffers: []}} = _radix_state) do
-    [
-      {"new", &Flamelex.API.Buffer.new/0},
-      {"save", &Flamelex.API.Buffer.save/0},
-      {"close", &Flamelex.API.Buffer.close/0}
     ]
   end
 
@@ -216,25 +240,6 @@ defmodule Flamelex.GUI.TopMenuBar do
           |> Flamelex.Fluxus.RadixStore.update()
         end}
      ]}
-  end
-
-  def buffer_menu(%{editor: %{buffers: open_buffers}} = _radix_state) do
-    # build the open-buffers sub-menu & open the buffer when we click on one
-    # TODO if the buffer is unsaved, put an * at the end of it
-    open_bufs_sub_menu =
-      open_buffers
-      |> Enum.map(fn %{id: {:buffer, name} = buf_id} ->
-        # NOTE: Wrap this call in it's closure so it's a function of arity /0
-        {name, fn -> Flamelex.API.Buffer.switch(buf_id) end}
-      end)
-
-    [
-      {:sub_menu, "open-buffers", open_bufs_sub_menu},
-      {"new", &Flamelex.API.Buffer.new/0},
-      #  {"list", &Flamelex.API.Buffer.new/0}, #TODO list should be an arrow-out menudown, that lists open buffers
-      {"save", &Flamelex.API.Buffer.save/0},
-      {"close", &Flamelex.API.Buffer.close/0}
-    ]
   end
 
   def widget_workbench do

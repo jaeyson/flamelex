@@ -85,7 +85,7 @@ defmodule Flamelex.Fluxus.RadixStore do
   end
 end
 
-# defmodule Memelex.Fluxus.RadixStore do
+# defmodule Flamelex.Fluxus.MemexStore do
 #   use Agent
 #   require Logger
 #   @moduledoc """

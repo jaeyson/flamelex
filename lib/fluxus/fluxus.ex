@@ -1,63 +1,67 @@
 defmodule Flamelex.Fluxus do
-   @moduledoc """
-   Flamelex.Fluxus implements the `flux` architecture pattern, of React.js
-   fame, in Elixir/Scenic. This module provides the interface to that
-   functionality.
+  @moduledoc """
+  Flamelex.Fluxus implements the `flux` architecture pattern, of React.js
+  fame, in Elixir/Scenic. This module provides the interface to that
+  functionality.
 
-   ### background
+  ### background
 
-   https://css-tricks.com/understanding-how-reducers-are-used-in-redux/
+  https://css-tricks.com/understanding-how-reducers-are-used-in-redux/
 
-   ### prior art
+  ### prior art
 
-   https://medium.com/grandcentrix/state-management-with-phoenix-liveview-and-liveex-f53f8f1ec4d7
-   """
+  https://medium.com/grandcentrix/state-management-with-phoenix-liveview-and-liveex-f53f8f1ec4d7
+  """
 
-
-   # called to fire off an action
-   def action(a) do
-      #Logger.debug "Fluxus handling action `#{inspect a}`..."
-      :ok = EventBus.notify(%EventBus.Model.Event{
-         id: UUID.uuid4(),
-         topic: :general,
-         data: {:action, a}
+  # called to fire off an action
+  def action(a) do
+    # Logger.debug "Fluxus handling action `#{inspect a}`..."
+    :ok =
+      EventBus.notify(%EventBus.Model.Event{
+        id: UUID.uuid4(),
+        topic: :general,
+        data: {:action, a}
       })
-   end
+  end
 
-   def event(topic, e) do
-      Logger.debug "pushing event for topic: #{inspect topic}, event: #{inspect e}"
-      :ok = EventBus.notify(%EventBus.Model.Event{
-         id: UUID.uuid4(),
-         topic: topic,
-         data: {:event, e}
+  def event(topic, e) do
+    Logger.debug("pushing event for topic: #{inspect(topic)}, event: #{inspect(e)}")
+
+    :ok =
+      EventBus.notify(%EventBus.Model.Event{
+        id: UUID.uuid4(),
+        topic: topic,
+        data: {:event, e}
       })
-   end
+  end
 
-   # declaring means we get the results back - this function also
-   # filters those results to just the ones from ActionListener
-   def declare(a) do
-      with {:ok, results} <- do_declare(a) do
-         [final_radix_state] =
-            Enum.reduce(results, :accumulator, fn # NOTE - we replace this atom, so we have confidence when it matches the final result that this function worked
-               # add the results from ActionListener to the accumulator, discard ones from UserInputListener
-               {Flamelex.Fluxus.ActionListener, {:ok, new_radix_state}}, acc ->
-                  [new_radix_state]
-               {Flamelex.Fluxus.UserInputListener, _res}, acc ->
-                  acc
-            end)
+  # declaring means we get the results back - this function also
+  # filters those results to just the ones from ActionListener
+  def declare(a) do
+    with {:ok, results} <- do_declare(a) do
+      # NOTE - we replace this atom, so we have confidence when it matches the final result that this function worked
+      [final_radix_state] =
+        Enum.reduce(results, :accumulator, fn
+          # add the results from ActionListener to the accumulator, discard ones from UserInputListener
+          {Flamelex.Fluxus.ActionListener, {:ok, new_radix_state}}, acc ->
+            [new_radix_state]
 
-         {:ok, final_radix_state}
-      end
-   end
+          {Flamelex.Fluxus.UserInputListener, _res}, acc ->
+            acc
+        end)
 
+      {:ok, final_radix_state}
+    end
+  end
 
-   def do_declare(a) do
-      {:ok, EventBus.declare(%EventBus.Model.Event{
-         id: UUID.uuid4(),
-         topic: :general,
-         data: {:action, a}
-      })}
-   end
+  def do_declare(a) do
+    {:ok,
+     EventBus.declare(%EventBus.Model.Event{
+       id: UUID.uuid4(),
+       topic: :general,
+       data: {:action, a}
+     })}
+  end
 
   # called to register user-input with the Fluxus system - Scenic MUST
   # forward input to Fluxus if it wants to be processed that way (input
@@ -136,12 +140,11 @@ defmodule Flamelex.Fluxus do
 
 
   """
-   def input(ii) do
-      EventBus.notify(%EventBus.Model.Event{
-         id: UUID.uuid4(),
-         topic: :general,
-         data: {:input, ii}
-      })
-   end
-
+  def input(ii) do
+    EventBus.notify(%EventBus.Model.Event{
+      id: UUID.uuid4(),
+      topic: :general,
+      data: {:input, ii}
+    })
+  end
 end

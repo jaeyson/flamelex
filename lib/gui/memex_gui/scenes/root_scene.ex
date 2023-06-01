@@ -1,62 +1,63 @@
 defmodule Memelex.GUI.RootScene do
-    @moduledoc false
-    use Scenic.Scene
-    require Logger
+  @moduledoc false
+  use Scenic.Scene
+  require Logger
 
- 
-   def init(init_scene, _args, opts) do
-      Logger.debug("#{__MODULE__} initializing...")
+  def init(init_scene, _args, opts) do
+    Logger.debug("#{__MODULE__} initializing...")
 
-      root_graph = render(init_scene.viewport)
+    root_graph = render(init_scene.viewport)
 
-      #TODO here, we should fetch the memelex app radix_state & use that going forward, also using that topic
-      # dont worry about passing in memex state from above, in fact it wont exist at that level!!
+    # TODO here, we should fetch the memelex app radix_state & use that going forward, also using that topic
+    # dont worry about passing in memex state from above, in fact it wont exist at that level!!
 
-      new_scene = init_scene
+    new_scene =
+      init_scene
       |> push_graph(root_graph)
 
-      # Memelex.Utils.PubSub.subscribe(topic: :radix_state_change)
+    # Memelex.Utils.PubSub.subscribe(topic: :radix_state_change)
 
-      # request_input(new_scene, [:viewport, :key, :cursor_scroll])
-      request_input(new_scene, [:viewport])
+    # request_input(new_scene, [:viewport, :key, :cursor_scroll])
+    request_input(new_scene, [:viewport])
 
-      {:ok, new_scene}
-   end
+    {:ok, new_scene}
+  end
 
-   def handle_input({:viewport, {:enter, _coords}}, context, scene) do
-      Logger.debug "#{__MODULE__} ignoring `:viewport_enter`..."
-      {:noreply, scene}
-   end
+  def handle_input({:viewport, {:enter, _coords}}, context, scene) do
+    Logger.debug("#{__MODULE__} ignoring `:viewport_enter`...")
+    {:noreply, scene}
+  end
 
-   def handle_input({:viewport, {:exit, _coords}}, context, scene) do
-      Logger.debug "#{__MODULE__} ignoring `:viewport_exit`..."
-      {:noreply, scene}
-   end
+  def handle_input({:viewport, {:exit, _coords}}, context, scene) do
+    Logger.debug("#{__MODULE__} ignoring `:viewport_exit`...")
+    {:noreply, scene}
+  end
 
-   #TODO put viewport size in the state & only re-render if it changes, to get around the situation where Scenic sends itself a viewport resize every time it starts up...
-   def handle_input({:viewport, {:reshape, new_dimensions}}, _context, scene) do # e.g. of new_dimensions: {1025, 818}
-      Logger.debug "#{__MODULE__} received :viewport :reshape, dim: #{inspect new_dimensions}"
+  # TODO put viewport size in the state & only re-render if it changes, to get around the situation where Scenic sends itself a viewport resize every time it starts up...
+  # e.g. of new_dimensions: {1025, 818}
+  def handle_input({:viewport, {:reshape, new_dimensions}}, _context, scene) do
+    Logger.debug("#{__MODULE__} received :viewport :reshape, dim: #{inspect(new_dimensions)}")
 
-      # new_viewport = %{scene.viewport|size: new_dimensions}
+    # new_viewport = %{scene.viewport|size: new_dimensions}
 
-      # NOTE - this causes render to be called twice upon boot, because
-      # Scenic automatically sends itself a :reshape for some reason...
-      
-      #TODO don't re-draw, push a new frame down to the component...
-      # new_graph = render(new_viewport)
+    # NOTE - this causes render to be called twice upon boot, because
+    # Scenic automatically sends itself a :reshape for some reason...
 
-      # new_scene = scene
-      # |> push_graph(new_graph)
+    # TODO don't re-draw, push a new frame down to the component...
+    # new_graph = render(new_viewport)
 
-      # {:noreply, %{scene|viewport: new_viewport}}
-      {:noreply, scene}
-   end
- 
-   def render(%Scenic.ViewPort{} = vp) do
-      Scenic.Graph.build()
-      |> Memelex.GUI.Components.MemDesk.add_to_graph(%{
-         frame: ScenicWidgets.Core.Structs.Frame.new(vp),
-         state: Memelex.Fluxus.RadixStore.get()
-      })
-   end
- end
+    # new_scene = scene
+    # |> push_graph(new_graph)
+
+    # {:noreply, %{scene|viewport: new_viewport}}
+    {:noreply, scene}
+  end
+
+  def render(%Scenic.ViewPort{} = vp) do
+    Scenic.Graph.build()
+    |> Memelex.GUI.Components.MemDesk.add_to_graph(%{
+      frame: ScenicWidgets.Core.Structs.Frame.new(vp),
+      state: Flamelex.Fluxus.MemexStore.get()
+    })
+  end
+end

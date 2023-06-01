@@ -24,7 +24,8 @@ defmodule Flamelex.Fluxus.UserInputHandler do
 
   def process(%{root: %{active_app: :memex}} = radix_state, input) do
     # fire it off to Memelex, they can worry about this one...
-    Memelex.Fluxus.input(input)
+    # Memelex.Fluxus.input(input)
+    Logger.warn("NEED TO HANDLE MEMEX INPUT")
     :ignore
   end
 

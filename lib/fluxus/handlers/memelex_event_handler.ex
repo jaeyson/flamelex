@@ -5,7 +5,23 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   """
   require Logger
 
-  def process(_radix_state, event) do
+  def process(radix_state, memex_state, {:loaded_memex, new_memex_env}) do
+    new_radix_state =
+      radix_state
+      |> put_in([:memex, :env], new_memex_env)
+      |> Flamelex.Fluxus.Structs.RadixState.calc_menu_map()
+
+    {:ok, new_radix_state, memex_state}
+  end
+
+  def process(radix_state, memex_state, {:open_tidbit, t}) do
+    {:ok, new_memex_state} =
+      Memelex.Fluxus.Reducers.TidbitReducer.process(memex_state, {:open_tidbit, t})
+
+    {:ok, radix_state, new_memex_state}
+  end
+
+  def process(_radix_state, _memex_state, event) do
     # Flamelex.Keymaps.Kommander |> process_with_rescue(radix_state, input)
     Logger.info("Got MemelexEvent: #{inspect(event)}")
     :ignore
