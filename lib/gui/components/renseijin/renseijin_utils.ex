@@ -109,42 +109,42 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
 
   def draw_taijitu(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
     radius = State.inner_radius(frame, state)
-    dot_radii = radius / 2
+    # dot_radii = radius / 2
 
     graph
-    |> Scenic.Primitives.line({{0, -dot_radii}, {0, dot_radii}}, stroke: {1, :grey})
+    # |> Scenic.Primitives.line({{0, -dot_radii}, {0, dot_radii}}, stroke: {1, :grey})
     |> draw_taijitu_group(frame, state, radius)
+    |> add_taijitu_tails(state, radius)
   end
 
   def draw_taijitu_group(graph, frame, state, radius) do
-    color = state.taijitu.color
+    stroke = state.taijitu.stroke
 
     graph
     |> Scenic.Primitives.group(
       fn graph ->
         graph
-        |> Scenic.Primitives.circle(radius / 6, stroke: {1, color}, translate: {0, -radius / 2})
-        |> Scenic.Primitives.circle(radius / 6, stroke: {1, color}, translate: {0, radius / 2})
+        |> Scenic.Primitives.circle(radius / 6, stroke: stroke, translate: {0, -radius / 2})
+        |> Scenic.Primitives.circle(radius / 6, stroke: stroke, translate: {0, radius / 2})
         |> Scenic.Primitives.arc({radius / 2, @pi},
-          stroke: {1, color},
+          stroke: stroke,
           rotate: 3 * @pi / 2,
           translate: {0, -radius / 2}
         )
         |> Scenic.Primitives.arc({radius / 2, @pi},
-          stroke: {1, color},
+          stroke: stroke,
           rotate: @pi / 2,
           translate: {0, radius / 2}
         )
-        |> Scenic.Primitives.circle(radius, stroke: {1, color})
+        |> Scenic.Primitives.circle(radius, stroke: stroke)
       end,
       id: :taijitu,
-      rotate: state.rotation
+      rotate: degree_in_radians(state.rotation)
     )
-    |> add_taijitu_tails(radius)
   end
 
   # TODO this should all get cleaned up...
-  def add_taijitu_tails(graph, inner_radius) do
+  def add_taijitu_tails(graph, state, inner_radius) do
     width_factor = 3
     finish_height = 2 * inner_radius
 
@@ -156,13 +156,8 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
         {:bezier_to, 0.67 * inner_radius * width_factor, inner_radius,
          (1 - 0.67) * inner_radius * width_factor, finish_height, inner_radius * width_factor,
          finish_height}
-        # {:line_to, 300, 600},
-        # :close_path
       ],
-      #  fill: :white,
-      # stroke_fill: :yellow,
-      # stroke_width: 2
-      stroke: {1, :yellow}
+      stroke: state.taijitu.stroke
     )
     |> Scenic.Primitives.path(
       [
@@ -171,13 +166,8 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
         {:bezier_to, -1 * 0.67 * inner_radius * width_factor, -1 * inner_radius,
          -1 * (1 - 0.67) * inner_radius * width_factor, -1 * finish_height,
          -1 * inner_radius * width_factor, -1 * finish_height}
-        # {:line_to, 300, 600},
-        # :close_path
       ],
-      #  fill: :white,
-      # stroke_fill: :yellow,
-      # stroke_width: 2
-      stroke: {1, :yellow}
+      stroke: state.taijitu.stroke
     )
   end
 
@@ -242,7 +232,17 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
   def draw_background(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
     graph
     |> Scenic.Primitives.rect(Dimensions.to_tuple(frame.size),
-      fill: {:image, "images/milky_way.jpg"}
+      fill: {:image, "images/ngc_4535.jpg"}
+    )
+    |> draw_mask(frame, state)
+  end
+
+  def draw_mask(graph, frame, state) do
+    graph
+    |> Scenic.Primitives.circle(
+      State.outer_radius(frame, state),
+      fill: :black,
+      translate: Frame.center_tuple(frame)
     )
   end
 

@@ -20,10 +20,6 @@ defmodule Flamelex.GUI.Component.RenseijinTest do
 
       args = %{}
 
-      require IEx
-      # IEx.pry(import: true)
-      IEx.pry()
-
       {:ok, new_scene} = init(scene, args, [])
 
       # # Add relevant assertions here

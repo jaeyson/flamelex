@@ -61,17 +61,16 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
               offset_size: 12
             },
             taijitu: %{
-              # dot_radii: 10
-              color: :yellow
+              stroke: {2, :yellow}
             },
             rotation: 0,
             animate?: false,
             timer: nil,
             primary_color: :dark_violet,
-            primary_stroke: 1,
+            primary_stroke: 2,
             animation_rate: 17,
             cool_kid_radius: 80,
-            tick_rotation: 0.007
+            tick_rotation: 0.72
 
   # The component is scaled relative to the width of the frame, we can
   # adjust this scale factor to make the component relatively larger or smaller
