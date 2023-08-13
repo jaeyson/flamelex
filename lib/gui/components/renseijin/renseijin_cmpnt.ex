@@ -201,6 +201,7 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
   @spec render(Frame.t(), State.t()) :: Scenic.Graph.t()
   def render(%Frame{} = frame, %State{} = state) do
     Scenic.Graph.build()
+    |> Utils.draw_background(frame, state)
     |> Scenic.Primitives.group(
       fn graph ->
         graph

@@ -1,5 +1,5 @@
 defmodule Flamelex.GUI.Component.Renseijin.Utils do
-  alias Widgex.Structs.Frame
+  alias Widgex.Structs.{Frame, Dimensions}
   alias Flamelex.GUI.Component.Renseijin.State
 
   # a constant for π (change for potentially wacky behaviour~~)
@@ -233,6 +233,17 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
       {0, length},
       {0, 0}
     }
+  end
+
+  #############################################################################
+  # Draw Background
+  # ===========================================================================
+
+  def draw_background(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
+    graph
+    |> Scenic.Primitives.rect(Dimensions.to_tuple(frame.size),
+      fill: {:image, "images/milky_way.jpg"}
+    )
   end
 
   #############################################################################
