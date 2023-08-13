@@ -204,11 +204,11 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
   # ===========================================================================
 
   def draw_pyramids(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
-    # length = State.inner_radius(frame, state) / 2
-    length = 120.0
+    radius = State.inner_radius(frame, state) * (2 / 3) * (3 / 4) * (2 / 3)
+    dot_radii = radius / 2
 
     graph
-    |> draw_triangle(state, right_angle: length)
+    |> draw_triangle(state, right_angle: radius + dot_radii / 3)
   end
 
   def draw_triangle(
