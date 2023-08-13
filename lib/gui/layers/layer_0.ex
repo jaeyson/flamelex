@@ -1,6 +1,6 @@
 defmodule Flamelex.GUI.Layers.LayerZero do
   @behaviour Flamelex.GUI.Layer.Behaviour
-  alias Flamelex.GUI.Component.Renseijin
+  alias Flamelex.GUI.Component.{Renseijin, RenseijinComponent}
 
   @impl Flamelex.GUI.Layer.Behaviour
   def calc_state(%{root: %{active_app: :desktop}, desktop: %{renseijin: state}} = radix_state) do
@@ -33,11 +33,11 @@ defmodule Flamelex.GUI.Layers.LayerZero do
     # TODO this is non-ideal aswell
     new_state = Renseijin.State.new(renseijin_state)
 
-    case Process.whereis(Flamelex.GUI.Component.Renseijin) do
+    case Process.whereis(RenseijinComponent) do
       nil ->
         new_graph =
           Scenic.Graph.build()
-          |> Renseijin.add_to_graph({new_frame, new_state})
+          |> RenseijinComponent.add_to_graph({new_frame, new_state})
 
         {:ok, new_graph}
 
