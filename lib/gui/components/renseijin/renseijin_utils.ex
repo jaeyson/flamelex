@@ -136,65 +136,66 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
           translate: {0, radius / 2}
         )
         |> Scenic.Primitives.circle(radius, stroke: {1, color})
-
-        # |> add_taijitu_tails(radius)
       end,
       id: :taijitu,
       rotate: state.rotation
     )
+    |> add_taijitu_tails(radius)
   end
 
-  # def add_taijitu_tails(graph, inner_radius) do
-  #   width_factor = 3
-  #   finish_height = 2 * inner_radius
+  # TODO this should all get cleaned up...
+  def add_taijitu_tails(graph, inner_radius) do
+    width_factor = 3
+    finish_height = 2 * inner_radius
 
-  #   graph
-  #   |> Scenic.Primitives.path(
-  #     [
-  #       :begin,
-  #       {:move_to, 0, inner_radius},
-  #       {:bezier_to, 0.67 * inner_radius * width_factor, inner_radius,
-  #        (1 - 0.67) * inner_radius * width_factor, finish_height, inner_radius * width_factor,
-  #        finish_height}
-  #       # {:line_to, 300, 600},
-  #       # :close_path
-  #     ],
-  #     #  fill: :white,
-  #     # stroke_fill: :yellow,
-  #     # stroke_width: 2
-  #     stroke: {1, :yellow}
-  #   )
-  #   |> Scenic.Primitives.path(
-  #     [
-  #       :begin,
-  #       {:move_to, 0, -inner_radius},
-  #       {:bezier_to, -1 * 0.67 * inner_radius * width_factor, -1 * inner_radius,
-  #        -1 * (1 - 0.67) * inner_radius * width_factor, -1 * finish_height,
-  #        -1 * inner_radius * width_factor, -1 * finish_height}
-  #       # {:line_to, 300, 600},
-  #       # :close_path
-  #     ],
-  #     #  fill: :white,
-  #     # stroke_fill: :yellow,
-  #     # stroke_width: 2
-  #     stroke: {1, :yellow}
-  #   )
-  # end
+    graph
+    |> Scenic.Primitives.path(
+      [
+        :begin,
+        {:move_to, 0, inner_radius},
+        {:bezier_to, 0.67 * inner_radius * width_factor, inner_radius,
+         (1 - 0.67) * inner_radius * width_factor, finish_height, inner_radius * width_factor,
+         finish_height}
+        # {:line_to, 300, 600},
+        # :close_path
+      ],
+      #  fill: :white,
+      # stroke_fill: :yellow,
+      # stroke_width: 2
+      stroke: {1, :yellow}
+    )
+    |> Scenic.Primitives.path(
+      [
+        :begin,
+        {:move_to, 0, -inner_radius},
+        {:bezier_to, -1 * 0.67 * inner_radius * width_factor, -1 * inner_radius,
+         -1 * (1 - 0.67) * inner_radius * width_factor, -1 * finish_height,
+         -1 * inner_radius * width_factor, -1 * finish_height}
+        # {:line_to, 300, 600},
+        # :close_path
+      ],
+      #  fill: :white,
+      # stroke_fill: :yellow,
+      # stroke_width: 2
+      stroke: {1, :yellow}
+    )
+  end
 
   # TODO this pattern was interesting... explore it later
   # def add_taijitu_tails(graph, width) do
-  #    graph
-  #    |> Scenic.Primitives.path( [
+  #   graph
+  #   |> Scenic.Primitives.path(
+  #     [
   #       :begin,
   #       {:move_to, 0, width},
   #       {:bezier_to, 0, 0, 0, 0, width, 0}
   #       # {:line_to, 300, 600},
   #       # :close_path
   #     ],
-  #    #  fill: :white,
-  #    # stroke_fill: :yellow,
-  #    # stroke_width: 2
-  #    stroke: {1, :yellow}
+  #     #  fill: :white,
+  #     # stroke_fill: :yellow,
+  #     # stroke_width: 2
+  #     stroke: {1, :yellow}
   #   )
   # end
 
