@@ -2,6 +2,7 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
   alias Widgex.Structs.Frame
   alias Flamelex.GUI.Component.Renseijin.State
 
+  # a constant for π (change for potentially wacky behaviour~~)
   @pi 3.14159265359
 
   #############################################################################
@@ -138,8 +139,8 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
 
         # |> add_taijitu_tails(radius)
       end,
-      id: :taijitu
-      # rotate: args.rotation
+      id: :taijitu,
+      rotate: state.rotation
     )
   end
 

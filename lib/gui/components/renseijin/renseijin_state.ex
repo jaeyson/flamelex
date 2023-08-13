@@ -38,9 +38,8 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
           primary_color: atom(),
           # the stroke-width used to draw lines
           primary_stroke: integer(),
-          # a constant for π (change for potentially wacky behaviour~~)
-          # pi: float(),
-          # animation_rate: integer(),
+          # how many milliseseconds between ticks
+          animation_rate: integer(),
 
           # how large of a circle to trigger an interaction
           cool_kid_radius: integer(),
@@ -70,9 +69,9 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
             timer: nil,
             primary_color: :dark_violet,
             primary_stroke: 1,
-            # animation_rate: 10,
+            animation_rate: 17,
             cool_kid_radius: 80,
-            tick_rotation: 0.3
+            tick_rotation: 0.007
 
   # The component is scaled relative to the width of the frame, we can
   # adjust this scale factor to make the component relatively larger or smaller
