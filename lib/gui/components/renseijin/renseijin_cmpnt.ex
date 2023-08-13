@@ -60,6 +60,8 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
       ) do
     Logger.debug("#{__MODULE__} initializing...")
 
+    # TODO fetch the theme coming in from the opts, and use it to set the primary_color
+
     new_graph = render(frame, state)
 
     new_scene =
@@ -204,9 +206,9 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
         graph
         |> Utils.draw_circles(frame, state)
         |> Utils.draw_triangles(frame, state)
-
-        # |> draw_taijitu(frame, args)
-        # |> draw_outer_square(args)
+        |> Utils.draw_taijitu(frame, state)
+        |> Utils.draw_squares(frame, state)
+        |> Utils.draw_pyramids(frame, state)
       end,
       id: __MODULE__,
       translate: Frame.center_tuple(frame)

@@ -17,8 +17,6 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
   """
   alias Widgex.Structs.Frame
 
-  @real_pi 3.14159265359
-
   @type t :: %__MODULE__{
           # coefficients of the equation which determine the radius of the inner circle
           inner_radius: %{
@@ -55,14 +53,23 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
           # gap_size: integer()
         }
 
-  defstruct inner_radius: %{scale: 0.97, offset_size: 17},
-            outer_radius: %{scale: 1.07, offset_size: 12},
+  defstruct inner_radius: %{
+              scale: 0.97,
+              offset_size: 17
+            },
+            outer_radius: %{
+              scale: 1.07,
+              offset_size: 12
+            },
+            taijitu: %{
+              # dot_radii: 10
+              color: :yellow
+            },
             rotation: 0,
             animate?: false,
             timer: nil,
             primary_color: :dark_violet,
             primary_stroke: 1,
-            # pi: @real_pi,
             # animation_rate: 10,
             cool_kid_radius: 80,
             tick_rotation: 0.3
@@ -135,17 +142,4 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
       }) do
     scale * radius(frame) + offset_size
   end
-
-  # def circle_rad(%Frame{} = frame) do
-  #   # we can get the scale_factor back this way!
-  #   frame.size.width / 2 * 0.37
-  # end
-
-  # def inner_circle_radius(%Frame{} = frame, %__MODULE__{
-  #       outer_rim: rim,
-  #       gap_size: size
-  #     }) do
-  #   # outer_radius - rim + 2 * size + size/2
-  #   circle_rad(frame) - rim + size
-  # end
 end

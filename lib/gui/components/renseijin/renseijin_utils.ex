@@ -2,6 +2,8 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
   alias Widgex.Structs.Frame
   alias Flamelex.GUI.Component.Renseijin.State
 
+  @pi 3.14159265359
+
   #############################################################################
   # Drawing circles
   # ===========================================================================
@@ -35,15 +37,15 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
 
   def draw_triangles(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
     graph
-    |> draw_triangle(state, State.radius(frame))
-    |> draw_triangle(state, State.inner_radius(frame, state))
-    |> draw_triangle(state, State.outer_radius(frame, state))
+    |> draw_triangle(state, equilateral: State.radius(frame))
+    |> draw_triangle(state, equilateral: State.inner_radius(frame, state))
+    |> draw_triangle(state, equilateral: State.outer_radius(frame, state))
   end
 
   def draw_triangle(
         %Scenic.Graph{} = graph,
         %State{} = state,
-        radius
+        equilateral: radius
       )
       when is_float(radius) do
     graph
@@ -65,6 +67,175 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
       {:math.sqrt(3) * radius / 2, radius / 2}
     }
   end
+
+  #############################################################################
+  # Draw Squares
+  # ===========================================================================
+
+  def draw_squares(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
+    graph
+    |> draw_square(state, State.inner_radius(frame, state))
+  end
+
+  def draw_square(
+        %Scenic.Graph{} = graph,
+        %State{} = state,
+        radius
+      ) do
+    # note - the `radius` of the square is the centroid to the flat-edge, NOT the vertex
+    graph
+    |> Scenic.Primitives.quad(
+      square_coords(radius),
+      # TODO use secondary color, or get themes working properly ;)
+      stroke: {1, :grey}
+    )
+  end
+
+  def square_coords(radius) do
+    r = radius
+
+    {
+      {-r, r},
+      {-r, -r},
+      {r, -r},
+      {r, r}
+    }
+  end
+
+  #############################################################################
+  # Taijitsu
+  # ===========================================================================
+
+  def draw_taijitu(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
+    radius = State.inner_radius(frame, state)
+    dot_radii = radius / 2
+
+    graph
+    |> Scenic.Primitives.line({{0, -dot_radii}, {0, dot_radii}}, stroke: {1, :grey})
+    |> draw_taijitu_group(frame, state, radius)
+  end
+
+  def draw_taijitu_group(graph, frame, state, radius) do
+    color = state.taijitu.color
+
+    graph
+    |> Scenic.Primitives.group(
+      fn graph ->
+        graph
+        |> Scenic.Primitives.circle(radius / 6, stroke: {1, color}, translate: {0, -radius / 2})
+        |> Scenic.Primitives.circle(radius / 6, stroke: {1, color}, translate: {0, radius / 2})
+        |> Scenic.Primitives.arc({radius / 2, @pi},
+          stroke: {1, color},
+          rotate: 3 * @pi / 2,
+          translate: {0, -radius / 2}
+        )
+        |> Scenic.Primitives.arc({radius / 2, @pi},
+          stroke: {1, color},
+          rotate: @pi / 2,
+          translate: {0, radius / 2}
+        )
+        |> Scenic.Primitives.circle(radius, stroke: {1, color})
+
+        # |> add_taijitu_tails(radius)
+      end,
+      id: :taijitu
+      # rotate: args.rotation
+    )
+  end
+
+  # def add_taijitu_tails(graph, inner_radius) do
+  #   width_factor = 3
+  #   finish_height = 2 * inner_radius
+
+  #   graph
+  #   |> Scenic.Primitives.path(
+  #     [
+  #       :begin,
+  #       {:move_to, 0, inner_radius},
+  #       {:bezier_to, 0.67 * inner_radius * width_factor, inner_radius,
+  #        (1 - 0.67) * inner_radius * width_factor, finish_height, inner_radius * width_factor,
+  #        finish_height}
+  #       # {:line_to, 300, 600},
+  #       # :close_path
+  #     ],
+  #     #  fill: :white,
+  #     # stroke_fill: :yellow,
+  #     # stroke_width: 2
+  #     stroke: {1, :yellow}
+  #   )
+  #   |> Scenic.Primitives.path(
+  #     [
+  #       :begin,
+  #       {:move_to, 0, -inner_radius},
+  #       {:bezier_to, -1 * 0.67 * inner_radius * width_factor, -1 * inner_radius,
+  #        -1 * (1 - 0.67) * inner_radius * width_factor, -1 * finish_height,
+  #        -1 * inner_radius * width_factor, -1 * finish_height}
+  #       # {:line_to, 300, 600},
+  #       # :close_path
+  #     ],
+  #     #  fill: :white,
+  #     # stroke_fill: :yellow,
+  #     # stroke_width: 2
+  #     stroke: {1, :yellow}
+  #   )
+  # end
+
+  # TODO this pattern was interesting... explore it later
+  # def add_taijitu_tails(graph, width) do
+  #    graph
+  #    |> Scenic.Primitives.path( [
+  #       :begin,
+  #       {:move_to, 0, width},
+  #       {:bezier_to, 0, 0, 0, 0, width, 0}
+  #       # {:line_to, 300, 600},
+  #       # :close_path
+  #     ],
+  #    #  fill: :white,
+  #    # stroke_fill: :yellow,
+  #    # stroke_width: 2
+  #    stroke: {1, :yellow}
+  #   )
+  # end
+
+  #############################################################################
+  # Draw Pyramids
+  # ===========================================================================
+
+  def draw_pyramids(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
+    # length = State.inner_radius(frame, state) / 2
+    length = 120.0
+
+    graph
+    |> draw_triangle(state, right_angle: length)
+  end
+
+  def draw_triangle(
+        %Scenic.Graph{} = graph,
+        %State{} = state,
+        right_angle: length
+      )
+      when is_float(length) do
+    graph
+    |> Scenic.Primitives.triangle(
+      right_triangle_coords(length),
+      stroke: {
+        state.primary_stroke,
+        state.primary_color
+      }
+    )
+  end
+
+  def right_triangle_coords(length) do
+    {
+      {length, length},
+      {0, length},
+      {0, 0}
+    }
+  end
+
+  #############################################################################
+  # Other Stuff
+  # ===========================================================================
 
   def within_box?({query_x, query_y}, %{x: base_x, y: base_y}, radius) do
     low_x = base_x - radius
@@ -126,125 +297,6 @@ end
 #   )
 # end
 
-# def draw_taijitu(graph, frame, args) do
-#   radius = inner_circle_radius(args)
-#   # TODO just having this grow & shrink would be AWESOME!!!
-#   # radius = inner_circle_radius(args)/2
-
-#   color = :yellow
-
-#   # circle_rad = circle_rad(frame)
-
-#   # TODO add tails
-
-#   graph
-#   # |> Scenic.Primitives.line({{0, -radius}, {0, radius}}, stroke: {1, :grey})
-#   # |> Scenic.Primitives.line({{-5, 0}, {5, 0}}, stroke: {1, :grey})
-#   # |> Scenic.Primitives.line({{-5, 0}, {5, 0}}, stroke: {1, :grey}, translate: {0, -radius/2})
-#   # |> Scenic.Primitives.line({{-5, 0}, {5, 0}}, stroke: {1, :grey}, translate: {0, radius/2})
-#   |> Scenic.Primitives.group(
-#     fn graph ->
-#       graph
-#       |> Scenic.Primitives.circle(radius / 6, stroke: {1, color}, translate: {0, -radius / 2})
-#       |> Scenic.Primitives.circle(radius / 6, stroke: {1, color}, translate: {0, radius / 2})
-#       |> Scenic.Primitives.arc({radius / 2, @pi},
-#         stroke: {1, color},
-#         rotate: 3 * @pi / 2,
-#         translate: {0, -radius / 2}
-#       )
-#       |> Scenic.Primitives.arc({radius / 2, @pi},
-#         stroke: {1, color},
-#         rotate: @pi / 2,
-#         translate: {0, radius / 2}
-#       )
-#       |> Scenic.Primitives.circle(radius, stroke: {1, color})
-#       |> add_taijitu_tails(radius)
-#     end,
-#     id: :taijitu,
-#     rotate: args.rotation
-#   )
-# end
-
-# def add_taijitu_tails(graph, inner_radius) do
-#   width_factor = 3
-#   finish_height = 2 * inner_radius
-
-#   graph
-#   |> Scenic.Primitives.path(
-#     [
-#       :begin,
-#       {:move_to, 0, inner_radius},
-#       {:bezier_to, 0.67 * inner_radius * width_factor, inner_radius,
-#        (1 - 0.67) * inner_radius * width_factor, finish_height, inner_radius * width_factor,
-#        finish_height}
-#       # {:line_to, 300, 600},
-#       # :close_path
-#     ],
-#     #  fill: :white,
-#     # stroke_fill: :yellow,
-#     # stroke_width: 2
-#     stroke: {1, :yellow}
-#   )
-#   |> Scenic.Primitives.path(
-#     [
-#       :begin,
-#       {:move_to, 0, -inner_radius},
-#       {:bezier_to, -1 * 0.67 * inner_radius * width_factor, -1 * inner_radius,
-#        -1 * (1 - 0.67) * inner_radius * width_factor, -1 * finish_height,
-#        -1 * inner_radius * width_factor, -1 * finish_height}
-#       # {:line_to, 300, 600},
-#       # :close_path
-#     ],
-#     #  fill: :white,
-#     # stroke_fill: :yellow,
-#     # stroke_width: 2
-#     stroke: {1, :yellow}
-#   )
-# end
-
-# TODO this pattern was interesting... explore it later
-# def add_taijitu_tails(graph, width) do
-#    graph
-#    |> Scenic.Primitives.path( [
-#       :begin,
-#       {:move_to, 0, width},
-#       {:bezier_to, 0, 0, 0, 0, width, 0}
-#       # {:line_to, 300, 600},
-#       # :close_path
-#     ],
-#    #  fill: :white,
-#    # stroke_fill: :yellow,
-#    # stroke_width: 2
-#    stroke: {1, :yellow}
-#   )
-# end
-
-# def draw_outer_square(graph, args) do
-#   l = inner_circle_radius(args)
-
-#   graph
-#   |> Scenic.Primitives.quad(
-#     {{-l, -l}, {-l, l}, {l, -l}, {l, l}},
-#     stroke: {1, :grey}
-#   )
-#   |> Scenic.Primitives.quad(
-#     {{l, l}, {-l, l}, {-l, -l}, {l, -l}},
-#     stroke: {1, :grey}
-#   )
-
-#   # |> render_pyramids()
-# end
-
-# def render_pyramids(graph) do
-#   graph
-#   |> Scenic.Primitives.triangle(
-#     right_triangle_coords(),
-#     id: {:top_left, :left},
-#     stroke: {1, :white},
-#     fill: :dark_gray
-#   )
-# end
-
 # def animate_mid_triangle(graph, rotation) do
 #   graph
 #   |> Scenic.Graph.modify(
@@ -254,17 +306,4 @@ end
 #       rotate: -1 * degree_in_radians(rotation)
 #     )
 #   )
-# end
-
-# def right_triangle_coords do
-#   size = 100
-
-#   {
-#     # top-right vertex
-#     {size, size},
-#     # top-left vertex
-#     {0, size},
-#     # bottom vertex
-#     {0, 0}
-#   }
 # end
