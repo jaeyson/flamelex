@@ -20,32 +20,56 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
   @real_pi 3.14159265359
 
   @type t :: %__MODULE__{
+          # coefficients of the equation which determine the radius of the inner circle
+          inner_radius: %{
+            scale: float(),
+            offset_size: float()
+          },
+          # coefficients of the equation which determine the radius of the outer circle
+          outer_radius: %{
+            scale: float(),
+            offset_size: float()
+          },
+          # variable to keep track of rotation during the animation
           rotation: float(),
+          # flag to trigger animation (or not)
           animate?: boolean(),
+          # field to hold a timer, which periodically sends us `tick`
           timer: term(),
+          # the main color used to draw lines
           primary_color: atom(),
-          primary_stroke: 1,
-          pi: float(),
-          animation_rate: integer(),
+          # the stroke-width used to draw lines
+          primary_stroke: integer(),
+          # a constant for π (change for potentially wacky behaviour~~)
+          # pi: float(),
+          # animation_rate: integer(),
+
+          # how large of a circle to trigger an interaction
           cool_kid_radius: integer(),
-          circle_size: integer(),
-          tick_rotation: float(),
-          outer_rim: integer(),
-          gap_size: integer()
+          # circle_size: integer(),
+
+          # how much to rotate the animation by on each tick
+          tick_rotation: float()
+
+          # outer_rim: integer(),
+          # gap_size: integer()
         }
 
-  defstruct rotation: 0,
+  defstruct inner_radius: %{scale: 0.97, offset_size: 17},
+            outer_radius: %{scale: 1.07, offset_size: 12},
+            rotation: 0,
             animate?: false,
             timer: nil,
             primary_color: :dark_violet,
             primary_stroke: 1,
-            pi: @real_pi,
-            animation_rate: 10,
+            # pi: @real_pi,
+            # animation_rate: 10,
             cool_kid_radius: 80,
-            circle_size: 47,
-            tick_rotation: 0.2,
-            outer_rim: 20,
-            gap_size: 4
+            tick_rotation: 0.3
+
+  # The component is scaled relative to the width of the frame, we can
+  # adjust this scale factor to make the component relatively larger or smaller
+  @scale_factor 0.37
 
   @spec new(map()) :: t()
   def new(%{
@@ -73,7 +97,7 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
         %{
           animate?: animate?,
           timer: timer
-        } = state
+        }
       )
       when is_boolean(animate?) do
     %{
@@ -90,16 +114,38 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
     %{state | rotation: r}
   end
 
-  def circle_rad(%Frame{} = frame) do
-    # we can get the scale_factor back this way!
-    frame.size.width / 2 * 0.37
+  def radius(%Frame{} = frame) do
+    frame.size.width / 2 * @scale_factor
   end
 
-  def inner_circle_radius(%Frame{} = frame, %__MODULE__{
-        outer_rim: rim,
-        gap_size: size
+  def inner_radius(%Frame{} = frame, %__MODULE__{
+        inner_radius: %{
+          scale: scale,
+          offset_size: offset_size
+        }
       }) do
-    # outer_radius - rim + 2 * size + size/2
-    circle_rad(frame) - rim + size
+    scale * radius(frame) + offset_size
   end
+
+  def outer_radius(%Frame{} = frame, %__MODULE__{
+        outer_radius: %{
+          scale: scale,
+          offset_size: offset_size
+        }
+      }) do
+    scale * radius(frame) + offset_size
+  end
+
+  # def circle_rad(%Frame{} = frame) do
+  #   # we can get the scale_factor back this way!
+  #   frame.size.width / 2 * 0.37
+  # end
+
+  # def inner_circle_radius(%Frame{} = frame, %__MODULE__{
+  #       outer_rim: rim,
+  #       gap_size: size
+  #     }) do
+  #   # outer_radius - rim + 2 * size + size/2
+  #   circle_rad(frame) - rim + size
+  # end
 end

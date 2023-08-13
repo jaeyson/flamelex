@@ -117,11 +117,7 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
     # Evaluates Destination ! Message repeatedly after Time milliseconds
     {:ok, timer} = :timer.send_interval(scene.assigns.state.animation_rate, :tick)
 
-    new_state =
-      State.cast(state, %{
-        animate?: true,
-        timer: timer
-      })
+    new_state = State.cast(state, %{animate?: true, timer: timer})
 
     {:noreply, scene |> assign(state: new_state)}
   end
@@ -207,8 +203,7 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
       fn graph ->
         graph
         |> Utils.draw_circles(frame, state)
-
-        # |> draw_triangles(args)
+        |> Utils.draw_triangles(frame, state)
 
         # |> draw_taijitu(frame, args)
         # |> draw_outer_square(args)

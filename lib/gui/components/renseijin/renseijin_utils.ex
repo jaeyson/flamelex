@@ -2,44 +2,26 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
   alias Widgex.Structs.Frame
   alias Flamelex.GUI.Component.Renseijin.State
 
+  #############################################################################
+  # Drawing circles
+  # ===========================================================================
+
   def draw_circles(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
     graph
-    |> draw_circle(frame, state, :one)
-    |> draw_circle(frame, state, :two)
-    |> draw_circle(frame, state, :three)
-  end
-
-  def draw_circle(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state, :one) do
-    graph
-    |> Scenic.Primitives.circle(
-      State.circle_rad(frame),
-      stroke: {
-        state.primary_stroke,
-        state.primary_color
-      }
-    )
-  end
-
-  def draw_circle(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state, :two) do
-    graph
-    |> Scenic.Primitives.circle(
-      State.inner_circle_radius(frame, state),
-      stroke: {
-        state.primary_stroke,
-        state.primary_color
-      }
-    )
+    |> draw_circle(state, State.radius(frame))
+    |> draw_circle(state, State.inner_radius(frame, state))
+    |> draw_circle(state, State.outer_radius(frame, state))
   end
 
   def draw_circle(
         %Scenic.Graph{} = graph,
-        %Frame{} = frame,
-        %State{gap_size: gap_size} = state,
-        :three
-      ) do
+        %State{} = state,
+        radius
+      )
+      when is_float(radius) do
     graph
     |> Scenic.Primitives.circle(
-      State.inner_circle_radius(frame, state) + 1.5 * gap_size,
+      radius,
       stroke: {
         state.primary_stroke,
         state.primary_color
@@ -47,7 +29,44 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
     )
   end
 
-  defp within_box?({query_x, query_y}, %{x: base_x, y: base_y}, radius) do
+  #############################################################################
+  # Drawing triangles
+  # ===========================================================================
+
+  def draw_triangles(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
+    graph
+    |> draw_triangle(state, State.radius(frame))
+    |> draw_triangle(state, State.inner_radius(frame, state))
+    |> draw_triangle(state, State.outer_radius(frame, state))
+  end
+
+  def draw_triangle(
+        %Scenic.Graph{} = graph,
+        %State{} = state,
+        radius
+      )
+      when is_float(radius) do
+    graph
+    |> Scenic.Primitives.triangle(
+      equilateral_triangle_coords(radius),
+      stroke: {
+        state.primary_stroke,
+        state.primary_color
+      }
+    )
+  end
+
+  # creates an "upwards pointing" equilateral triangle
+  # the `radius` is the distance from the center of the triangle to any of its vertices
+  def equilateral_triangle_coords(radius) do
+    {
+      {-1 * :math.sqrt(3) * radius / 2, radius / 2},
+      {0, -1 * radius},
+      {:math.sqrt(3) * radius / 2, radius / 2}
+    }
+  end
+
+  def within_box?({query_x, query_y}, %{x: base_x, y: base_y}, radius) do
     low_x = base_x - radius
     low_y = base_y - radius
     high_x = base_x + radius
@@ -56,7 +75,7 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
     low_x <= query_x and query_x <= high_x and low_y <= query_y and query_y <= high_y
   end
 
-  defp degree_in_radians(x) do
+  def degree_in_radians(x) do
     2 * @pi * x / 360
   end
 end
@@ -104,34 +123,6 @@ end
 #   |> Scenic.Graph.modify(
 #     :taijitu,
 #     &Scenic.Primitives.update_opts(&1, rotate: degree_in_radians(rotation))
-#   )
-# end
-
-# def draw_triangles(graph, args) do
-#   %{
-#     radius: radius,
-#     center: center,
-#     outer_rim: rim,
-#     gap_size: size,
-#     rotation: r
-#   } = args
-
-#   graph
-#   |> Scenic.Primitives.triangle(
-#     equilateral_triangle_coords(radius),
-#     id: :inner_triangle,
-#     stroke: {1, @primary_color}
-#   )
-#   |> Scenic.Primitives.triangle(
-#     equilateral_triangle_coords(radius - rim + size),
-#     id: :mid_triangle,
-#     stroke: {1, @primary_color},
-#     rotate: r
-#   )
-#   |> Scenic.Primitives.triangle(
-#     equilateral_triangle_coords(radius - rim + 2.5 * size),
-#     id: :outer_triangle,
-#     stroke: {1, @primary_color}
 #   )
 # end
 
@@ -263,14 +254,6 @@ end
 #       rotate: -1 * degree_in_radians(rotation)
 #     )
 #   )
-# end
-
-# def equilateral_triangle_coords(radius) do
-#   {
-#     {-1 * :math.sqrt(3) * radius / 2, radius / 2},
-#     {0, -1 * radius},
-#     {:math.sqrt(3) * radius / 2, radius / 2}
-#   }
 # end
 
 # def right_triangle_coords do
