@@ -27,18 +27,22 @@ defmodule Flamelex.GUI.Layers.LayerZero do
         root: %{active_app: :desktop},
         desktop: %{renseijin: %{visible?: true}}
       }) do
-    Process.whereis(Flamelex.GUI.Component.Renseijin)
-    |> case do
+    # TODO change this over eventually...
+    new_frame = Widgex.Structs.Frame.new(frame.pin, frame.size)
+
+    # TODO this is non-ideal aswell
+    new_state = Renseijin.State.new(renseijin_state)
+
+    case Process.whereis(Flamelex.GUI.Component.Renseijin) do
       nil ->
-        {:ok,
-         Scenic.Graph.build()
-         |> Renseijin.add_to_graph(%{
-           frame: frame,
-           animate?: animate?
-         })}
+        new_graph =
+          Scenic.Graph.build()
+          |> Renseijin.add_to_graph({new_frame, new_state})
+
+        {:ok, new_graph}
 
       pid when is_pid(pid) ->
-        GenServer.cast(pid, {:redraw, renseijin_state})
+        GenServer.cast(pid, {:redraw, new_state})
         :ignore
     end
   end
