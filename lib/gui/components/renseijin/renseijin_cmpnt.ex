@@ -215,7 +215,7 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
       id: __MODULE__,
       translate: Frame.center_tuple(frame)
     )
-    |> Scenic.Graph.modify(:scissor, Dimensions.to_tuple(frame.size))
+    |> Scenic.Graph.modify(:scissor, Dimensions.box(frame.size))
   end
 
   # a way of re-using a code-pattern inside this module, nothing more

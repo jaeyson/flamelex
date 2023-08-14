@@ -1,5 +1,5 @@
 defmodule Flamelex.GUI.Component.Renseijin.Utils do
-  alias Widgex.Structs.{Frame, Dimensions}
+  alias Widgex.Structs.{Frame, Coordinates, Dimensions}
   alias Flamelex.GUI.Component.Renseijin.State
 
   # a constant for π (change for potentially wacky behaviour~~)
@@ -231,7 +231,8 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
 
   def draw_background(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
     graph
-    |> Scenic.Primitives.rect(Dimensions.to_tuple(frame.size),
+    |> Scenic.Primitives.rect(Dimensions.box(frame.size),
+      translate: Coordinates.point(frame.pin),
       fill: {:image, "images/ngc_4535.jpg"}
     )
     |> draw_mask(frame, state)
