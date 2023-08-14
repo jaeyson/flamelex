@@ -208,6 +208,7 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
         |> Utils.draw_circles(frame, state)
         |> Utils.draw_triangles(frame, state)
         |> Utils.draw_taijitu(frame, state)
+        |> Utils.draw_hexagons(frame, state)
 
         # |> Utils.draw_squares(frame, state)
         # |> Utils.draw_pyramids(frame, state)

@@ -38,6 +38,8 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
           primary_color: atom(),
           # the stroke-width used to draw lines
           primary_stroke: integer(),
+          # the color used to draw the relief lines
+          relief_stroke: {integer(), atom()},
           # how many milliseseconds between ticks
           animation_rate: integer(),
 
@@ -66,8 +68,9 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
             rotation: 0,
             animate?: false,
             timer: nil,
-            primary_color: :dark_violet,
             primary_stroke: 2,
+            primary_color: :dark_violet,
+            relief_stroke: {1, :grey},
             animation_rate: 17,
             cool_kid_radius: 80,
             tick_rotation: 0.72
