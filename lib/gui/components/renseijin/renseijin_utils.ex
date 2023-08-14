@@ -145,8 +145,8 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
 
   # TODO this should all get cleaned up...
   def add_taijitu_tails(graph, state, inner_radius) do
-    width_factor = 3
-    finish_height = 2 * inner_radius
+    width_factor = 6.12
+    finish_height = 3 * inner_radius
 
     graph
     |> Scenic.Primitives.path(

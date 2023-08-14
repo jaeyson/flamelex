@@ -74,7 +74,7 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
 
   # The component is scaled relative to the width of the frame, we can
   # adjust this scale factor to make the component relatively larger or smaller
-  @scale_factor 0.37
+  @scale_factor 0.19
 
   @spec new(map()) :: t()
   def new(%{
