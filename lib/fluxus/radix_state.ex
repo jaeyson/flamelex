@@ -104,7 +104,7 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
         # }
       },
       desktop: %{
-        renseijin: %{
+        renseijin: %Flamelex.GUI.Component.Renseijin.State{
           visible?: true,
           animate?: false
         },

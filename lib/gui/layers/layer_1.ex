@@ -5,10 +5,11 @@ defmodule Flamelex.GUI.Layers.LayerOne do
   @behaviour Flamelex.GUI.Layer.Behaviour
 
   alias ScenicWidgets.Core.Utils.FlexiFrame
+  alias Widgex.Structs.LayerCake
 
   @impl Flamelex.GUI.Layer.Behaviour
 
-  def calc_state(%{root: %{layers: %{one: :split}}} = radix_state) do
+  def cast(%{root: %{layers: %{one: :split}}} = radix_state) do
     # TODO here, this is gonna get split msg when we call Flamelex.API.Editor.split
 
     %{framestack: [_menubar_f | editor_f]} =
@@ -29,7 +30,7 @@ defmodule Flamelex.GUI.Layers.LayerOne do
     }
   end
 
-  def calc_state(%{root: %{layers: %{one: %{explorer: %{active?: true}}}}} = radix_state) do
+  def cast(%{root: %{layers: %{one: %{explorer: %{active?: true}}}}} = radix_state) do
     main_pane =
       FlexiFrame.main_pane_frame(radix_state.gui.viewport,
         menu_bar_height: radix_state.desktop.menu_bar.height
@@ -48,7 +49,7 @@ defmodule Flamelex.GUI.Layers.LayerOne do
     }
   end
 
-  def calc_state(%{root: %{layers: %{one: %{layout: %{editor: :full_screen}}}}} = radix_state) do
+  def cast(%{root: %{layers: %{one: %{layout: %{editor: :full_screen}}}}} = radix_state) do
     # calc the editor frame
     %{framestack: [_menubar_f | editor_f]} =
       FlexiFrame.calc(
@@ -65,86 +66,109 @@ defmodule Flamelex.GUI.Layers.LayerOne do
   end
 
   @impl Flamelex.GUI.Layer.Behaviour
-  def render(%{active_app: :desktop}, _radix_state) do
+  def render(
+        {:radix_state,
+         %{
+           root: %{active_app: :desktop},
+           desktop: %{renseijin: %{visible?: true}}
+         }},
+        %LayerCake{}
+      ) do
     {:ok, Scenic.Graph.build()}
   end
 
-  def render(%{active_app: :editor, layout: :split, frames: [f1 | f2]}, radix_state) do
-    {:ok,
-     Scenic.Graph.build()
-     |> QuillEx.GUI.Components.Editor.add_to_graph(%{
-       frame: f1,
-       radix_state: radix_state,
-       app: Flamelex
-     })
-     |> QuillEx.GUI.Components.Editor.add_to_graph(%{
-       frame: hd(f2),
-       radix_state: radix_state,
-       app: Flamelex
-     })}
-  end
+  # def render({:radix_state, _rdx}, %{active_app: :desktop}) do
+  #   {:ok, Scenic.Graph.build()}
+  # end
 
-  def render(
-        %{
-          active_app: :editor,
-          layout: %{
-            explorer: explorer_frame,
-            editor: editor_frame
-          }
-        },
-        radix_state
-      ) do
-    {:ok,
-     Scenic.Graph.build()
-     |> Flamelex.GUI.Component.FileExplorer.add_to_graph(%{
-       frame: explorer_frame,
-       state: radix_state.projects
-     })
-     |> QuillEx.GUI.Components.Editor.add_to_graph(%{
-       frame: editor_frame,
-       radix_state: radix_state,
-       app: Flamelex
-     })}
-  end
+  # def render({:radix_state, radix_state}, _frame, %{
+  #       active_app: :editor,
+  #       layout: :split,
+  #       frames: [f1 | f2]
+  #     }) do
+  #   {:ok,
+  #    Scenic.Graph.build()
+  #    |> QuillEx.GUI.Components.Editor.add_to_graph(%{
+  #      frame: f1,
+  #      radix_state: radix_state,
+  #      app: Flamelex
+  #    })
+  #    |> QuillEx.GUI.Components.Editor.add_to_graph(%{
+  #      frame: hd(f2),
+  #      radix_state: radix_state,
+  #      app: Flamelex
+  #    })}
+  # end
 
-  def render(%{active_app: :editor, frame: frame}, radix_state) do
-    {:ok,
-     Scenic.Graph.build()
-     |> QuillEx.GUI.Components.Editor.add_to_graph(%{
-       frame: frame,
-       radix_state: radix_state,
-       app: Flamelex
-     })}
-  end
+  # def render(
+  #       {:radix_state, radix_state},
+  #       %{
+  #         active_app: :editor,
+  #         layout: %{
+  #           explorer: explorer_frame,
+  #           editor: editor_frame
+  #         }
+  #       }
+  #     ) do
+  #   {:ok,
+  #    Scenic.Graph.build()
+  #    |> Flamelex.GUI.Component.FileExplorer.add_to_graph(%{
+  #      frame: explorer_frame,
+  #      state: radix_state.projects
+  #    })
+  #    |> QuillEx.GUI.Components.Editor.add_to_graph(%{
+  #      frame: editor_frame,
+  #      radix_state: radix_state,
+  #      app: Flamelex
+  #    })}
+  # end
 
-  def render(%{active_app: :memex, frame: frame}, radix_state) do
-    {:ok,
-     Scenic.Graph.build()
-     |> Memelex.GUI.Components.MemDesk.add_to_graph(%{
-       frame: frame,
-       state: Flamelex.Fluxus.MemexStore.get()
-     })}
-  end
+  # def render(
+  #       {:radix_state, radix_state},
+  #       %{active_app: :editor, frame: frame}
+  #     ) do
+  #   {:ok,
+  #    Scenic.Graph.build()
+  #    |> QuillEx.GUI.Components.Editor.add_to_graph(%{
+  #      frame: frame,
+  #      radix_state: radix_state,
+  #      app: Flamelex
+  #    })}
+  # end
 
-  def render(%{active_app: :hexdocs, frame: frame}, radix_state) do
-    {:ok,
-     Scenic.Graph.build()
-     |> Flamelex.GUI.Components.HexDocs.add_to_graph(%{
-       frame: frame,
-       state: %{}
-     })}
-  end
+  # def render(
+  #       {:radix_state, radix_state},
+  #       %{active_app: :memex, frame: frame}
+  #     ) do
+  #   {:ok,
+  #    Scenic.Graph.build()
+  #    |> Memelex.GUI.Components.MemDesk.add_to_graph(%{
+  #      frame: frame,
+  #      state: Flamelex.Fluxus.MemexStore.get()
+  #    })}
+  # end
 
-  def render(%{active_app: :widget_workbench, frame: frame}, _radix_state) do
-    #    g = Scenic.Graph.build()
+  # def render(
+  #       {:radix_state, radix_state},
+  #       %{active_app: :hexdocs, frame: frame}
+  #     ) do
+  #   {:ok,
+  #    Scenic.Graph.build()
+  #    |> Flamelex.GUI.Components.HexDocs.add_to_graph(%{
+  #      frame: frame,
+  #      state: %{}
+  #    })}
+  # end
 
-    #    {:ok, g}
-
-    {:ok,
-     Scenic.Graph.build()
-     |> Flamelex.GUI.Components.WidgetWkb.add_to_graph(%{
-       frame: frame,
-       state: %{}
-     })}
-  end
+  # def render(
+  #       {:radix_state, _rdx},
+  #       %{active_app: :widget_workbench, frame: f}
+  #     ) do
+  #   {:ok,
+  #    Scenic.Graph.build()
+  #    |> WidgetWorkbench.Desk.add_to_graph(%{
+  #      frame: f,
+  #      state: %{}
+  #    })}
+  # end
 end

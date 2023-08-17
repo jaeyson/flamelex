@@ -30,8 +30,6 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
           },
           # variable to keep track of rotation during the animation
           rotation: float(),
-          # flag to trigger animation (or not)
-          animate?: boolean(),
           # field to hold a timer, which periodically sends us `tick`
           timer: term(),
           # the main color used to draw lines
@@ -48,10 +46,13 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
           # circle_size: integer(),
 
           # how much to rotate the animation by on each tick
-          tick_rotation: float()
+          tick_rotation: float(),
 
-          # outer_rim: integer(),
-          # gap_size: integer()
+          # whether or not to show the Renseijin
+          visible?: boolean(),
+
+          # enable/disable the animation
+          animate?: boolean()
         }
 
   defstruct inner_radius: %{
@@ -73,20 +74,15 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
             relief_stroke: {1, :grey},
             animation_rate: 17,
             cool_kid_radius: 80,
-            tick_rotation: 0.72
+            tick_rotation: 0.72,
+            visible?: true,
+            animate?: false
 
   # The component is scaled relative to the width of the frame, we can
   # adjust this scale factor to make the component relatively larger or smaller
   @scale_factor 0.19
 
-  @spec new(map()) :: t()
-  def new(%{
-        animate?: animate?
-      }) do
-    %__MODULE__{
-      animate?: animate?
-    }
-  end
+  # @spec cast(map()) :: t()
 
   def cast(
         %__MODULE__{
@@ -120,6 +116,19 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
       })
       when r >= 0 and r <= 360 do
     %{state | rotation: r}
+  end
+
+  def cast(%{
+        # TODO radix state type here
+        desktop: %{
+          renseijin: %{
+            animate?: animate?
+          }
+        }
+      }) do
+    %__MODULE__{
+      animate?: animate?
+    }
   end
 
   def radius(%Frame{} = frame) do

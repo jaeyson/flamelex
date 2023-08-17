@@ -2,28 +2,60 @@ defmodule Flamelex.GUI.Component.Layer do
   use Scenic.Component
   require Logger
 
-  @layers [
-    Flamelex.GUI.Layers.LayerZero,
-    Flamelex.GUI.Layers.LayerOne,
-    Flamelex.GUI.Layers.LayerTwo,
-    Flamelex.GUI.Layers.LayerThree
-  ]
+  # @layers [
+  #   Flamelex.GUI.Layers.LayerZero,
+  #   Flamelex.GUI.Layers.LayerOne,
+  #   Flamelex.GUI.Layers.LayerTwo,
+  #   Flamelex.GUI.Layers.LayerThree
+  # ]
 
   # #TODO accept a function, which is the render function - takes in a radix_state, re-computes entire layer, this is how we know if layers needs to be updated!!
   # def validate(%{graph: %Scenic.Graph{} = _g, render_fn: render_fn} = data) when is_function(render_fn) do
   #    {:ok, data}
   # end
 
-  def validate(%{layer_module: layer, radix_state: radix_state} = data) when layer in @layers do
+  # def validate(%{layer_module: layer, radix_state: radix_state} = data) when layer in @layers do
+  #   {:ok, data}
+  # end
+
+  alias Widgex.Structs.LayerCake
+  alias Widgex.Structs.Frame
+
+  def validate({radix_state, layer} = data) do
     {:ok, data}
   end
 
   # TODO handle the state & calc_state_fn not being mandatory args...
 
+  def init(
+        %Scenic.Scene{} = scene,
+        {radix_state, %LayerCake{layerable: layer_mod} = layer},
+        opts
+      ) do
+    Logger.debug("#{__MODULE__} initializing...")
+
+    # TODO fetch the theme coming in from the opts, and use it to set the primary_color
+    # "make a layer_renderable protocol & implement it for each layer"
+    # Layer.render(state)
+
+    # TODO pass opts here aswell
+    {:ok, %Scenic.Graph{} = new_graph} = layer_mod.render(radix_state, layer)
+
+    new_scene =
+      scene
+      |> assign(graph: new_graph)
+      |> assign(layer: layer)
+      |> push_graph(new_graph)
+
+    request_input(new_scene, [:cursor_pos])
+
+    {:ok, new_scene}
+  end
+
   def init(scene, %{layer_module: layer, radix_state: radix_state} = args, opts) do
     # Logger.debug "Initializing layer #{opts[:id]}..."
 
-    init_state = layer.calc_state(radix_state)
+    init_state = layer.cast(radix_state)
     {:ok, init_graph} = layer.render(init_state, radix_state)
 
     init_scene =
@@ -56,12 +88,22 @@ defmodule Flamelex.GUI.Component.Layer do
   # NOTE that this is better because it uses the "layer state" to figure out if it needs to change. Layer state doesn't need to change *all* the time e.g. if we input a single character... that can be handled by the Editor component
   def handle_info(
         {:radix_state_change, new_radix_state},
-        %{assigns: %{state: old_layer_state, layer: layer}} = scene
+        # %{assigns: %{state: old_layer_state, layer: layer}} = scene
+        %{
+          assigns: %{
+            state: old_layer_state,
+            layer: %LayerCake{
+              layerable: layer_mod
+            }
+          }
+        } = scene
       ) do
-    new_layer_state = layer.calc_state(new_radix_state)
+    # NOTE here is where layer updates happen
+    new_layer_state = layer_mod.cast(new_radix_state)
 
     if new_layer_state != old_layer_state do
-      case layer.render(new_layer_state, new_radix_state) do
+      # case layer.render(new_layer_state, new_radix_state) do
+      case layer_mod.render({:radix_state, new_radix_state}, new_layer_state) do
         :ignore ->
           {:noreply, scene}
 

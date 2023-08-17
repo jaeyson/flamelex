@@ -6,6 +6,7 @@ defmodule Flamelex.GUI.RootScene do
   import Scenic.Components
   alias ScenicWidgets.Core.Structs.Frame
   alias ScenicWidgets.Core.Utils.FlexiFrame
+  alias Widgex.Structs.LayerCake
   require Logger
 
   # NOTE:
@@ -35,7 +36,7 @@ defmodule Flamelex.GUI.RootScene do
   def init(init_scene, args, opts) do
     # Logger.debug("#{__MODULE__} initializing...")
 
-    #NOTE - due to the way Scenic works right now, it's not practical to pass in the RadixState from the highest level of the SUpervision tree
+    # NOTE - due to the way Scenic works right now, it's not practical to pass in the RadixState from the highest level of the SUpervision tree
     # Maybe in the future this could change but for now just fetch this data when the Scenc boots... this is also kind of nice incase the GUI gets reset
 
     # TODO we should return the radix_state here to save us from having to fetch it again in like 5 lines time
@@ -122,38 +123,80 @@ defmodule Flamelex.GUI.RootScene do
     {:noreply, scene}
   end
 
+  # TODO this is the MainEntry for rendering the graph - this is the highest level
+  # function, where we map from radix_state to the graph
   def render_layers(radix_state) do
+    # [
+    #   %LayerCake{
+    #     layer: {:zero, "Layer One"},
+    #     layout: :layout,
+    #     state: %LayerZero.State{},
+    #     frame: nil
+    #   }
+    # ]
+
+    # Note that this list is ordered, so that it readws nicely
+    # for humans - the firstt entry in this list will show _on top_
+    # of the other layers, but for it to show up top it actually gets drawn *last*,
+    # trhis is why we reverse the list at the end of this function
+    # [
+    #   kommander_layer(radix_state),
+    #   menubar_layer(radix_state),
+    #   working_layer(radix_state),
+
+    # ]
+    # |> Enum.reverse()
+
     full_graph =
       Scenic.Graph.build()
-      |> Flamelex.GUI.Component.Layer.add_to_graph(
-        %{
-          layer_module: Flamelex.GUI.Layers.LayerZero,
-          radix_state: radix_state
-        },
-        id: :zero
-      )
-      |> Flamelex.GUI.Component.Layer.add_to_graph(
-        %{
-          layer_module: Flamelex.GUI.Layers.LayerOne,
-          radix_state: radix_state
-        },
-        id: :one
-      )
-      |> Flamelex.GUI.Component.Layer.add_to_graph(
-        %{
-          layer_module: Flamelex.GUI.Layers.LayerTwo,
-          radix_state: radix_state
-        },
-        id: :two
-      )
-      |> Flamelex.GUI.Component.Layer.add_to_graph(
-        %{
-          layer_module: Flamelex.GUI.Layers.LayerThree,
-          radix_state: radix_state
-        },
-        id: :three
-      )
+      |> base_layer(:renseijin, radix_state)
+
+    # |> working_layer(radix_state)
+    # |> menubar_layer(radix_state)
+    # |> kommander_layer(radix_state)
 
     {:ok, full_graph}
+  end
+
+  def base_layer(graph, :renseijin, radix_state) do
+    layer_state = Flamelex.GUI.Component.Renseijin.State.cast(radix_state)
+
+    graph
+    |> render_layer(radix_state, Flamelex.GUI.Layers.LayerZero.cast(radix_state))
+  end
+
+  def working_layer(graph, radix_state) do
+    graph
+    |> render_layer(radix_state, %LayerCake{
+      id: :working_layer,
+      # layer: {:working, "Working"},
+      layout: %Widgex.Structs.GridLayout{},
+      state: %{}
+    })
+  end
+
+  def menubar_layer(graph, radix_state) do
+    graph
+    |> render_layer(radix_state, %LayerCake{
+      # layer: {:menu, "Menu"},
+      id: :menubar,
+      layout: %Widgex.Structs.GridLayout{},
+      state: %{}
+    })
+  end
+
+  def kommander_layer(graph, radix_state) do
+    graph
+    |> render_layer(radix_state, %LayerCake{
+      # layer: {:kommander, "Kommander"},
+      id: :kommander,
+      layout: %Widgex.Structs.GridLayout{},
+      state: %{}
+    })
+  end
+
+  def render_layer(graph, radix_state, %LayerCake{id: l_id} = layer) do
+    graph
+    |> Flamelex.GUI.Component.Layer.add_to_graph({radix_state, layer}, id: l_id)
   end
 end

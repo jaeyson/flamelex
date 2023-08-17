@@ -3,9 +3,10 @@ defmodule Flamelex.GUI.Layers.LayerTwo do
   # NOTE: Layer 2 is the MenuBar/Desktop component
 
   @behaviour Flamelex.GUI.Layer.Behaviour
+  alias Widgex.Structs.LayerCake
 
   @impl Flamelex.GUI.Layer.Behaviour
-  def calc_state(radix_state) do
+  def cast(radix_state) do
     # calc the frame for the Menubar, we can choose to discard the other frames in the stack
     %{framestack: [menubar_f | _editor_f]} =
       ScenicWidgets.Core.Utils.FlexiFrame.calc(
@@ -22,17 +23,28 @@ defmodule Flamelex.GUI.Layers.LayerTwo do
   end
 
   @impl Flamelex.GUI.Layer.Behaviour
-  def render(layer_state, _radix_state) do
-    {:ok,
-     Scenic.Graph.build()
-     |> ScenicWidgets.MenuBar.add_to_graph(
-       %{
-         frame: layer_state.frame,
-         menu_map: layer_state.menu_map,
-         font: layer_state.font
-       },
-       id: :menu_bar
-     )}
+  def render(
+        {:radix_state,
+         %{
+           root: %{active_app: :desktop},
+           desktop: %{renseijin: %{visible?: true}}
+         }},
+        %LayerCake{}
+      ) do
+    {:ok, Scenic.Graph.build()}
   end
 
+  # @impl Flamelex.GUI.Layer.Behaviour
+  # def render({:radix_state, _rdx}, layer_state) do
+  #   {:ok,
+  #    Scenic.Graph.build()
+  #    |> ScenicWidgets.MenuBar.add_to_graph(
+  #      %{
+  #        frame: layer_state.frame,
+  #        menu_map: layer_state.menu_map,
+  #        font: layer_state.font
+  #      },
+  #      id: :menu_bar
+  #    )}
+  # end
 end
