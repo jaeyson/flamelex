@@ -5,6 +5,8 @@ config :flamelex, :key_mapping, Flamelex.KeyMappings.VimClone
 config :memelex,
   active?: true
 
+config :nx, default_backend: EXLA.Backend
+
 config :event_bus,
   # https://github.com/otobus/event_bus/wiki/Creating-(Registering)-Topics
   topics: [
@@ -27,7 +29,9 @@ config :scenic,
        module: Flamelex.App.Scenic.Assets
 
 config :logger,
-  level: :debug,
+  level: :info,
   truncate: :infinity,
   # remove superfluous newline characters from logs, see: https://elixirforum.com/t/why-does-logger-output-in-iex-have-to-have-an-empty-line-after-every-line-logged/21822/4
   console: [format: "$time $metadata[$level] $message\n"]
+
+import_config "#{config_env()}.exs"
