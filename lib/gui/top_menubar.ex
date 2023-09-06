@@ -71,6 +71,7 @@ defmodule Flamelex.GUI.TopMenuBar do
         {name, fn -> Flamelex.API.Buffer.switch(buf_id) end}
       end)
 
+    IO.puts("RECOMPUTING MENUBARRRRRR")
     {:sub_menu, "open-buffers", open_bufs_sub_menu}
   end
 
@@ -79,25 +80,31 @@ defmodule Flamelex.GUI.TopMenuBar do
      ScenicWidgets.MenuBar.modules_and_zero_arity_functions("Elixir.Flamelex.API")}
   end
 
-  def memex_menu(
-        # when we have an active memex & a custom mod, check for custom menu
-        %{
-          memex: %{active?: true, env: %{name: env_name, env_module: mod}}
-        } = radix_state
-      )
-      when is_binary(env_name) and is_atom(mod) do
-    # TODO we need to look in the environment, for if a specific fuinction is defined, inside their `my_modz.ex` module??
-    {:sub_menu, "Memex", base_memex_menu} = do_memex_menu(radix_state)
+  # def memex_menu(
+  #       # when we have an active memex & a custom mod, check for custom menu
+  #       %{
+  #         memex: %{active?: true, env: %{name: env_name, env_modz_module: mod}}
+  #       } = radix_state
+  #     )
+  #     when is_binary(env_name) and is_atom(mod) do
+  #   {:sub_menu, "Memex", base_memex_menu} = do_memex_menu(radix_state)
 
-    # TODO check if the function is exported first
-    my_menu = mod.my_menu(radix_state)
+  #   new_memex_menu =
+  #     base_memex_menu
+  #     # maybe add my_menu
+  #     |> then(fn menu ->
+  #       if Code.ensure_loaded?(mod) && function_exported?(mod, :my_menu, 1) do
+  #         my_menu = mod.my_menu(radix_state)
 
-    new_memex_menu =
-      base_memex_menu
-      |> List.insert_at(2, {env_name, my_menu})
+  #         base_memex_menu
+  #         |> List.insert_at(2, {env_name, my_menu})
+  #       else
+  #         menu
+  #       end
+  #     end)
 
-    {:sub_menu, "Memex", new_memex_menu}
-  end
+  #   {:sub_menu, "Memex", new_memex_menu}
+  # end
 
   def memex_menu(
         %{
@@ -106,7 +113,6 @@ defmodule Flamelex.GUI.TopMenuBar do
         } = radix_state
       )
       when is_binary(env_name) do
-    IO.puts("GOLD GOLD GOLD")
     do_memex_menu(radix_state)
   end
 
@@ -118,22 +124,119 @@ defmodule Flamelex.GUI.TopMenuBar do
      ] ++ load_jedilukes()}
   end
 
-  def do_memex_menu(_radix_state) do
+  # def check_module_function(module, function, arity) do
+  #   if Code.ensure_loaded?(module) && function_exported?(module, function, arity) do
+  #     IO.puts "The function #{function}/#{arity} is exported from the module #{module}."
+  #   else
+  #     IO.puts "The function #{function}/#{arity} is not exported from the module #{module}."
+  #   end
+  # end
+
+  def do_memex_menu(radix_state) do
     # TODO add random memex button
-    {:sub_menu, "Memex",
-     [
-       {"open", &Flamelex.API.Diary.open/0},
-       {"close", &Flamelex.API.Diary.close/0},
-       {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end},
-       {"journal", fn -> Memelex.My.Journal.today() end}
-     ]}
+
+    base_menu = [
+      {"open", &Flamelex.API.Diary.open/0},
+      {"close", &Flamelex.API.Diary.close/0},
+      # {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end},
+      {"journal", fn -> Memelex.My.Journal.today() end}
+    ]
+
+    full_menu =
+      base_menu
+      |> maybe_add_agents_menu(radix_state)
+      |> maybe_add_open_my_modz_button(radix_state)
+      |> maybe_add_custom_menu(radix_state)
+
+    {:sub_menu, "Memex", full_menu}
   end
+
+  def maybe_add_agents_menu(memex_sub_menu, %{memex: %{env: %{env_modz_module: mod}}} = memex_env)
+      when is_atom(mod) do
+    memex_sub_menu
+    |> then(fn menu ->
+      if Code.ensure_loaded?(mod) && function_exported?(mod, :agents, 0) do
+        menu
+        |> List.insert_at(2, {"agents", fn -> IO.puts("this will eventually add agents!!") end})
+      else
+        menu
+      end
+    end)
+  end
+
+  def maybe_add_open_my_modz_button(memex_sub_menu, %{
+        memex: %{env: %{name: memex_name} = memex_env}
+      })
+      when is_binary(memex_name) do
+    modz_file = Memelex.Environment.my_modz_filepath(memex_env)
+
+    if not is_nil(modz_file) and File.exists?(modz_file) do
+      IO.puts("ADDING A my modz button")
+
+      memex_sub_menu
+      |> List.insert_at(2, {"my_modz", fn -> Flamelex.API.Buffer.open(modz_file) end})
+    else
+      IO.puts("SKIPPING my modz button")
+      memex_sub_menu
+    end
+  end
+
+  def maybe_add_open_my_modz_button(memex_sub_menu, _radix_state) do
+    IO.puts("SKIPPING ADDING OPEN MY MODZ BUTTON...")
+    memex_sub_menu
+  end
+
+  def maybe_add_agents_menu(memex_sub_menu, _memex_env) do
+    IO.puts("SKIPPING ADDING AGENTS...")
+    memex_sub_menu
+  end
+
+  def maybe_add_custom_menu(
+        memex_sub_menu,
+        %{
+          memex: %{env: %{name: env_name, env_modz_module: mod} = memex_env}
+        } = radix_state
+      )
+      when is_binary(env_name) and is_atom(mod) do
+    memex_sub_menu
+    |> then(fn menu ->
+      if Code.ensure_loaded?(mod) && function_exported?(mod, :my_menu, 1) do
+        my_menu = mod.my_menu(radix_state)
+
+        memex_sub_menu
+        |> List.insert_at(2, {env_name, my_menu})
+      else
+        menu
+      end
+    end)
+  end
+
+  def maybe_add_custom_menu(memex_sub_menu, _memex_env) do
+    IO.puts("SKIPPING ADDING CUSTOM MENU...")
+    memex_sub_menu
+  end
+
+  # def do_memex_menu(:base_menu) do
+  #   # TODO add random memex button
+  #   # TODO we need to look in the environment, for if a specific fuinction is defined, inside their `my_modz.ex` module??
+
+  #   base_menu =
+  #     {:sub_menu, "Memex",
+  #      [
+  #        {"open", &Flamelex.API.Diary.open/0},
+  #        {"close", &Flamelex.API.Diary.close/0},
+  #        #  {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end},
+  #        {"journal", fn -> Memelex.My.Journal.today() end}
+  #      ]}
+
+  #   base_menu
+
+  # end
 
   def load_jedilukes do
     [
       {
         "load JediLuke",
-        # put us in the test environment / dream world
         fn ->
           Memelex.deactivate()
 
@@ -145,6 +248,17 @@ defmodule Flamelex.GUI.TopMenuBar do
       },
       {
         "load old JediLuke",
+        fn ->
+          Memelex.deactivate()
+
+          Memelex.load_env(%{
+            name: "old JediLuke",
+            memex_directory: "/home/luke/backups/dubber_two/memex/JediLuke"
+          })
+        end
+      },
+      {
+        "load really old JediLuke",
         # put us in the test environment / dream world
         fn ->
           Memelex.deactivate()

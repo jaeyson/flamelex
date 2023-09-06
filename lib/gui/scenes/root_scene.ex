@@ -49,8 +49,6 @@ defmodule Flamelex.GUI.RootScene do
     # force-refreshed due to this process starting up
     {:ok, root_graph} = render_layers(radix_state)
 
-    # Flamelex.Fluxus.RadixStore.put_root_graph(graph: root_graph)
-
     new_scene =
       init_scene
       |> assign(graph: root_graph)
@@ -126,76 +124,83 @@ defmodule Flamelex.GUI.RootScene do
   # TODO this is the MainEntry for rendering the graph - this is the highest level
   # function, where we map from radix_state to the graph
   def render_layers(radix_state) do
-    # [
-    #   %LayerCake{
-    #     layer: {:zero, "Layer One"},
-    #     layout: :layout,
-    #     state: %LayerZero.State{},
-    #     frame: nil
-    #   }
-    # ]
-
     # Note that this list is ordered, so that it readws nicely
     # for humans - the firstt entry in this list will show _on top_
     # of the other layers, but for it to show up top it actually gets drawn *last*,
-    # trhis is why we reverse the list at the end of this function
-    # [
-    #   kommander_layer(radix_state),
-    #   menubar_layer(radix_state),
-    #   working_layer(radix_state),
-
-    # ]
-    # |> Enum.reverse()
+    # this is why we reverse the list at the end of this function
 
     full_graph =
       Scenic.Graph.build()
       |> base_layer(:renseijin, radix_state)
 
-    # |> working_layer(radix_state)
-    # |> menubar_layer(radix_state)
+      # |> working_layer(radix_state)
+      |> second_layer(:menubar, radix_state)
+
     # |> kommander_layer(radix_state)
 
     {:ok, full_graph}
   end
 
   def base_layer(graph, :renseijin, radix_state) do
-    layer_state = Flamelex.GUI.Component.Renseijin.State.cast(radix_state)
+    # layer_state = Flamelex.GUI.Component.Renseijin.State.cast(radix_state)
 
     graph
-    |> render_layer(radix_state, Flamelex.GUI.Layers.LayerZero.cast(radix_state))
+    |> render_layer(
+      radix_state,
+      Flamelex.GUI.Layers.LayerZero.cast(radix_state)
+    )
   end
 
-  def working_layer(graph, radix_state) do
-    graph
-    |> render_layer(radix_state, %LayerCake{
-      id: :working_layer,
-      # layer: {:working, "Working"},
-      layout: %Widgex.Structs.GridLayout{},
-      state: %{}
-    })
-  end
+  # def working_layer(graph, radix_state) do
+  #   graph
+  #   |> render_layer(radix_state, %LayerCake{
+  #     id: :working_layer,
+  #     # layer: {:working, "Working"},
+  #     layout: %Widgex.Structs.GridLayout{},
+  #     state: %{}
+  #   })
+  # end
 
-  def menubar_layer(graph, radix_state) do
-    graph
-    |> render_layer(radix_state, %LayerCake{
-      # layer: {:menu, "Menu"},
-      id: :menubar,
-      layout: %Widgex.Structs.GridLayout{},
-      state: %{}
-    })
+  def second_layer(graph, :menubar, radix_state) do
+    # TODO actually, cast is the real name of this function, we should use that
+    state = Flamelex.GUI.Layers.Layer02.cast(radix_state)
+
+    layer_cake =
+      LayerCake.new(%{
+        "id" => :menubar,
+        "state" => state,
+        "layerable" => Flamelex.GUI.Layers.Layer02
+      })
+
+    graph |> do_render_layer(radix_state, layer_cake)
+
+    #     |> render_layer(radix_state, %LayerCake{
+    #   # layer: {:menu, "Menu"},
+    #   id: :menubar,
+    #   layout: %Widgex.Structs.GridLayout{},
+    #   state: %{}
+    # })
+
+    # |> render_layer(
+    #   radix_state,
+    #   Flamelex.GUI.Layers.Layer02.cast(radix_state)
+    # )
   end
 
   def kommander_layer(graph, radix_state) do
     graph
-    |> render_layer(radix_state, %LayerCake{
-      # layer: {:kommander, "Kommander"},
-      id: :kommander,
-      layout: %Widgex.Structs.GridLayout{},
-      state: %{}
-    })
+    |> render_layer(
+      radix_state,
+      Flamelex.GUI.Layers.Layer03.cast(radix_state)
+    )
   end
 
   def render_layer(graph, radix_state, %LayerCake{id: l_id} = layer) do
+    graph
+    |> Flamelex.GUI.Component.Layer.add_to_graph({radix_state, layer}, id: l_id)
+  end
+
+  def do_render_layer(graph, radix_state, %LayerCake{id: l_id} = layer) do
     graph
     |> Flamelex.GUI.Component.Layer.add_to_graph({radix_state, layer}, id: l_id)
   end

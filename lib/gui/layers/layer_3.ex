@@ -1,4 +1,4 @@
-defmodule Flamelex.GUI.Layers.LayerThree do
+defmodule Flamelex.GUI.Layers.Layer03 do
   alias ScenicWidgets.Core.Structs.Frame
 
   @behaviour Flamelex.GUI.Layer.Behaviour
@@ -17,19 +17,27 @@ defmodule Flamelex.GUI.Layers.LayerThree do
         size: {vp_width + 1, @kommander_height}
       )
 
-    %{
-      layer: 3,
-      frame: kommander_frame
+    #  %{
+    #    layer: 3,
+    #    frame: kommander_frame
+    #  }
+
+    %LayerCake{
+      id: :kommander,
+      frame: kommander_frame,
+      state: %{},
+      layout: %Widgex.Structs.GridLayout{},
+      layerable: __MODULE__
     }
   end
 
   @impl Flamelex.GUI.Layer.Behaviour
   def render(
-        {:radix_state,
-         %{
-           root: %{active_app: :desktop},
-           desktop: %{renseijin: %{visible?: true}}
-         }},
+        _rx,
+        # %{
+        #   root: %{active_app: :desktop},
+        #   desktop: %{renseijin: %{visible?: true}}
+        # }},
         %LayerCake{}
       ) do
     {:ok, Scenic.Graph.build()}

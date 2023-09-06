@@ -1,45 +1,33 @@
+# TODO move this to a Widgex module
 defmodule Flamelex.GUI.Component.Layer do
   use Scenic.Component
   require Logger
 
-  # @layers [
-  #   Flamelex.GUI.Layers.LayerZero,
-  #   Flamelex.GUI.Layers.LayerOne,
-  #   Flamelex.GUI.Layers.LayerTwo,
-  #   Flamelex.GUI.Layers.LayerThree
-  # ]
-
-  # #TODO accept a function, which is the render function - takes in a radix_state, re-computes entire layer, this is how we know if layers needs to be updated!!
-  # def validate(%{graph: %Scenic.Graph{} = _g, render_fn: render_fn} = data) when is_function(render_fn) do
-  #    {:ok, data}
-  # end
-
-  # def validate(%{layer_module: layer, radix_state: radix_state} = data) when layer in @layers do
-  #   {:ok, data}
-  # end
-
   alias Widgex.Structs.LayerCake
   alias Widgex.Structs.Frame
 
-  def validate({radix_state, layer} = data) do
+  def validate({radix_state, %LayerCake{} = layer} = data) do
     {:ok, data}
   end
 
-  # TODO handle the state & calc_state_fn not being mandatory args...
-
   def init(
         %Scenic.Scene{} = scene,
+        # TODO rename layerable to layer_module or somethjing
         {radix_state, %LayerCake{layerable: layer_mod} = layer},
         opts
       ) do
     Logger.debug("#{__MODULE__} initializing...")
 
     # TODO fetch the theme coming in from the opts, and use it to set the primary_color
-    # "make a layer_renderable protocol & implement it for each layer"
-    # Layer.render(state)
-
     # TODO pass opts here aswell
-    {:ok, %Scenic.Graph{} = new_graph} = layer_mod.render(radix_state, layer)
+    # {:ok, %Scenic.Graph{} = new_graph} = layer_mod.render(radix_state, layer)
+
+    {:ok, new_graph} =
+      if layer_mod == Flamelex.GUI.Layers.Layer02 do
+        layer_mod.render(radix_state.gui.viewport, layer.state)
+      else
+        layer_mod.render(radix_state, layer)
+      end
 
     new_scene =
       scene
@@ -52,16 +40,22 @@ defmodule Flamelex.GUI.Component.Layer do
     {:ok, new_scene}
   end
 
-  def init(scene, %{layer_module: layer, radix_state: radix_state} = args, opts) do
+  def init(scene, %{layer_module: layer_mod, radix_state: radix_state} = args, opts) do
     # Logger.debug "Initializing layer #{opts[:id]}..."
 
-    init_state = layer.cast(radix_state)
-    {:ok, init_graph} = layer.render(init_state, radix_state)
+    init_state = layer_mod.cast(radix_state)
+
+    {:ok, init_graph} =
+      if layer_mod == Flamelex.GUI.Layers.Layer02 do
+        layer_mod.render(radix_state.gui.viewport, init_state)
+      else
+        layer_mod.render(init_state, radix_state)
+      end
 
     init_scene =
       scene
       # |> assign(id: opts[:id] || raise "invalid ID")
-      |> assign(layer: layer)
+      # |> assign(layer: layer)
       |> assign(graph: init_graph)
       |> assign(state: init_state)
       |> push_graph(init_graph)
@@ -103,18 +97,36 @@ defmodule Flamelex.GUI.Component.Layer do
 
     if new_layer_state != old_layer_state do
       # case layer.render(new_layer_state, new_radix_state) do
-      case layer_mod.render({:radix_state, new_radix_state}, new_layer_state) do
-        :ignore ->
-          {:noreply, scene}
 
-        {:ok, %Scenic.Graph{} = new_graph} ->
-          new_scene =
-            scene
-            |> assign(state: new_layer_state)
-            |> assign(graph: new_graph)
-            |> push_graph(new_graph)
+      # this is a temp hack to just test out the new pattern on layer 2
+      if layer_mod == Flamelex.GUI.Layers.Layer02 do
+        viewport = new_radix_state.gui.viewport
 
-          {:noreply, new_scene}
+        {:ok, %Scenic.Graph{} = new_graph} = layer_mod.render(viewport, new_layer_state)
+
+        new_scene =
+          scene
+          |> assign(state: new_layer_state)
+          |> assign(graph: new_graph)
+          |> push_graph(new_graph)
+
+        {:noreply, new_scene}
+      else
+        IO.inspect(layer_mod)
+
+        case layer_mod.render({:radix_state, new_radix_state}, new_layer_state) do
+          :ignore ->
+            {:noreply, scene}
+
+          {:ok, %Scenic.Graph{} = new_graph} ->
+            new_scene =
+              scene
+              |> assign(state: new_layer_state)
+              |> assign(graph: new_graph)
+              |> push_graph(new_graph)
+
+            {:noreply, new_scene}
+        end
       end
     else
       {:noreply, scene}
