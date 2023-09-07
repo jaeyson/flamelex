@@ -1,3 +1,4 @@
+# TODO TopMenuMap
 defmodule Flamelex.GUI.TopMenuBar do
   # TODO automatically add a .gitignore into each memex directory so it's impossible to accidentally commit the memex - anything except the my_modz.ex file
   # note that although it can never be committed, we also make a my_secretz.ex file
@@ -32,7 +33,12 @@ defmodule Flamelex.GUI.TopMenuBar do
           {"show", &Flamelex.API.Kommander.show/0},
           {"hide", &Flamelex.API.Kommander.hide/0}
         ]},
+       {:sub_menu, "Widgex",
+        [
+          {"open wdg-wkb", fn -> raise "no" end}
+        ]},
        devtools(),
+       {"open agents", fn -> raise "no" end},
        widget_workbench(),
        re_source_shell(),
        quit()
@@ -171,23 +177,18 @@ defmodule Flamelex.GUI.TopMenuBar do
     modz_file = Memelex.Environment.my_modz_filepath(memex_env)
 
     if not is_nil(modz_file) and File.exists?(modz_file) do
-      IO.puts("ADDING A my modz button")
-
       memex_sub_menu
       |> List.insert_at(2, {"my_modz", fn -> Flamelex.API.Buffer.open(modz_file) end})
     else
-      IO.puts("SKIPPING my modz button")
       memex_sub_menu
     end
   end
 
   def maybe_add_open_my_modz_button(memex_sub_menu, _radix_state) do
-    IO.puts("SKIPPING ADDING OPEN MY MODZ BUTTON...")
     memex_sub_menu
   end
 
   def maybe_add_agents_menu(memex_sub_menu, _memex_env) do
-    IO.puts("SKIPPING ADDING AGENTS...")
     memex_sub_menu
   end
 
@@ -212,7 +213,6 @@ defmodule Flamelex.GUI.TopMenuBar do
   end
 
   def maybe_add_custom_menu(memex_sub_menu, _memex_env) do
-    IO.puts("SKIPPING ADDING CUSTOM MENU...")
     memex_sub_menu
   end
 
