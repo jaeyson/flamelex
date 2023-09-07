@@ -1,85 +1,146 @@
-defmodule Flamelex.GUI.Layers.LayerOne do
-  # NOTE: Something in here has to be about layouts
-  # NOTE: Layer 1 is the primary app layer
+defmodule Flamelex.GUI.Layers.Layer01 do
+  @moduledoc """
+  This layer contains the Editor & other desktop apps.
+  """
 
-  @behaviour Flamelex.GUI.Layer.Behaviour
+  # @behaviour Flamelex.GUI.Layer.Behaviour
 
   alias ScenicWidgets.Core.Utils.FlexiFrame
   alias Widgex.Structs.LayerCake
 
-  @impl Flamelex.GUI.Layer.Behaviour
+  # @impl Flamelex.GUI.Layer.Behaviour
 
-  def cast(%{root: %{layers: %{one: :split}}} = radix_state) do
-    # TODO here, this is gonna get split msg when we call Flamelex.API.Editor.split
+  defstruct active_app: nil,
+            menu_bar: %{
+              height: nil
+            },
+            editor: %{
+              active_buf: nil
+            }
 
-    %{framestack: [_menubar_f | editor_f]} =
-      FlexiFrame.calc(
-        radix_state.gui.viewport,
-        {:standard_rule, linemark: radix_state.desktop.menu_bar.height}
-      )
+  # explorer: %{
+  #   active?: false,
+  #   horizontal_split: {27, :percent}
+  # },
+  # layout: nil
 
-    frames = FlexiFrame.split(hd(editor_f))
-
-    # Then we change the state of the layer to be showing 2 buffers, and we update the render function to render 2 buffers!!
-    %{
-      layer: :one,
-      layout: :split,
-      frames: frames,
+  def cast(radix_state) do
+    %__MODULE__{
       active_app: radix_state.root.active_app,
-      active_buf: radix_state.editor.active_buf
-    }
-  end
-
-  def cast(%{root: %{layers: %{one: %{explorer: %{active?: true}}}}} = radix_state) do
-    main_pane =
-      FlexiFrame.main_pane_frame(radix_state.gui.viewport,
-        menu_bar_height: radix_state.desktop.menu_bar.height
-      )
-
-    # FlexiFrame.split(main_pane, horizontal: {32, :percent})
-    [left_pane, right_pane] = FlexiFrame.split_horizontal(main_pane, 27)
-
-    %{
-      layer: :one,
-      layout: %{
-        explorer: left_pane,
-        editor: right_pane
+      editor: %{
+        active_buf: radix_state.editor.active_buf
       },
-      active_app: radix_state.root.active_app
+      menu_bar: %{
+        height: radix_state.desktop.menu_bar.height
+      }
     }
   end
 
-  def cast(%{root: %{layers: %{one: %{layout: %{editor: :full_screen}}}}} = radix_state) do
-    # calc the editor frame
-    %{framestack: [_menubar_f | editor_f]} =
-      FlexiFrame.calc(
-        radix_state.gui.viewport,
-        {:standard_rule, linemark: radix_state.desktop.menu_bar.height}
-      )
+  # def cast(%{root: %{layers: %{one: :split}}} = radix_state) do
+  #   # TODO here, this is gonna get split msg when we call Flamelex.API.Editor.split
 
-    %{
-      layer: :one,
-      frame: hd(editor_f),
-      active_app: radix_state.root.active_app,
-      active_buf: radix_state.editor.active_buf
-    }
-  end
+  #   %{framestack: [_menubar_f | editor_f]} =
+  #     FlexiFrame.calc(
+  #       radix_state.gui.viewport,
+  #       {:standard_rule, linemark: radix_state.desktop.menu_bar.height}
+  #     )
 
-  @impl Flamelex.GUI.Layer.Behaviour
+  #   frames = FlexiFrame.split(hd(editor_f))
+
+  #   # Then we change the state of the layer to be showing 2 buffers, and we update the render function to render 2 buffers!!
+  #   %{
+  #     layer: :one,
+  #     layout: :split,
+  #     frames: frames,
+  #     active_app: radix_state.root.active_app,
+  #     active_buf: radix_state.editor.active_buf
+  #   }
+  # end
+
+  # def cast(%{root: %{layers: %{one: %{explorer: %{active?: true}}}}} = radix_state) do
+  #   main_pane =
+  #     FlexiFrame.main_pane_frame(radix_state.gui.viewport,
+  #       menu_bar_height: radix_state.desktop.menu_bar.height
+  #     )
+
+  #   # FlexiFrame.split(main_pane, horizontal: {32, :percent})
+  #   [left_pane, right_pane] = FlexiFrame.split_horizontal(main_pane, 27)
+
+  #   %{
+  #     layer: :one,
+  #     layout: %{
+  #       explorer: left_pane,
+  #       editor: right_pane
+  #     },
+  #     active_app: radix_state.root.active_app
+  #   }
+  # end
+
+  # def cast(%{root: %{layers: %{one: %{layout: %{editor: :full_screen}}}}} = radix_state) do
+  #   # calc the editor frame
+  #   %{framestack: [_menubar_f | editor_f]} =
+  #     FlexiFrame.calc(
+  #       radix_state.gui.viewport,
+  #       {:standard_rule, linemark: radix_state.desktop.menu_bar.height}
+  #     )
+
+  #   %{
+  #     layer: :one,
+  #     frame: hd(editor_f),
+  #     active_app: radix_state.root.active_app,
+  #     active_buf: radix_state.editor.active_buf
+  #   }
+  # end
+
   def render(
-        {:radix_state,
-         %{
-           root: %{active_app: :desktop},
-           desktop: %{renseijin: %{visible?: true}}
-         }},
-        %LayerCake{}
+        %Scenic.ViewPort{} = _viewport,
+        %__MODULE__{active_app: :desktop}
       ) do
+    IO.puts("RENDERING LAYER 1...")
     {:ok, Scenic.Graph.build()}
   end
 
-  # def render({:radix_state, _rdx}, %{active_app: :desktop}) do
+  # @impl Flamelex.GUI.Layer.Behaviour
+  # def render(
+  #       {:radix_state,
+  #        %{
+  #          root: %{active_app: :desktop},
+  #          desktop: %{renseijin: %{visible?: true}}
+  #        }},
+  #       %LayerCake{}
+  #     ) do
   #   {:ok, Scenic.Graph.build()}
   # end
+
+  def render(
+        %Scenic.ViewPort{} = viewport,
+        %__MODULE__{active_app: :editor} = state
+      ) do
+    IO.puts("RENDERING LAYER 1 as EDITOR...")
+
+    %{framestack: [_menubar_f | editor_f]} =
+      FlexiFrame.calc(
+        viewport,
+        {:standard_rule, linemark: state.menu_bar.height}
+      )
+
+    # editor_f is always a tail list (for now...)
+    editor_frame = hd(editor_f)
+
+    # you know what fuck it
+    radix_state = Flamelex.Fluxus.RadixStore.get()
+
+    new_graph =
+      Scenic.Graph.build()
+      # TODO this is the next big place we tackle...
+      |> QuillEx.GUI.Components.Editor.add_to_graph(%{
+        frame: editor_frame,
+        radix_state: radix_state,
+        app: Flamelex
+      })
+
+    {:ok, new_graph}
+  end
 
   # def render({:radix_state, radix_state}, _frame, %{
   #       active_app: :editor,

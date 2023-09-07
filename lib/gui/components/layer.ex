@@ -22,12 +22,13 @@ defmodule Flamelex.GUI.Component.Layer do
     # TODO pass opts here aswell
     # {:ok, %Scenic.Graph{} = new_graph} = layer_mod.render(radix_state, layer)
 
-    {:ok, new_graph} =
-      if layer_mod == Flamelex.GUI.Layers.Layer02 do
-        layer_mod.render(radix_state.gui.viewport, layer.state)
-      else
-        layer_mod.render(radix_state, layer)
-      end
+    # TODO apply a scissor here so layers can never render outside themselves,
+    # we will then also need to react to changes in the viewport
+    # if layer_mod == Flamelex.GUI.Layers.Layer02 do
+    {:ok, new_graph} = layer_mod.render(radix_state.gui.viewport, layer.state)
+    # else
+    #   layer_mod.render(radix_state, layer)
+    # end
 
     new_scene =
       scene
@@ -35,35 +36,32 @@ defmodule Flamelex.GUI.Component.Layer do
       |> assign(layer: layer)
       |> push_graph(new_graph)
 
+    Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
+
     request_input(new_scene, [:cursor_pos])
 
     {:ok, new_scene}
   end
 
-  def init(scene, %{layer_module: layer_mod, radix_state: radix_state} = args, opts) do
-    # Logger.debug "Initializing layer #{opts[:id]}..."
+  # def init(scene, %{layer_module: layer_mod, radix_state: radix_state} = args, opts) do
+  #   Logger.debug("Initializing layer #{opts[:id]}...")
 
-    init_state = layer_mod.cast(radix_state)
+  #   init_state = layer_mod.cast(radix_state)
 
-    {:ok, init_graph} =
-      if layer_mod == Flamelex.GUI.Layers.Layer02 do
-        layer_mod.render(radix_state.gui.viewport, init_state)
-      else
-        layer_mod.render(init_state, radix_state)
-      end
+  #   {:ok, init_graph} = layer_mod.render(radix_state.gui.viewport, init_state)
 
-    init_scene =
-      scene
-      # |> assign(id: opts[:id] || raise "invalid ID")
-      # |> assign(layer: layer)
-      |> assign(graph: init_graph)
-      |> assign(state: init_state)
-      |> push_graph(init_graph)
+  #   init_scene =
+  #     scene
+  #     # |> assign(id: opts[:id] || raise "invalid ID")
+  #     # |> assign(layer: layer)
+  #     |> assign(graph: init_graph)
+  #     |> assign(state: init_state)
+  #     |> push_graph(init_graph)
 
-    Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
+  #   Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
 
-    {:ok, init_scene}
-  end
+  #   {:ok, init_scene}
+  # end
 
   # def init(scene, args, opts) do
   #    init_scene = scene
@@ -85,49 +83,34 @@ defmodule Flamelex.GUI.Component.Layer do
         # %{assigns: %{state: old_layer_state, layer: layer}} = scene
         %{
           assigns: %{
-            state: old_layer_state,
             layer: %LayerCake{
+              state: old_layer_state,
               layerable: layer_mod
             }
           }
         } = scene
       ) do
+    IO.puts("RADIX STATE CHANGED")
     # NOTE here is where layer updates happen
     new_layer_state = layer_mod.cast(new_radix_state)
 
+    # require IEx
+    # IEx.pry()
+
     if new_layer_state != old_layer_state do
-      # case layer.render(new_layer_state, new_radix_state) do
+      IO.puts("LAYER CHANGED!!!")
+      viewport = new_radix_state.gui.viewport
 
-      # this is a temp hack to just test out the new pattern on layer 2
-      if layer_mod == Flamelex.GUI.Layers.Layer02 do
-        viewport = new_radix_state.gui.viewport
+      # TODO this should be crashing, I guess we're not registering a change of state??
+      {:ok, %Scenic.Graph{} = new_graph} = layer_mod.render(viewport, new_layer_state)
 
-        {:ok, %Scenic.Graph{} = new_graph} = layer_mod.render(viewport, new_layer_state)
+      new_scene =
+        scene
+        |> assign(state: new_layer_state)
+        |> assign(graph: new_graph)
+        |> push_graph(new_graph)
 
-        new_scene =
-          scene
-          |> assign(state: new_layer_state)
-          |> assign(graph: new_graph)
-          |> push_graph(new_graph)
-
-        {:noreply, new_scene}
-      else
-        IO.inspect(layer_mod)
-
-        case layer_mod.render({:radix_state, new_radix_state}, new_layer_state) do
-          :ignore ->
-            {:noreply, scene}
-
-          {:ok, %Scenic.Graph{} = new_graph} ->
-            new_scene =
-              scene
-              |> assign(state: new_layer_state)
-              |> assign(graph: new_graph)
-              |> push_graph(new_graph)
-
-            {:noreply, new_scene}
-        end
-      end
+      {:noreply, new_scene}
     else
       {:noreply, scene}
     end
@@ -160,7 +143,7 @@ defmodule Flamelex.GUI.Component.Layer do
   # end
 
   def handle_info({:radix_state_change, _new_radix_state}, scene) do
-    # Logger.debug "#{__MODULE__} ignoring a RadixState change..."
+    Logger.debug("#{__MODULE__} ignoring a RadixState change...")
     {:noreply, scene}
   end
 end

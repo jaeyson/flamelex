@@ -30,12 +30,15 @@ defmodule Flamelex.GUI.Layers.Layer02 do
     }
   end
 
-  def render(viewport, %__MODULE__{menu_bar: menu_bar} = state) do
+  def render(
+        %Scenic.ViewPort{} = viewport,
+        %__MODULE__{menu_bar: menu_bar}
+      ) do
     # TODO use WIdgex for this - define the layout
     %{framestack: [menubar_f | _editor_f]} =
       ScenicWidgets.Core.Utils.FlexiFrame.calc(
         viewport,
-        # TODO call this top-line rule, or find
+        # TODO call this top-ine rule, or find
         {:standard_rule, linemark: menu_bar.height}
       )
 

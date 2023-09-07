@@ -1,4 +1,3 @@
-# TODO rename just InputHandler to make it easier to find
 defmodule Flamelex.Fluxus.UserInputHandler do
   @moduledoc """
   This is the highest-level input handler. All user-input gets routed

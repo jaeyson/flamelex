@@ -131,9 +131,8 @@ defmodule Flamelex.GUI.RootScene do
 
     full_graph =
       Scenic.Graph.build()
-      |> base_layer(:renseijin, radix_state)
-
-      # |> working_layer(radix_state)
+      # |> base_layer(:renseijin, radix_state)
+      |> first_layer(:editor_and_apps, radix_state)
       |> second_layer(:menubar, radix_state)
 
     # |> kommander_layer(radix_state)
@@ -161,8 +160,22 @@ defmodule Flamelex.GUI.RootScene do
   #   })
   # end
 
+  def first_layer(graph, :editor_and_apps, radix_state) do
+    state = Flamelex.GUI.Layers.Layer01.cast(radix_state)
+
+    # TODO should be cast...
+    layer_cake =
+      LayerCake.new(%{
+        "id" => :editor_and_apps,
+        "state" => state,
+        "layerable" => Flamelex.GUI.Layers.Layer01
+      })
+
+    graph |> do_render_layer(radix_state, layer_cake)
+  end
+
   def second_layer(graph, :menubar, radix_state) do
-    # TODO actually, cast is the real name of this function, we should use that
+    # TODO actually, cast is the real name of this function, we should use that, shoud blog about that...
     state = Flamelex.GUI.Layers.Layer02.cast(radix_state)
 
     layer_cake =
