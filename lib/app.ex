@@ -4,7 +4,7 @@ defmodule Flamelex.App do
   require Logger
 
   def start(_type, _args) do
-    Logger.info("#{__MODULE__} initializing...")
+    Logger.debug("#{__MODULE__} initializing...")
 
     init_radix_state =
       if boot_memelex?() do

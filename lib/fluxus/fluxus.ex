@@ -13,33 +13,40 @@ defmodule Flamelex.Fluxus do
   https://medium.com/grandcentrix/state-management-with-phoenix-liveview-and-liveex-f53f8f1ec4d7
   """
 
+  @actions :flamelex_actions
+  @user_input :flamelex_user_input
+
   # called to fire off an action
   def action(a) do
     # Logger.debug "Fluxus handling action `#{inspect a}`..."
-    :ok =
-      EventBus.notify(%EventBus.Model.Event{
-        id: UUID.uuid4(),
-        topic: :general,
-        data: {:action, a}
-      })
+    # :ok =
+    EventBus.notify(%EventBus.Model.Event{
+      id: UUID.uuid4(),
+      topic: @actions,
+      data: {:action, a}
+    })
+
+    # event(@actions, {:action, a})
   end
 
   def event(topic, e) do
     Logger.debug("pushing event for topic: #{inspect(topic)}, event: #{inspect(e)}")
 
-    :ok =
-      EventBus.notify(%EventBus.Model.Event{
-        id: UUID.uuid4(),
-        topic: topic,
-        data: {:event, e}
-      })
+    EventBus.notify(%EventBus.Model.Event{
+      id: UUID.uuid4(),
+      topic: topic,
+      data: {:event, e}
+    })
   end
 
   # declaring means we get the results back - this function also
   # filters those results to just the ones from ActionListener
+
+  # having to include this is starting to feel like a bad thing...
   def declare(a) do
     with {:ok, results} <- do_declare(a) do
-      # NOTE - we replace this atom, so we have confidence when it matches the final result that this function worked
+      # NOTE - we replace this atom (the initial accumulator) in the successful case,
+      # so we have confidence when it matches (an atom can't match onto a list) the final result that this function worked
       [final_radix_state] =
         Enum.reduce(results, :accumulator, fn
           # add the results from ActionListener to the accumulator, discard ones from UserInputListener
@@ -54,11 +61,11 @@ defmodule Flamelex.Fluxus do
     end
   end
 
-  def do_declare(a) do
+  defp do_declare(a) do
     {:ok,
      EventBus.declare(%EventBus.Model.Event{
        id: UUID.uuid4(),
-       topic: :general,
+       topic: @actions,
        data: {:action, a}
      })}
   end
@@ -69,6 +76,7 @@ defmodule Flamelex.Fluxus do
   # then trigger an action... however if Scenic passes input through to
   # Fluxus, then it opens up the possibility of having things like Vim
   # keymaps that exist at a higher level than just a Scenic component)
+
   @doc """
   This function is called to channel all user input, e.g. keypresses,
   through the FluxusRadix, where they can be converted into actions.
@@ -83,10 +91,6 @@ defmodule Flamelex.Fluxus do
   The effect of most user input will be either to ignore it, or to dispatch
   an action - this is achieved by sending a new msg to the FluxusRadix, which
   will in turn be handled by spinning up a new Task process to handle it.
-
-
-
-
 
 
     ##TODO it's simpler to route these different right now.
@@ -106,45 +110,39 @@ defmodule Flamelex.Fluxus do
 
     # Maybe how this should work is - instead of messaging a GenServer
     # which holds the root state, we just start a process, which fetches
-    # a copy of the root state inside itself
-
-
-
-
-  # @impl Scenic.Scene
-  # def handle_event( {:click, :btn}, _, %{assigns: %{count: count}} = scene ) do
-  #   count = count + 1
-
-  #   # modify the graph to show the current click count
-  #   graph =
-  #     graph()
-  #     |> Scenic.Graph.modify(:count, &text(&1, "Count: " <> inspect(count)))
-
-  #   # update the count and push the modified graph
-  #   scene =
-  #     scene
-  #     |> assign( count: count )
-  #     |> push_graph( graph )
-
-  #   # return the updated scene
-  #   { :noreply, scene }
-  # end
-
-  # # handle all other (not-ignored) input...
-  # def handle_event(input, _context, scene) do
-  #   IO.puts "SOME NON IGNORED INPUT
-  #   # Flamelex.Fluxus.handle_user_input(input)
-  #   {:noreply, scene}
-  # end
-
-
-
+    # a copy of the root state inside itself?
   """
   def input(ii) do
     EventBus.notify(%EventBus.Model.Event{
       id: UUID.uuid4(),
-      topic: :general,
+      topic: @user_input,
       data: {:input, ii}
     })
   end
 end
+
+# @impl Scenic.Scene
+# def handle_event( {:click, :btn}, _, %{assigns: %{count: count}} = scene ) do
+#   count = count + 1
+
+#   # modify the graph to show the current click count
+#   graph =
+#     graph()
+#     |> Scenic.Graph.modify(:count, &text(&1, "Count: " <> inspect(count)))
+
+#   # update the count and push the modified graph
+#   scene =
+#     scene
+#     |> assign( count: count )
+#     |> push_graph( graph )
+
+#   # return the updated scene
+#   { :noreply, scene }
+# end
+
+# # handle all other (not-ignored) input...
+# def handle_event(input, _context, scene) do
+#   IO.puts "SOME NON IGNORED INPUT
+#   # Flamelex.Fluxus.handle_user_input(input)
+#   {:noreply, scene}
+# end

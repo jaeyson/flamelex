@@ -1,12 +1,8 @@
 # defmodule AutoAlias do
 
-
-
 #   defmacro alias_modules({:__aliases__, _call_stack, namespace}) do
 #     # Convert the given namespace to a string
 #     # prefix = Atom.to_string(namespace)
-
-#     IO.inspect(namespace, label: "HIHIHIHIHIHIHI")
 
 #     # Find all modules with the given prefix
 #     # modules = find_modules_with_prefix(prefix)

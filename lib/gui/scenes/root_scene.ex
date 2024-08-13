@@ -116,7 +116,7 @@ defmodule Flamelex.GUI.RootScene do
   end
 
   def handle_input(input, context, scene) do
-    # Logger.debug "#{__MODULE__} recv'd some (non-ignored) input: #{inspect input}"
+    # Logger.debug("#{__MODULE__} recv'd some (non-ignored) input: #{inspect(input)}")
     Flamelex.Fluxus.input(input)
     {:noreply, scene}
   end
