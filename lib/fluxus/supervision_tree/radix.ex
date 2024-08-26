@@ -7,17 +7,20 @@ defmodule Flamelex.Fluxus.Radix do
   end
 
   def init(args) do
-    # use continue so that we dont block bootup of the supervision tree,
+    # Use :continue to initialize state after normal GenServer startup
+    # this prevents blocking the main app supervision tree's startup
     # since building the radix tree can take a while / might fail
     {:ok, args, {:continue, :sprout_state}}
   end
 
-  # here we build the initial state, after bootup so we don't block the supervision tree bootup process
+  # initialize state, off the main process tree bootup sequence
   def handle_continue(:sprout_state, args) do
     Logger.debug("#{__MODULE__} starting up...")
 
-    case do_task(&Flamelex.Fluxus.NeoRadixState.new(args)) do
+    # compute state changes in a task for safety
+    case do_task(fn -> Flamelex.Fluxus.NeoRadixState.new(args) end) do
       {:ok, state} ->
+        Logger.debug("#{__MODULE__} started successfully.")
         {:noreply, state}
 
       {:error, reason} ->
@@ -26,22 +29,24 @@ defmodule Flamelex.Fluxus.Radix do
     end
   end
 
-  defp do_task(task_fn, state) when is_function(task_fn) do
+  # this function offloads work to an asynchronous task
+  # and manages the result
+  @task_timeout 5000
+  defp do_task(task_fn) when is_function(task_fn, 0) do
     task = Task.async(task_fn)
 
-    # Monitor the task and wait for it to complete, fail, or timeout
-    result = Task.yield(task, @timeout) || Task.shutdown(task, :brutal_kill)
+    result = Task.yield(task, @task_timeout) || Task.shutdown(task, :brutal_kill)
 
     case result do
       {:ok, task_result} ->
-        # Handle successful task completion
+        # Task completed successfully
         {:ok, task_result}
 
       nil ->
         # Task timed out
         {:error, :timeout}
 
-      {:exit, reason} ->
+      {:exit, _reason} ->
         # Task crashed or exited with an error
         {:error, :task_failed}
     end
