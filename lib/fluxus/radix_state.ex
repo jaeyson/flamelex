@@ -43,6 +43,8 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
   to FluxusRadix (kind of a loop-back) to be then handled.
   """
 
+  # TODO this should implement the `ScenicWidgets.Fluxus.RadixState` behaviour
+
   use Flamelex.Lib.ProjectAliases
 
   @max_keystroke_history_limit 50
@@ -77,7 +79,7 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
     %{
       root: %{
         active_app: :desktop,
-        graph: nil,
+        # graph: nil,
         layers: %{
           one: %{
             layout: %{
@@ -178,6 +180,8 @@ defmodule Flamelex.Fluxus.Structs.RadixState do
   end
 
   def calc_menu_map(rdx) do
+    # TODO maybe instead of calculating & storing this in the radix state, it should be in the state of the MenuBar component,
+    # or even in that components state... but then again this is the central state repo, it should probably get updated here too..
     menu_map = Flamelex.GUI.TopMenuBar.calc_menu_map(rdx)
     put_in(rdx, [:desktop, :menu_bar, :menu_map], menu_map)
   end

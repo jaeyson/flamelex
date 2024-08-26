@@ -12,11 +12,12 @@ config :event_bus,
   topics: [
     # TODO rename this topic `flamelex-general`
     # This topic is used by Fluxus, it's for updating internal Fluxus state by firing actions #TODO rename this to `actions`?
-    :general,
+    # :general,
+    :flx_actions,
     # This topic is for transmitting user input throughout the application, to the appropriate listeners, which will likely in turn fire off Fluxus actions as a result of that input
-    :user_input,
+    :flx_user_input,
     # The idea behind this topic is to handle external interrupts, e.g. perhaps we will add email as a feature to Flamelex, well getting an email might go on the interrupts channel
-    :interrupts
+    :flx_interrupts
   ]
 
 config :elixir,
@@ -33,5 +34,12 @@ config :logger,
   truncate: :infinity,
   # remove superfluous newline characters from logs, see: https://elixirforum.com/t/why-does-logger-output-in-iex-have-to-have-an-empty-line-after-every-line-logged/21822/4
   console: [format: "$time $metadata[$level] $message\n"]
+
+# config :fluxus,
+#   # actions_topic: :flx_actions,
+#   # user_input_topic: :flx_user_input,
+#   # interrupts_topic: :flx_interrupts,
+#   radix_state: Flamelex.Fluxus.RadixState,
+#   radix_reducer: Flamelex.Fluxus.RadixReducer
 
 import_config "#{config_env()}.exs"
