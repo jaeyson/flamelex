@@ -17,6 +17,10 @@ defmodule Flamelex.Keymaps.Desktop do
     :ignore
   end
 
+  def process(_radix_state, @lowercase_k) do
+    :ok = Flamelex.API.Kommander.show()
+  end
+
   def process(_radix_state, key) when key in @ignorable_keys do
     :ignore
   end
@@ -54,8 +58,12 @@ defmodule Flamelex.Keymaps.Desktop do
     :ignore
   end
 
+  def process(_radix_state, @left_shift) do
+    :ignore
+  end
+
   def process(radix_state, key) do
-    dbg()
+    raise "Unhandled key: #{inspect(key)}"
   end
 
   # open the Memex with keybinding <leader>h

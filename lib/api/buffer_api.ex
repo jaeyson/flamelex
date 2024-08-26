@@ -19,6 +19,10 @@ defmodule Flamelex.API.Buffer do
     new("")
   end
 
+  def new_func do
+    IO.puts("PROOF THAT THIS WORK   demoooo    SSSSSS27272")
+  end
+
   def new(data) when is_bitstring(data) do
     {:ok, radix_state} =
       Flamelex.Fluxus.declare(
@@ -136,6 +140,10 @@ defmodule Flamelex.API.Buffer do
   """
   def scroll({_x_scroll, _y_scroll} = scroll_delta) do
     Flamelex.Fluxus.action({QuillExBufrReducer, {:scroll, :active_buf, {:delta, scroll_delta}}})
+  end
+
+  def split do
+    Flamelex.API.Editor.split()
   end
 
   @doc """

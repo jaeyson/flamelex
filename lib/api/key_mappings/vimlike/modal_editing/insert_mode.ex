@@ -17,6 +17,12 @@ defmodule Flamelex.KeyMappings.Vim.InsertMode do
     Flamelex.API.Buffer.move_cursor(@left_one_column)
   end
 
+  # Note, this is kind of one of those points in the project where I should
+  # really keep going, but, I have kind of solved it, so, now I need to
+  # figure out the next thing that's actually unsolved, because I
+  # need to understand the program in it's entireity before I can go for the
+  # final v1.0 release.
+
   # treat key repeats as a press
   def process(radix_state, {:key, {key, @key_held, mods}}) do
     process(radix_state, {:key, {key, @key_pressed, mods}})

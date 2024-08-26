@@ -13,8 +13,8 @@ defmodule Flamelex.Fluxus do
   https://medium.com/grandcentrix/state-management-with-phoenix-liveview-and-liveex-f53f8f1ec4d7
   """
 
-  @actions :flamelex_actions
-  @user_input :flamelex_user_input
+  @actions :flx_actions
+  @user_input :flx_user_input
 
   # called to fire off an action
   def action(a) do
