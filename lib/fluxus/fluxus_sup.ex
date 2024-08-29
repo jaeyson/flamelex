@@ -1,7 +1,7 @@
 defmodule Flamelex.Fluxus.Supervisor do
   @moduledoc """
-  Flamelex.Fluxus.Soup is the top-level supervisor for the Fluxus
-  architecture pattern in the Flamelex application.
+  Flamelex.Fluxus.Supervisor is the top-level supervisor for the
+  Fluxus architecture pattern in the Flamelex application.
   """
 
   use Supervisor
@@ -43,11 +43,11 @@ defmodule Flamelex.Fluxus.Supervisor do
     {Registry, keys: :duplicate, name: Flamelex.Fluxus.PubSub}
   end
 
-  defp fluxus_radix(args) do
-    {Flamelex.Fluxus.Radix, args}
-    #  %{
-    #  state_module: Flamelex.Fluxus.Structs.RadixState,
-    #  args: args
-    #  }}
-  end
+  # defp fluxus_radix(args) do
+  #   {Flamelex.Fluxus.Radix, args}
+  #   #  %{
+  #   #  state_module: Flamelex.Fluxus.Structs.RadixState,
+  #   #  args: args
+  #   #  }}
+  # end
 end

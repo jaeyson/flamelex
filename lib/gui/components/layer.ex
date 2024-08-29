@@ -77,7 +77,8 @@ defmodule Flamelex.GUI.Component.Layer do
   #    {:ok, init_scene}
   # end
 
-  # NOTE that this is better because it uses the "layer state" to figure out if it needs to change. Layer state doesn't need to change *all* the time e.g. if we input a single character... that can be handled by the Editor component
+  # NOTE that this is better because it uses the "layer state" to figure out if it needs to change.
+  # Layer state doesn't need to change *all* the time e.g. if we input a single character... that can be handled by the Editor component
   def handle_info(
         {:radix_state_change, new_radix_state},
         # %{assigns: %{state: old_layer_state, layer: layer}} = scene
@@ -90,6 +91,9 @@ defmodule Flamelex.GUI.Component.Layer do
           }
         } = scene
       ) do
+    # here we're re-computing the layer state each time the radix state changes,
+    # which... seems crazy??? It works though!
+
     IO.puts("RADIX STATE CHANGED")
     # NOTE here is where layer updates happen
     new_layer_state = layer_mod.cast(new_radix_state)
@@ -101,7 +105,7 @@ defmodule Flamelex.GUI.Component.Layer do
       IO.puts("LAYER CHANGED!!!")
       viewport = new_radix_state.gui.viewport
 
-      # TODO this should be crashing, I guess we're not registering a change of state??
+      # TODO this should be crashing, I guess we're not registering a change of state?? not pushing the graph or something maybe??
       {:ok, %Scenic.Graph{} = new_graph} = layer_mod.render(viewport, new_layer_state)
 
       new_scene =

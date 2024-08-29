@@ -1,21 +1,39 @@
 # TODO TopMenuMap
-defmodule Flamelex.GUI.TopMenuBar do
+defmodule Flamelex.GUI.MainMenu do
   # TODO automatically add a .gitignore into each memex directory so it's impossible to accidentally commit the memex - anything except the my_modz.ex file
   # note that although it can never be committed, we also make a my_secretz.ex file
 
   def calc_menu_map(radix_state) do
     # TODO add "help", "getting started", "about Flamelex" etc
-    base_menu_map = [
-      flamelex_menu(),
-      buffer_menu(radix_state),
-      api_menu()
-    ]
+    base_menu_map =
+      [
+        flamelex_menu(),
+        buffer_menu(radix_state),
+        memex_menu(radix_state),
+        api_menu()
+      ]
+      |> Enum.reject(&is_nil/1)
 
-    if radix_state.memex.active? do
-      base_menu_map |> List.insert_at(2, memex_menu(radix_state))
-    else
-      base_menu_map
-    end
+    # if radix_state.memex.active? do
+    #   # menu_map =
+
+    #   case calc_memex_menu(radix_state) do
+    #     [] ->
+    #       base_menu_map
+
+    #     memex_menu = {:sub_menu, "Memex", _full_menu} ->
+    #       base_menu_map |> List.insert_at(2, memex_menu)
+
+    #       # menu
+    #       # {:error, reason} ->
+    #       #   Logger.
+    #       #   base_menu_map
+    #   end
+
+    #   # base_menu_map |> List.insert_at(2, menu_map)
+    # else
+    #   base_menu_map
+    # end
   end
 
   def flamelex_menu do
@@ -38,7 +56,7 @@ defmodule Flamelex.GUI.TopMenuBar do
           {"open wdg-wkb", fn -> raise "no" end}
         ]},
        devtools(),
-       {"open agents", fn -> raise "no" end},
+       open_agents(),
        widget_workbench(),
        re_source_shell(),
        quit()
@@ -50,6 +68,8 @@ defmodule Flamelex.GUI.TopMenuBar do
   end
 
   def do_buffer_menu(%{editor: %{buffers: []}} = _radix_state) do
+    # what I currently call :sub_menu should be renamed :node,
+    # and these ones should have a tag like :leaf or :button
     [
       {"new", &Flamelex.API.Buffer.new/0},
       {"save", &Flamelex.API.Buffer.save/0},
@@ -112,23 +132,26 @@ defmodule Flamelex.GUI.TopMenuBar do
   #   {:sub_menu, "Memex", new_memex_menu}
   # end
 
-  def memex_menu(
-        %{
-          # if we have an active memex, but no customizations to load
-          memex: %{active?: true, env: %{name: env_name}}
-        } = radix_state
-      )
-      when is_binary(env_name) do
-    do_memex_menu(radix_state)
-  end
+  def memex_menu(%{memex: %{active?: false}}), do: nil
+  def memex_menu(%{memex: %{env: nil}}), do: nil
 
-  def memex_menu(_radix_state) do
-    # if the memex is active, but there's no environment loaded
-    {:sub_menu, "Memex",
-     [
-       {"new", fn -> IO.puts("CLicked new memex! THis doesn't do anything yet :)") end}
-     ] ++ load_jedilukes()}
-  end
+  # def memex_menu(
+  #       %{
+  #         # if we have an active memex, but no customizations to load
+  #         memex: %{active?: true, env: %{name: env_name}}
+  #       } = radix_state
+  #     )
+  #     when is_binary(env_name) do
+  #   do_memex_menu(radix_state)
+  # end
+
+  # def memex_menu(_radix_state) do
+  #   # if the memex is active, but there's no environment loaded
+  #   {:sub_menu, "Memex",
+  #    [
+  #      {"new", fn -> IO.puts("CLicked new memex! THis doesn't do anything yet :)") end}
+  #    ] ++ load_jedilukes()}
+  # end
 
   # def check_module_function(module, function, arity) do
   #   if Code.ensure_loaded?(module) && function_exported?(module, function, arity) do
@@ -138,12 +161,20 @@ defmodule Flamelex.GUI.TopMenuBar do
   #   end
   # end
 
-  def do_memex_menu(radix_state) do
+  def memex_menu(
+        %{
+          # if we have an active memex, but no customizations to load
+          memex: %{active?: true, env: %{name: env_name}}
+        } = radix_state
+      )
+      when is_binary(env_name) do
     # TODO add random memex button
 
     base_menu = [
       {"open", &Flamelex.API.Diary.open/0},
       {"close", &Flamelex.API.Diary.close/0},
+      {"my_modz", fn -> raise "man we should have this!" end},
+      {"my TODOs", &Memelex.My.TODOs.show/0},
       # {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end},
       {"journal", fn -> Memelex.My.Journal.today() end}
     ]
@@ -156,6 +187,11 @@ defmodule Flamelex.GUI.TopMenuBar do
 
     {:sub_menu, "Memex", full_menu}
   end
+
+  # def memex_menu(rdx_state) do
+  #   IO.puts("UNKNOWN RDX STATE #{inspect(rdx_state.memex)}")
+  #   nil
+  # end
 
   def maybe_add_agents_menu(memex_sub_menu, %{memex: %{env: %{env_modz_module: mod}}} = memex_env)
       when is_atom(mod) do
@@ -233,59 +269,70 @@ defmodule Flamelex.GUI.TopMenuBar do
 
   # end
 
-  def load_jedilukes do
-    [
-      {
-        "load JediLuke",
-        fn ->
-          Memelex.deactivate()
+  # def load_jedilukes do
+  #   [
+  #     {
+  #       "load JediLuke",
+  #       fn ->
+  #         Memelex.deactivate()
 
-          Memelex.load_env(%{
-            name: "JediLuke",
-            memex_directory: "/home/luke/memex/JediLuke"
-          })
-        end
-      },
-      {
-        "load old JediLuke",
-        fn ->
-          Memelex.deactivate()
+  #         Memelex.load_env(%{
+  #           name: "JediLuke",
+  #           memex_directory: "/home/luke/memex/JediLuke"
+  #         })
+  #       end
+  #     },
+  #     {
+  #       "load old JediLuke",
+  #       fn ->
+  #         Memelex.deactivate()
 
-          Memelex.load_env(%{
-            name: "old JediLuke",
-            memex_directory: "/home/luke/backups/dubber_two/memex/JediLuke"
-          })
-        end
-      },
-      {
-        "load really old JediLuke",
-        # put us in the test environment / dream world
-        fn ->
-          Memelex.deactivate()
+  #         Memelex.load_env(%{
+  #           name: "old JediLuke",
+  #           memex_directory: "/home/luke/backups/dubber_two/memex/JediLuke"
+  #         })
+  #       end
+  #     },
+  #     {
+  #       "load really old JediLuke",
+  #       # put us in the test environment / dream world
+  #       fn ->
+  #         Memelex.deactivate()
 
-          Memelex.load_env(%{
-            name: "old JediLuke",
-            memex_directory: "/home/luke/backups/dubber_one/memex/JediLuke"
-          })
-        end
-      }
-    ]
-  end
+  #         Memelex.load_env(%{
+  #           name: "old JediLuke",
+  #           memex_directory: "/home/luke/backups/dubber_one/memex/JediLuke"
+  #         })
+  #       end
+  #     }
+  #   ]
+  # end
 
   def devtools do
     {:sub_menu, "DevTools",
      [
-       {"get radix state", fn -> Flamelex.API.DevTools.get_radix_state() |> IO.inspect() end},
-       {"temet nosce", &Flamelex.temet_nosce/0},
+       {"get radix state", fn -> Flamelex.API.DevTools.get_radix_state() end},
        {
          "load Telaranrhiod",
          # put us in the test environment / dream world
          fn ->
            Memelex.deactivate()
 
-           Memelex.load_env(%{
+           Memelex.load_env(%Memelex.Environment{
              name: "Telaranrhiod",
              memex_directory: "/home/luke/memex/Telaranrhiod"
+           })
+         end
+       },
+       {"temet nosce", &Flamelex.temet_nosce/0},
+       {
+         "load JediLuke",
+         fn ->
+           Memelex.deactivate()
+
+           Memelex.load_env(%Memelex.Environment{
+             name: "JediLuke",
+             memex_directory: "/home/luke/memex/JediLuke"
            })
          end
        }
@@ -354,6 +401,13 @@ defmodule Flamelex.GUI.TopMenuBar do
           |> Flamelex.Fluxus.RadixStore.update()
         end}
      ]}
+  end
+
+  def open_agents do
+    {"open agents",
+     fn ->
+       Flamelex.Fluxus.action({Flamelex.Fluxus.RadixReducer, :show_agents})
+     end}
   end
 
   def widget_workbench do

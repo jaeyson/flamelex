@@ -12,19 +12,20 @@ defmodule Flamelex.Fluxus.TopLevelSupervisor do
 
     children = [
       # https://hexdocs.pm/elixir/1.12/Registry.html#module-using-as-a-dispatcher
-      {Registry, keys: :duplicate, name: Fluxus.PubSub},
-      {Flamelex.Fluxus.RadixStore, init_rdx},
-      Flamelex.Fluxus.ActionListener,
-      Flamelex.Fluxus.UserInputListener,
-      # TODO this will probably blow up but whatever
-      {Flamelex.Fluxus.MemexStore, init_rdx},
-      {Flamelex.Fluxus.MemelexListener, init_rdx.memex}
+      # {Registry, keys: :duplicate, name: Fluxus.PubSub},
+      # Flamelex.Fluxus
+      # {Flamelex.Fluxus.RadixStore, init_rdx},
+      # Flamelex.Fluxus.ActionListener,
+      # Flamelex.Fluxus.UserInputListener,
+      # # TODO this will probably blow up but whatever
+      # # {Flamelex.Fluxus.MemexStore, init_rdx},
+      # Flamelex.Fluxus.MemelexListener
 
-      # Memelex Fluxus processes
-      # {Registry, keys: :duplicate, name: Memelex.PubSub},
-      # Flamelex.Fluxus.MemexStore,
-      # Memelex.Fluxus.ActionListener,
-      # Memelex.Fluxus.UserInputListener
+      # # Memelex Fluxus processes
+      # # {Registry, keys: :duplicate, name: Memelex.PubSub},
+      # # Flamelex.Fluxus.MemexStore,
+      # # Memelex.Fluxus.ActionListener,
+      # # Memelex.Fluxus.UserInputListener
     ]
 
     # TODO make this :rest_for_one?
