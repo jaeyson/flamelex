@@ -43,20 +43,36 @@ defmodule Flamelex.Fluxus.RadixReducer do
   """
 
   # If we try to open a TidBit and we're already in editor mode, don't switch to Memex mode
-  def process(%{root: %{active_app: active_app}} = radix_state, {
-        Memelex.Fluxus.Reducers.TidbitReducer,
-        {:open_tidbit,
-         %{type: ["external", "textfile"], data: %{"filepath" => filepath}} = tidbit}
-      })
-      when active_app in [:desktop, :editor] do
-    QuillEx.Reducers.BufferReducer.process(
-      radix_state,
-      {:open_buffer, %{file: filepath, mode: {:vim, :normal}}}
-    )
-  end
+  # def process(%{root: %{active_app: active_app}} = radix_state, {
+  #       Memelex.Fluxus.Reducers.TidbitReducer,
+  #       {:open_tidbit,
+  #        %{type: ["external", "textfile"], data: %{"filepath" => filepath}} = tidbit}
+  #     })
+  #     when active_app in [:desktop, :editor] do
+  #   QuillEx.Reducers.BufferReducer.process(
+  #     radix_state,
+  #     {:open_buffer, %{file: filepath, mode: {:vim, :normal}}}
+  #   )
+  # end
 
-  def process(radix_state, {:widget_workbench, :open}) do
-    {:ok, radix_state |> open_widget_workbench()}
+  # def process(radix_state, {:widget_workbench, :open}) do
+  #   {:ok, radix_state |> open_widget_workbench()}
+  # end
+
+  # def process(radix_state, :show_agents) do
+  #   new_radix_state =
+  #     radix_state
+  #     |> put_in([:root, :active_app], :high_council)
+
+  #   {:ok, new_radix_state}
+  # end
+
+  def process(radix_state, :open_memex) do
+    new_radix_state =
+      radix_state
+      |> put_in([:root, :active_app], :memex)
+
+    {:ok, new_radix_state}
   end
 
   def process(radix_state, {reducer, action}) when is_atom(reducer) do
@@ -64,7 +80,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
 
     # That could be cool, if we make all actions an actual function in the processor??
 
-    # If that fails/doesn't work, we want to look up custom keymaps in the my_modz.ex
+    # If that fails/doesn't work, we want to look up custom keymaps in the my_modz.ex (???)
 
     try do
       reducer.process(radix_state, action)
@@ -75,14 +91,6 @@ defmodule Flamelex.Fluxus.RadixReducer do
         {:error,
          "#{__MODULE__} -- Reducer `#{inspect(reducer)}` could not match action: #{inspect(action)}"}
     end
-  end
-
-  def process(radix_state, :open_memex) do
-    new_radix_state =
-      radix_state
-      |> put_in([:root, :active_app], :memex)
-
-    {:ok, new_radix_state}
   end
 
   # TODO here, we should have a module of transformations for the radix state!

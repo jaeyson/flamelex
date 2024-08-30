@@ -1,8 +1,6 @@
 defmodule Flamelex.Fluxus do
-  # defdelegate start_link(args), to: Flamelex.Fluxus.TopLevelSupervisor
-  # defdelegate start_link(args), to: Flamelex.Fluxus.Soup
-
   defdelegate user_input(ii), to: Flamelex.Fluxus.Utils
+  defdelegate action(a), to: Flamelex.Fluxus.Utils
 end
 
 # defmodule Flamelex.Fluxus do
@@ -25,29 +23,6 @@ end
 
 #   def radix(z) do
 #     GenServer.call(Flamelex.Fluxus.RadixStore, {:redux, z})
-#   end
-
-#   # called to fire off an action
-#   def action(a) do
-#     # Logger.debug "Fluxus handling action `#{inspect a}`..."
-#     # :ok =
-#     EventBus.notify(%EventBus.Model.Event{
-#       id: UUID.uuid4(),
-#       topic: @actions,
-#       data: {:action, a}
-#     })
-
-#     # event(@actions, {:action, a})
-#   end
-
-#   def event(topic, e) do
-#     Logger.debug("pushing event for topic: #{inspect(topic)}, event: #{inspect(e)}")
-
-#     EventBus.notify(%EventBus.Model.Event{
-#       id: UUID.uuid4(),
-#       topic: topic,
-#       data: {:event, e}
-#     })
 #   end
 
 #   # declaring means we get the results back - this function also

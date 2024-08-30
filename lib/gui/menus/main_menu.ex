@@ -43,8 +43,8 @@ defmodule Flamelex.GUI.Menus.MainMenu do
         [
           {"toggle line nums", fn -> raise "no" end},
           {"toggle file tray", fn -> raise "no" end},
-          {"toggle tab bar", fn -> raise "no" end},
-          font_sub_menu()
+          {"toggle tab bar", fn -> raise "no" end}
+          # font_sub_menu()
         ]},
        {:sub_menu, "Kommander",
         [

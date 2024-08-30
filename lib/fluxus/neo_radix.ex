@@ -95,7 +95,7 @@ defmodule Flamelex.Fluxus.Radix do
 
       handler =
         case topic do
-          :flx_actions -> Flamelex.Fluxus.ActionHandler
+          :flx_actions -> Flamelex.Fluxus.RadixReducer
           :flx_user_input -> Flamelex.Fluxus.UserInputHandler
           :memelex -> Flamelex.Fluxus.MemelexEventHandler
         end

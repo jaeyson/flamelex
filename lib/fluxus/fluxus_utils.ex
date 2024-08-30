@@ -41,4 +41,13 @@ defmodule Flamelex.Fluxus.Utils do
       data: ii
     })
   end
+
+  @actions :flx_actions
+  def action(a) do
+    EventBus.notify(%EventBus.Model.Event{
+      id: UUID.uuid4(),
+      topic: @actions,
+      data: a
+    })
+  end
 end
