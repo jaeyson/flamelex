@@ -1,6 +1,4 @@
 defmodule Flamelex.Fluxus.NeoRadixState do
-  # def new(%{memex: %{active: true}}) do
-
   def new(_args) do
     {:ok, ibm_plex_mono_font_metrics} =
       TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
@@ -14,16 +12,15 @@ defmodule Flamelex.Fluxus.NeoRadixState do
       editor: %{
         buffers: []
       },
+      memex: %{
+        active?: false,
+        env: nil
+      },
       fonts: %{
         ibm_plex_mono: %{
           metrics: ibm_plex_mono_font_metrics
         }
       }
-      # memex:
-      #   %{
-      #     # active: true
-      #     # env: Memelex.environment_details()
-      #   },
       # layers: []
     }
   end

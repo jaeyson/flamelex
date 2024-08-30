@@ -1,5 +1,5 @@
 # TODO TopMenuMap
-defmodule Flamelex.GUI.MainMenu do
+defmodule Flamelex.GUI.Menus.MainMenu do
   # TODO automatically add a .gitignore into each memex directory so it's impossible to accidentally commit the memex - anything except the my_modz.ex file
   # note that although it can never be committed, we also make a my_secretz.ex file
 

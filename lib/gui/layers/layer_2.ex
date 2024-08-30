@@ -22,11 +22,24 @@ defmodule Flamelex.GUI.Layers.Layer02 do
 
   # we use this to store the central state of the layer, so that
   # we can check if we need to re-render or not
+
+  # NOTE - I don't think that the "layer" should be computing the menu map!
+  # let that be done by the MenuBar component, and it can adjust itself!
+
   def cast(radix_state) do
+    menu_map = Flamelex.GUI.TopMenuBar.calc_menu_map(radix_state)
     menu_bar = MenuBar.cast(radix_state)
 
+    # %__MODULE__{
+    #   menu_bar: menu_bar
+    # }
+
     %__MODULE__{
-      menu_bar: menu_bar
+      menu_bar: %MenuBar{
+        height: menu_bar.height,
+        menu_map: menu_map,
+        font: menu_bar.font
+      }
     }
   end
 
@@ -34,6 +47,7 @@ defmodule Flamelex.GUI.Layers.Layer02 do
         %Scenic.ViewPort{} = viewport,
         %__MODULE__{menu_bar: menu_bar}
       ) do
+    IO.puts("RENDERING MENUBARRERR")
     # TODO use WIdgex for this - define the layout
     %{framestack: [menubar_f | _editor_f]} =
       ScenicWidgets.Core.Utils.FlexiFrame.calc(
@@ -42,6 +56,8 @@ defmodule Flamelex.GUI.Layers.Layer02 do
         {:standard_rule, linemark: menu_bar.height}
       )
 
+    # TODO here is the root of the problem... we need a wrapper component which can react/subscribe
+    # to radix state changes, and then, it can re-render the MenuBar if necessary
     graph =
       Scenic.Graph.build()
       |> ScenicWidgets.MenuBar.add_to_graph(

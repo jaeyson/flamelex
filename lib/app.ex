@@ -17,7 +17,7 @@ defmodule Flamelex.App do
         #   }
         # })
 
-        %{memex: %{active: true}}
+        %{memex: %{active?: true}}
       else
         IO.puts("starting Flamelex (no Memex)...")
 
@@ -27,7 +27,7 @@ defmodule Flamelex.App do
         #   }
         # })
 
-        %{memex: %{active: false}}
+        %{memex: %{active?: false}}
       end
 
     children = start_flamelex(init_args)

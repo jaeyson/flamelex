@@ -38,29 +38,7 @@ defmodule Flamelex.Fluxus.Utils do
     EventBus.notify(%EventBus.Model.Event{
       id: UUID.uuid4(),
       topic: @user_input,
-      data: {:user_input, ii}
+      data: ii
     })
-  end
-
-  # this function offloads work to an asynchronous task
-  # and returns that result or an error if the task fails
-  @task_timeout :timer.seconds(3)
-  def do_task(task_fn) when is_function(task_fn, 0) do
-    task = Task.async(task_fn)
-    result = Task.yield(task, @task_timeout) || Task.shutdown(task, :brutal_kill)
-
-    case result do
-      {:ok, task_result} ->
-        # Task completed successfully
-        {:ok, task_result}
-
-      nil ->
-        # Task timed out
-        {:error, :timeout}
-
-      {:exit, _reason} ->
-        # Task crashed or exited with an error
-        {:error, :task_failed}
-    end
   end
 end

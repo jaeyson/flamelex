@@ -2,8 +2,6 @@ defmodule Flamelex.Fluxus.Radix do
   use GenServer
   require Logger
 
-  import Flamelex.Fluxus.Utils, only: [do_task: 1]
-
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
@@ -24,14 +22,14 @@ defmodule Flamelex.Fluxus.Radix do
     Logger.debug("#{__MODULE__} starting up...")
 
     # compute state changes in a task for safety
-    case do_task(construct_new_radix_state(args)) do
-      {:ok, state} ->
+    case Wormhole.capture(construct_init_radix_state_fn(args), crush_report: true) do
+      {:ok, init_radix_state} ->
         subscribe_to_pubsub_topics()
         Logger.debug("#{__MODULE__} started successfully.")
-        {:noreply, state}
+        {:noreply, init_radix_state}
 
-      {:error, _reason} ->
-        Logger.error("#{__MODULE__} failed to initialize.")
+      {:error, reason} ->
+        Logger.error("#{__MODULE__} failed to initialize. #{inspect(reason)}")
         {:noreply, :initialization_failure}
     end
   end
@@ -40,111 +38,92 @@ defmodule Flamelex.Fluxus.Radix do
     {:reply, {:ok, state}, state}
   end
 
-  # def handle_cast({:flx_user_input, ii}, state) do
-  #   Logger.debug("#{__MODULE__} handling user input... #{inspect(ii)}")
-  #   # TODO really handle the user input here
-  #   {:noreply, state}
-  # end
-
   # this function recieves events from the EventBus subscriptions
   def process(event_shadow) do
-    GenServer.cast(__MODULE__, {:event, event_shadow})
+    # fetch the event in the caller process (I think it's within the sup tree of :event_bus app?)
+    # then cast it to the GenServer (itself) so that we have access to rdx_state
+    # we need to pass event_shadow all the way through so that we can ack
+    # the event at the end of the processing
+    e = EventBus.fetch_event(event_shadow)
+    GenServer.cast(__MODULE__, {:event, e, event_shadow})
   end
 
-  def handle_cast({:event, event_shadow}, state) do
-    %{data: event} = EventBus.fetch_event(event_shadow)
+  def handle_cast(_any_msg, :initialization_failure) do
+    Logger.warning(
+      "#{__MODULE__} is in a failed state of `:initialization_failure`, events are being ignored."
+    )
 
-    case handle_event(state, event) do
-      {:ok, new_state} ->
-        EventBus.mark_as_completed({__MODULE__, event_shadow})
-        {:noreply, new_state}
+    {:noreply, :initialization_failure}
+  end
 
-      {:error, _reason} ->
-        EventBus.mark_as_completed({__MODULE__, event_shadow})
-        {:noreply, state}
+  def handle_cast({:event, e, e_shadow}, radix_state) do
+    case Wormhole.capture(handle_event_fn(radix_state, e, e_shadow), crush_report: true) do
+      {:ok, :ignore} ->
+        {:noreply, radix_state}
+
+      {:ok, new_radix_state} ->
+        Flamelex.Lib.Utils.PubSub.broadcast(
+          topic: :radix_state_change,
+          msg: {:radix_state_change, new_radix_state}
+        )
+
+        {:noreply, new_radix_state}
+
+      {:error, reason} ->
+        formatted_error = ~s|\n
+        id: #{e.id},
+        topic: #{e.topic},
+        event: #{inspect(e.data)}
+        reason: #{inspect(reason)}
+        |
+
+        Logger.error("#{__MODULE__} failed to process event.#{formatted_error}")
+
+        {:noreply, radix_state}
     end
   end
 
-  def handle_event(state, {:user_input, ii}) do
-    Logger.debug("#{__MODULE__} handling user input... #{inspect(ii)}")
-    # TODO really handle the user input here
-
-    #   case Flamelex.Fluxus.UserInputHandler.process(radix_state, input) do
-    #     :ignore ->
-    #       # Logger.debug "#{__MODULE__} ignoring... #{inspect(%{radix_state: radix_state, action: action})}"
-    #       EventBus.mark_as_completed({__MODULE__, event_shadow})
-
-    #     {:ok, ^radix_state} ->
-    #       # Logger.debug "#{__MODULE__} ignoring (no state-change)..."
-    #       EventBus.mark_as_completed({__MODULE__, event_shadow})
-
-    #     {:ok, new_radix_state} ->
-    #       # Logger.debug "#{__MODULE__} processed event, state changed..."
-    #       Flamelex.Fluxus.RadixStore.put(new_radix_state)
-    #       EventBus.mark_as_completed({__MODULE__, event_shadow})
-    #   end
-
-    {:ok, state}
-  end
-
-  # event handler for user input
-  # def process({@user_input, _id} = event_shadow) do
-  #   %EventBus.Model.Event{data: {:input, input}} = EventBus.fetch_event(event_shadow)
-
-  #   # TODO lock the store? even better, just make it a GenServer - pass the input handler function in & run it in the context of the Store process
-  #   radix_state = Flamelex.Fluxus.RadixStore.get()
-
-  #   case Flamelex.Fluxus.UserInputHandler.process(radix_state, input) do
-  #     :ignore ->
-  #       # Logger.debug "#{__MODULE__} ignoring... #{inspect(%{radix_state: radix_state, action: action})}"
-  #       EventBus.mark_as_completed({__MODULE__, event_shadow})
-
-  #     {:ok, ^radix_state} ->
-  #       # Logger.debug "#{__MODULE__} ignoring (no state-change)..."
-  #       EventBus.mark_as_completed({__MODULE__, event_shadow})
-
-  #     {:ok, new_radix_state} ->
-  #       # Logger.debug "#{__MODULE__} processed event, state changed..."
-  #       Flamelex.Fluxus.RadixStore.put(new_radix_state)
-  #       EventBus.mark_as_completed({__MODULE__, event_shadow})
-  #   end
-  # end
-
-  # construct a new radix state
-  defp construct_new_radix_state(args) do
+  defp construct_init_radix_state_fn(args) do
     # have to return a zero arity function for Task.async
     fn -> Flamelex.Fluxus.NeoRadixState.new(args) end
   end
 
-  @actions to_string(:flx_actions)
-  @memelex to_string(:memelex)
-  @user_input to_string(:flx_user_input)
-  defp subscribe_to_pubsub_topics do
-    EventBus.subscribe({__MODULE__, [@actions]})
-    EventBus.subscribe({__MODULE__, [@memelex]})
-    EventBus.subscribe({__MODULE__, [@user_input]})
-    :ok
+  defp handle_event_fn(radix_state, %{topic: topic, data: event}, e_shadow) do
+    # have to return a zero arity function for Task.async
+    fn ->
+      Logger.debug("#{__MODULE__} handling event: #{inspect(event)}, topic: #{inspect(topic)}...")
+
+      handler =
+        case topic do
+          :flx_actions -> Flamelex.Fluxus.ActionHandler
+          :flx_user_input -> Flamelex.Fluxus.UserInputHandler
+          :memelex -> Flamelex.Fluxus.MemelexEventHandler
+        end
+
+      case handler.process(radix_state, event) do
+        :ignore ->
+          EventBus.mark_as_completed({__MODULE__, e_shadow})
+          :ignore
+
+        ^radix_state ->
+          EventBus.mark_as_completed({__MODULE__, e_shadow})
+          :ignore
+
+        new_radix_state ->
+          EventBus.mark_as_completed({__MODULE__, e_shadow})
+          new_radix_state
+      end
+    end
   end
 
-  # # this function offloads work to an asynchronous task
-  # # and returns that result or an error if the task fails
-  # @task_timeout :timer.seconds(3)
-  # defp do_task(task_fn) when is_function(task_fn, 0) do
-  #   task = Task.async(task_fn)
-  #   result = Task.yield(task, @task_timeout) || Task.shutdown(task, :brutal_kill)
-
-  #   case result do
-  #     {:ok, task_result} ->
-  #       # Task completed successfully
-  #       {:ok, task_result}
-
-  #     nil ->
-  #       # Task timed out
-  #       {:error, :timeout}
-
-  #     {:exit, _reason} ->
-  #       # Task crashed or exited with an error
-  #       {:error, :task_failed}
-  #   end
-  # end
+  defp subscribe_to_pubsub_topics do
+    EventBus.subscribe(
+      {__MODULE__,
+       [
+         to_string(:flx_actions),
+         to_string(:memelex),
+         to_string(:flx_user_input)
+       ]}
+    )
+  end
 end
