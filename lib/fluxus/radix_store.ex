@@ -85,7 +85,7 @@ defmodule Flamelex.Fluxus.Radix do
 
   defp construct_init_radix_state_fn(args) do
     # have to return a zero arity function for Task.async
-    fn -> Flamelex.Fluxus.NeoRadixState.new(args) end
+    fn -> Flamelex.Fluxus.RadixState.new(args) end
   end
 
   defp handle_event_fn(radix_state, %{topic: topic, data: event}, e_shadow) do

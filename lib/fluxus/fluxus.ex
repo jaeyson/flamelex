@@ -1,22 +1,23 @@
 defmodule Flamelex.Fluxus do
+  @moduledoc """
+  Flamelex.Fluxus implements the `flux` architecture pattern, of React.js
+  fame, in Elixir/Scenic. This module provides the interface to that
+  functionality.
+
+  ### background
+
+  https://css-tricks.com/understanding-how-reducers-are-used-in-redux/
+
+  ### prior art
+
+  https://medium.com/grandcentrix/state-management-with-phoenix-liveview-and-liveex-f53f8f1ec4d7
+  """
+
   defdelegate user_input(ii), to: Flamelex.Fluxus.Utils
   defdelegate action(a), to: Flamelex.Fluxus.Utils
 end
 
 # defmodule Flamelex.Fluxus do
-#   @moduledoc """
-#   Flamelex.Fluxus implements the `flux` architecture pattern, of React.js
-#   fame, in Elixir/Scenic. This module provides the interface to that
-#   functionality.
-
-#   ### background
-
-#   https://css-tricks.com/understanding-how-reducers-are-used-in-redux/
-
-#   ### prior art
-
-#   https://medium.com/grandcentrix/state-management-with-phoenix-liveview-and-liveex-f53f8f1ec4d7
-#   """
 
 #   @actions :flx_actions
 #   @user_input :flx_user_input
@@ -64,29 +65,3 @@ end
 #   # keymaps that exist at a higher level than just a Scenic component)
 
 # end
-
-# # @impl Scenic.Scene
-# # def handle_event( {:click, :btn}, _, %{assigns: %{count: count}} = scene ) do
-# #   count = count + 1
-
-# #   # modify the graph to show the current click count
-# #   graph =
-# #     graph()
-# #     |> Scenic.Graph.modify(:count, &text(&1, "Count: " <> inspect(count)))
-
-# #   # update the count and push the modified graph
-# #   scene =
-# #     scene
-# #     |> assign( count: count )
-# #     |> push_graph( graph )
-
-# #   # return the updated scene
-# #   { :noreply, scene }
-# # end
-
-# # # handle all other (not-ignored) input...
-# # def handle_event(input, _context, scene) do
-# #   IO.puts "SOME NON IGNORED INPUT
-# #   # Flamelex.Fluxus.handle_user_input(input)
-# #   {:noreply, scene}
-# # end

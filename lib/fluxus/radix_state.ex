@@ -1,4 +1,4 @@
-defmodule Flamelex.Fluxus.NeoRadixState do
+defmodule Flamelex.Fluxus.RadixState do
   def new(_args) do
     {:ok, ibm_plex_mono_font_metrics} =
       TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
