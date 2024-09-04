@@ -14,8 +14,13 @@ defmodule Flamelex.GUI.Component.Kommander do
     {:ok, data}
   end
 
+  # args = %Widgex.Structs.LayerCake{}
   def init(scene, args, opts) do
-    init_state = args.radix_state.kommander
+    # IO.puts("KKKKKKKKKKKKK\n\n\n\n")
+
+    # TODO just for demo, we do this incredible hack :D
+    radix_state = Flamelex.Fluxus.RadixStore.get()
+    init_state = radix_state.kommander
 
     init_graph = render(args.frame, init_state)
 

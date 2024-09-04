@@ -29,7 +29,7 @@ defmodule Flamelex.Fluxus.UserInputHandler do
   end
 
   def process(_radix_state, input) do
-    Logger.warn("ignoring input: #{inspect(input)}")
+    # Logger.warn("ignoring input: #{inspect(input)}")
     :ignore
   end
 

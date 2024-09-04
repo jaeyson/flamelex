@@ -14,7 +14,7 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   end
 
   def process(radix_state, :show_todos) do
-    raise("THIS IS SUPPOSED TO SO THE THING")
+    # raise("THIS IS SUPPOSED TO SO THE THING")
 
     # notes - this should really be cleaner, but in principle
     # it's a very simple way to define the logic.. the problem is that
@@ -32,8 +32,6 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
     # have the layer components implement the behaviour, and then a reducer
     # function will be able to convert radix_state to radix_state for certain actions
 
-    # new_radix_state =
-    #   radix_state
     #   # |> Flamelex.GUI.Layers.Layer01.show_todos()
     #   |> put_in([:root, :layers, :one, :layout], %{todo_list: :full_screen})
 
@@ -48,6 +46,20 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
     # {:ok, Flamelex.GUI.Layers.Layer01.show_todo_list(radix_state, :full_screen)}
 
     # {:ok, Fluxus.radixify(radix_state, :todos)}
+
+    todo_list = Memelex.My.TODOs.all()
+
+    radix_state
+    |> put_in([:layers, :one, :active_app], :todo_list)
+    |> put_in([:layers, :one, :todos], todo_list)
+  end
+
+  def process(radix_state, {:tidbit_saved, _t}) do
+    todo_list = Memelex.My.TODOs.all()
+
+    radix_state
+    |> put_in([:layers, :one, :active_app], :todo_list)
+    |> put_in([:layers, :one, :todos], todo_list)
   end
 
   # def process(_rdx, unknown_event) do

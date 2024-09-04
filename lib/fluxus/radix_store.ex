@@ -91,7 +91,7 @@ defmodule Flamelex.Fluxus.Radix do
   defp handle_event_fn(radix_state, %{topic: topic, data: event}, e_shadow) do
     # have to return a zero arity function for Task.async
     fn ->
-      Logger.debug("#{__MODULE__} handling event: #{inspect(event)}, topic: #{inspect(topic)}...")
+      # Logger.debug("#{__MODULE__} handling event: #{inspect(event)}, topic: #{inspect(topic)}...")
 
       handler =
         case topic do

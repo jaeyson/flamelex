@@ -20,8 +20,13 @@ defmodule Flamelex.Fluxus.RadixState do
         ibm_plex_mono: %{
           metrics: ibm_plex_mono_font_metrics
         }
+      },
+      layers: %{
+        one: %{
+          layout: :full_screen,
+          active_app: nil
+        }
       }
-      # layers: []
     }
   end
 

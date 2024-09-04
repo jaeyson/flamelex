@@ -259,8 +259,8 @@
 #       # |> maybe_split(editor_frame, radix_state)
 
 #       # # TODO this is the next big place we tackle...
-#       |> Flamelex.GUI.MemexGUI.Components.ToDoList.add_to_graph({
-#         %Flamelex.GUI.MemexGUI.Components.ToDoList{},
+#       |> Flamelex.GUI.MemexGUI.Components.TODOlist.add_to_graph({
+#         %Flamelex.GUI.MemexGUI.Components.TODOlist{},
 #         f
 #         #   # radix_state: radix_state,
 #         #   # app: Flamelex
@@ -423,7 +423,7 @@
 
 #     new_graph =
 #       Scenic.Graph.build()
-#       |> Flamelex.GUI.Component.ToDoList.add_to_graph(%{
+#       |> Flamelex.GUI.Component.TODOlist.add_to_graph(%{
 #         frame: main_pane,
 #         state: %{}
 #       })

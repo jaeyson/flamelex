@@ -68,7 +68,6 @@ defmodule Flamelex.Fluxus.Reducers.Kommander do
     {:ok, _pid} =
       Task.start(fn ->
         res = Code.eval_string(radix_state.kommander.buffer.data, [], __ENV__)
-        IO.inspect(res, label: "KOMMANDER")
       end)
 
     # {value, _binding} = Task.await(eval_task)
@@ -85,6 +84,6 @@ defmodule Flamelex.Fluxus.Reducers.Kommander do
 
   def process(radix_state, action) do
     IO.puts("#{__MODULE__} failed to process action: #{inspect(action)}")
-    dbg()
+    raise "kommand raise"
   end
 end

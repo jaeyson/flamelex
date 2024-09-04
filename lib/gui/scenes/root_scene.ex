@@ -142,8 +142,6 @@ defmodule Flamelex.GUI.RootScene do
 
     full_graph =
       Scenic.Graph.build()
-      # |> base_layer(:renseijin, radix_state)
-      # |> first_layer(:editor_and_apps, radix_state)
       |> NeoLayer01.add_to_graph(%{
         id: :apps,
         frame: full_window,
@@ -168,16 +166,16 @@ defmodule Flamelex.GUI.RootScene do
     {:ok, full_graph}
   end
 
-  def base_layer(graph, :renseijin, radix_state) do
-    # layer_state = Flamelex.GUI.Component.Renseijin.State.cast(radix_state)
+  # def base_layer(graph, :renseijin, radix_state) do
+  #   # layer_state = Flamelex.GUI.Component.Renseijin.State.cast(radix_state)
 
-    graph
-    |> render_layer(
-      radix_state,
-      Flamelex.GUI.Layers.LayerZero.cast(radix_state)
-      # layer_state
-    )
-  end
+  #   graph
+  #   |> render_layer(
+  #     radix_state,
+  #     Flamelex.GUI.Layers.LayerZero.cast(radix_state)
+  #     # layer_state
+  #   )
+  # end
 
   # def working_layer(graph, radix_state) do
   #   graph
@@ -206,65 +204,65 @@ defmodule Flamelex.GUI.RootScene do
   #   |> Flamelex.GUI.Layers.NeoLayer01.add_to_graph(radix_state)
   # end
 
-  def second_layer(graph, :menubar, radix_state) do
-    # TODO actually, cast is the real name of this function, we should use that, shoud blog about that...
-    # what I mean by this is, that "cast" is transmute, it means 'change the type' or to 'change the form'
-    state = Flamelex.GUI.Layers.Layer02.cast(radix_state)
+  # def second_layer(graph, :menubar, radix_state) do
+  #   # TODO actually, cast is the real name of this function, we should use that, shoud blog about that...
+  #   # what I mean by this is, that "cast" is transmute, it means 'change the type' or to 'change the form'
+  #   state = Flamelex.GUI.Layers.Layer02.cast(radix_state)
 
-    layer_cake =
-      LayerCake.new(%{
-        "id" => :menubar,
-        "state" => state,
-        "layerable" => Flamelex.GUI.Layers.Layer02
-      })
+  #   layer_cake =
+  #     LayerCake.new(%{
+  #       "id" => :menubar,
+  #       "state" => state,
+  #       "layerable" => Flamelex.GUI.Layers.Layer02
+  #     })
 
-    graph |> do_render_layer(radix_state, layer_cake)
+  #   graph |> do_render_layer(radix_state, layer_cake)
 
-    #     |> render_layer(radix_state, %LayerCake{
-    #   # layer: {:menu, "Menu"},
-    #   id: :menubar,
-    #   layout: %Widgex.Structs.GridLayout{},
-    #   state: %{}
-    # })
+  #   #     |> render_layer(radix_state, %LayerCake{
+  #   #   # layer: {:menu, "Menu"},
+  #   #   id: :menubar,
+  #   #   layout: %Widgex.Structs.GridLayout{},
+  #   #   state: %{}
+  #   # })
 
-    # |> render_layer(
-    #   radix_state,
-    #   Flamelex.GUI.Layers.Layer02.cast(radix_state)
-    # )
-  end
+  #   # |> render_layer(
+  #   #   radix_state,
+  #   #   Flamelex.GUI.Layers.Layer02.cast(radix_state)
+  #   # )
+  # end
 
-  def kommander_layer(graph, radix_state) do
-    # graph
-    # |> render_layer(
-    #   radix_state,
-    #   Flamelex.GUI.Layers.Layer03.cast(radix_state)
-    # )
+  # def kommander_layer(graph, radix_state) do
+  #   # graph
+  #   # |> render_layer(
+  #   #   radix_state,
+  #   #   Flamelex.GUI.Layers.Layer03.cast(radix_state)
+  #   # )
 
-    # TODO THIS ONE is the best interfact here, this module
-    # should implement a behaviour which abstracts away all common
-    # layer behaviour, but it doesnt makse sense having one layer
-    # component which accepts a streuct with module names, just
-    # call the module but have that behaviour ("wink wink!") abstracted away
-    # but call the module itself directly
-    # Flamelex.GUI.Layers.Layer03.stack_layer(graph, radix_state)
+  #   # TODO THIS ONE is the best interfact here, this module
+  #   # should implement a behaviour which abstracts away all common
+  #   # layer behaviour, but it doesnt makse sense having one layer
+  #   # component which accepts a streuct with module names, just
+  #   # call the module but have that behaviour ("wink wink!") abstracted away
+  #   # but call the module itself directly
+  #   # Flamelex.GUI.Layers.Layer03.stack_layer(graph, radix_state)
 
-    layer_cake =
-      LayerCake.new(%{
-        "id" => :kommander,
-        "state" => Flamelex.GUI.Layers.Layer03.cast(radix_state),
-        "layerable" => Flamelex.GUI.Layers.Layer03
-      })
+  #   layer_cake =
+  #     LayerCake.new(%{
+  #       "id" => :kommander,
+  #       "state" => Flamelex.GUI.Layers.Layer03.cast(radix_state),
+  #       "layerable" => Flamelex.GUI.Layers.Layer03
+  #     })
 
-    graph |> do_render_layer(radix_state, layer_cake)
-  end
+  #   graph |> do_render_layer(radix_state, layer_cake)
+  # end
 
-  def render_layer(graph, radix_state, %LayerCake{id: l_id} = layer) do
-    graph
-    |> Flamelex.GUI.Component.Layer.add_to_graph({radix_state, layer}, id: l_id)
-  end
+  # def render_layer(graph, radix_state, %LayerCake{id: l_id} = layer) do
+  #   graph
+  #   |> Flamelex.GUI.Component.Layer.add_to_graph({radix_state, layer}, id: l_id)
+  # end
 
-  def do_render_layer(graph, radix_state, %LayerCake{id: l_id} = layer) do
-    graph
-    |> Flamelex.GUI.Component.Layer.add_to_graph({radix_state, layer}, id: l_id)
-  end
+  # def do_render_layer(graph, radix_state, %LayerCake{id: l_id} = layer) do
+  #   graph
+  #   |> Flamelex.GUI.Component.Layer.add_to_graph({radix_state, layer}, id: l_id)
+  # end
 end

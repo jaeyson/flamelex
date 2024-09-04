@@ -67,35 +67,35 @@ defmodule Flamelex.Fluxus.RadixReducer do
   #   {:ok, new_radix_state}
   # end
 
-  def process(radix_state, :open_memex) do
-    new_radix_state =
-      radix_state
-      |> put_in([:root, :active_app], :memex)
+  # def process(radix_state, :open_memex) do
+  #   new_radix_state =
+  #     radix_state
+  #     |> put_in([:root, :active_app], :memex)
 
-    {:ok, new_radix_state}
-  end
+  #   {:ok, new_radix_state}
+  # end
 
-  def process(radix_state, {reducer, action}) when is_atom(reducer) do
-    # Instead of try catch, look in the module, see if there's a function called that.
+  # def process(radix_state, {reducer, action}) when is_atom(reducer) do
+  #   # Instead of try catch, look in the module, see if there's a function called that.
 
-    # That could be cool, if we make all actions an actual function in the processor??
+  #   # That could be cool, if we make all actions an actual function in the processor??
 
-    # If that fails/doesn't work, we want to look up custom keymaps in the my_modz.ex (???)
+  #   # If that fails/doesn't work, we want to look up custom keymaps in the my_modz.ex (???)
 
-    try do
-      reducer.process(radix_state, action)
-    rescue
-      e in FunctionClauseError ->
-        IO.inspect(e)
+  #   try do
+  #     reducer.process(radix_state, action)
+  #   rescue
+  #     e in FunctionClauseError ->
+  #       IO.inspect(e)
 
-        {:error,
-         "#{__MODULE__} -- Reducer `#{inspect(reducer)}` could not match action: #{inspect(action)}"}
-    end
-  end
+  #       {:error,
+  #        "#{__MODULE__} -- Reducer `#{inspect(reducer)}` could not match action: #{inspect(action)}"}
+  #   end
+  # end
 
-  # TODO here, we should have a module of transformations for the radix state!
-  # Make RadixState a struct!?!?
-  defp open_widget_workbench(radix_state) do
-    Flamelex.Fluxus.Structs.RadixState.mutate(radix_state, :open_widget_workbench)
-  end
+  # # TODO here, we should have a module of transformations for the radix state!
+  # # Make RadixState a struct!?!?
+  # defp open_widget_workbench(radix_state) do
+  #   Flamelex.Fluxus.Structs.RadixState.mutate(radix_state, :open_widget_workbench)
+  # end
 end

@@ -4,7 +4,7 @@ defmodule Flamelex.GUI.Components.Template do
   require Logger
 
   def validate(%{frame: %Frame{} = _f, state: _state} = data) do
-    # Logger.debug "#{__MODULE__} accepted params: #{inspect data}"
+    Logger.debug("#{__MODULE__} accepted params: #{inspect(data)}")
     {:ok, data}
   end
 
