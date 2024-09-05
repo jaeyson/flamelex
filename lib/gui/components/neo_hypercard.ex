@@ -20,31 +20,39 @@ defmodule Flamelex.GUI.Components.NeoHyperCard do
   end
 
   def render(graph, %{frame: frame, state: %Memelex.TidBit{} = t}) do
-    graph
-    |> Scenic.Primitives.group(fn graph ->
-      graph
-      |> Scenic.Primitives.rect(frame.size.box, fill: :yellow, stroke: {2, :blue})
-      |> Scenic.Primitives.text(t.title,
-                  # font: font.name,
-                  font_size: 20,
-                  fill: :black,
-                  translate: {0, 72}
-                  # translate: {5, font.ascent}
-               )
-      # |> render_background(args.frame, args.state)
-      # |> render_header(args.frame, args.state)
-      # |> render_body(args.frame, args.state)
-   end, [
-  #     id: {:hypercard, args.state.uuid},
-      translate: frame.pin.point
-   ])
-  end
+    # need to anchor the new frame within this one, not re-use the same pin
+    header_frame = Widgex.Structs.Frame.new(%{pin: {0, 0}, size: frame.size.box})
 
+    graph
+    |> Scenic.Primitives.group(
+      fn graph ->
+        graph
+        |> Scenic.Primitives.rect(frame.size.box, fill: :yellow, stroke: {2, :blue})
+        # |> ScenicWidgets.Markup.Header6.draw(header_frame, t.title)
+
+        |> Scenic.Primitives.text(t.title,
+          # font: font.name,
+          font_size: 20,
+          fill: :black,
+          translate: {0, 72}
+          # translate: {5, font.ascent}
+        )
+
+        # |> render_background(args.frame, args.state)
+        # |> render_header(args.frame, args.state)
+        # |> render_body(args.frame, args.state)
+        # end)
+      end,
+      # #     id: {:hypercard, args.state.uuid},
+      translate: frame.pin.point
+      # NOTE - ADDING scissor here will cause it to not scissor!?!?!
+      # scissor: frame.size.box
+    )
+  end
 
   # next 2 todos for todo list
 
   # - handle "new tidbit savbed" event and auto-refresh
   # - allow scrolling within the vertical list
   # - add priority/sorting within the list and make them clickable
-
 end
