@@ -107,6 +107,10 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
         frame: todo_frame,
         state: %{items: calc_todo_widgets(todo_list)}
       })
+      |> Flamelex.GUI.Component.TODOdetails.add_to_graph(%{
+        frame: details_frame,
+        state: tidbit
+      })
 
     # TODO add next component
 
