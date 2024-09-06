@@ -42,9 +42,47 @@ defmodule Flamelex.GUI.Component.TODOdetails do
           fill: :white,
           translate: {20, 50}
         )
+        |> render_tools(f)
       end,
       translate: f.pin.point
     )
+  end
+
+  @spacing 180
+  def render_tools(graph, %Widgex.Frame{} = f) do
+    graph
+    |> Scenic.Primitives.group(
+      fn graph ->
+        graph
+        |> Scenic.Components.button("Lower priority", id: :sample_btn_id, t: {10, 10})
+        |> Scenic.Components.button("Higher priority", id: :sample_btn_id, t: {10 + @spacing, 10})
+        |> Scenic.Components.button("Add Due date",
+          id: :sample_btn_id,
+          t: {10 + 2 * @spacing, 10}
+        )
+        |> Scenic.Components.button("Consequences",
+          id: :sample_btn_id,
+          t: {10 + 3 * @spacing, 10}
+        )
+        ## next row
+        |> Scenic.Components.button("Create sub-task", id: :sample_btn_id, t: {10, 60})
+        |> Scenic.Components.button("Blockers", id: :sample_btn_id, t: {10 + 1 * @spacing, 60})
+        |> Scenic.Components.button("Req'd resources",
+          id: :sample_btn_id,
+          t: {10 + 2 * @spacing, 60}
+        )
+        |> Scenic.Components.button("Apply label",
+          id: :sample_btn_id,
+          t: {10 + 3 * @spacing, 60}
+        )
+      end,
+      translate: {20, f.size.height - 200}
+    )
+  end
+
+  def handle_event({:click, btn}, _from, scene) do
+    IO.puts("Sample button was clicked in HANDLE EVENT! #{inspect(btn)}")
+    {:noreply, scene}
   end
 
   def prettify_map(map) when is_map(map) do
