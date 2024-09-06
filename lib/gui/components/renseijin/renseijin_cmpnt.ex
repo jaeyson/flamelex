@@ -35,7 +35,8 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
   """
   use Scenic.Component
   alias Flamelex.GUI.Component.Renseijin.{State, Utils}
-  alias Widgex.Structs.{Frame, Dimensions}
+  alias Widgex.Structs.{Dimensions}
+  alias Widgex.Frame
   require Logger
 
   def validate(

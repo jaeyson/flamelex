@@ -1,5 +1,6 @@
 defmodule Flamelex.GUI.Component.Renseijin.Utils do
-  alias Widgex.Structs.{Frame, Coordinates, Dimensions}
+  alias Widgex.Structs.{Coordinates, Dimensions}
+  alias Widgex.Frame
   alias Flamelex.GUI.Component.Renseijin.State
 
   # a constant for π (change for potentially wacky behaviour~~)

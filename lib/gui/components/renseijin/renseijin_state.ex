@@ -15,7 +15,7 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
   - `cool_kid_radius`: The radius of effect for special animations. Defaults to `80`.
   - `circle_size`: The size of the circle component. Defaults to `47`.
   """
-  alias Widgex.Structs.Frame
+  alias Widgex.Frame
 
   @type t :: %__MODULE__{
           # coefficients of the equation which determine the radius of the inner circle
