@@ -35,9 +35,22 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     |> Scenic.Primitives.group(
       fn graph ->
         graph
-        |> Widgex.Frame.draw_guidewires(f, color: :purple)
+        # |> Widgex.Frame.draw_guidewires(f, color: :purple)
+        |> Scenic.Primitives.text("#{prettify_map(t)}",
+          font: :ibm_plex_mono,
+          font_size: 24,
+          fill: :white,
+          translate: {20, 50}
+        )
       end,
       translate: f.pin.point
     )
+  end
+
+  def prettify_map(map) when is_map(map) do
+    map
+    |> Inspect.Algebra.to_doc(%Inspect.Opts{pretty: true, width: 80})
+    |> Inspect.Algebra.format(80)
+    |> IO.iodata_to_binary()
   end
 end
