@@ -138,7 +138,7 @@ defmodule Flamelex.GUI.RootScene do
     # of the other layers, but for it to show up top it actually gets drawn *last*,
     # this is why we reverse the list at the end of this function
 
-    full_window = Widgex.Structs.Frame.new(viewport)
+    full_window = Widgex.Frame.new(viewport)
 
     full_graph =
       Scenic.Graph.build()

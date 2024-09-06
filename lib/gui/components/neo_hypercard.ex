@@ -2,7 +2,7 @@ defmodule Flamelex.GUI.Components.NeoHyperCard do
   use Scenic.Component
   require Logger
 
-  def validate(%{frame: _frame, state: _s} = data) do
+  def validate(%{frame: _frame, tidbit: %Memelex.TidBit{} = _t} = data) do
     {:ok, data}
   end
 
@@ -13,30 +13,32 @@ defmodule Flamelex.GUI.Components.NeoHyperCard do
       scene
       |> assign(graph: init_graph)
       |> assign(frame: args.frame)
-      |> assign(state: args.state)
+      |> assign(tidbit: args.tidbit)
       |> push_graph(init_graph)
+
+    request_input(init_scene, [:cursor_button])
 
     {:ok, init_scene}
   end
 
-  def render(graph, %{frame: frame, state: %Memelex.TidBit{} = t}) do
+  def render(graph, %{frame: frame, tidbit: %Memelex.TidBit{} = t}) do
     # need to anchor the new frame within this one, not re-use the same pin
-    header_frame = Widgex.Structs.Frame.new(%{pin: {0, 0}, size: frame.size.box})
+    header_frame = Widgex.Frame.new(%{pin: {0, 0}, size: frame.size.box})
 
     graph
     |> Scenic.Primitives.group(
       fn graph ->
         graph
         |> Scenic.Primitives.rect(frame.size.box, fill: :yellow, stroke: {2, :blue})
-        # |> ScenicWidgets.Markup.Header6.draw(header_frame, t.title)
+        |> ScenicWidgets.Markup.Header6.draw(header_frame, t.title)
 
-        |> Scenic.Primitives.text(t.title,
-          # font: font.name,
-          font_size: 20,
-          fill: :black,
-          translate: {0, 72}
-          # translate: {5, font.ascent}
-        )
+        # |> Scenic.Primitives.text(t.title,
+        #   # font: font.name,
+        #   font_size: 20,
+        #   fill: :black,
+        #   translate: {0, 72}
+        #   # translate: {5, font.ascent}
+        # )
 
         # |> render_background(args.frame, args.state)
         # |> render_header(args.frame, args.state)
@@ -48,6 +50,22 @@ defmodule Flamelex.GUI.Components.NeoHyperCard do
       # NOTE - ADDING scissor here will cause it to not scissor!?!?!
       # scissor: frame.size.box
     )
+  end
+
+  def handle_input({:cursor_button, {:btn_left, 0, [], click_coords}}, _context, scene) do
+    bounds = Scenic.Graph.bounds(scene.assigns.graph)
+
+    if click_coords |> ScenicWidgets.Utils.inside?(bounds) do
+      # IO.puts("CLICKCLIKC #{scene.assigns.tidbit.title}")
+      cast_parent(scene, {:click, scene.assigns.tidbit})
+    end
+
+    {:noreply, scene}
+  end
+
+  def handle_input({:cursor_button, _otherwise}, _context, scene) do
+    # Logger.debug "#{__MODULE__} ignoring input: #{inspect input}..."
+    {:noreply, scene}
   end
 
   # next 2 todos for todo list

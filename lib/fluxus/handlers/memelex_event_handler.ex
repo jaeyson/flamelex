@@ -50,15 +50,14 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
     todo_list = Memelex.My.TODOs.all()
 
     radix_state
-    |> put_in([:layers, :one, :active_app], :todo_list)
-    |> put_in([:layers, :one, :todos], todo_list)
+    |> put_in([:layers, :one, :active_app], {Flamelex.GUI.Component.TODOlist, todo_list})
   end
 
   def process(radix_state, {:tidbit_saved, _t}) do
     todo_list = Memelex.My.TODOs.all()
 
     radix_state
-    |> put_in([:layers, :one, :active_app], :todo_list)
+    |> put_in([:layers, :one, :active_app], Flamelex.GUI.Component.TODOlist)
     |> put_in([:layers, :one, :todos], todo_list)
   end
 

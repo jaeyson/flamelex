@@ -3,7 +3,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
   A GUI component for managing my TODO list.
   """
   use Scenic.Component
-  alias Widgex.Structs.Frame
+  alias Widgex.Frame
 
   def validate(%{frame: %Frame{} = _f, state: _state} = data) do
     # Logger.debug "#{__MODULE__} accepted params: #{inspect data}"
@@ -36,9 +36,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
     |> render_todo_list(list_frame, args)
   end
 
-  def calc_layout_frames(
-        %Frame{pin: %{x: x, y: y}, size: %{width: w, height: h}} = component_frame
-      ) do
+  def calc_layout_frames(%Frame{} = component_frame) do
     title_frame = calc_title_frame(component_frame)
     tools_frame = calc_tools_frame(component_frame, title_frame)
     list_frame = calc_list_frame(component_frame, title_frame, tools_frame)
@@ -149,5 +147,10 @@ defmodule Flamelex.GUI.Component.TODOlist do
       translate: frame.pin.point
       # scissor: frame.size.box
     )
+  end
+
+  def handle_cast({:click, %Memelex.TidBit{} = t}, scene) do
+    Flamelex.Fluxus.action({[app: __MODULE__], {:open_todo, t}})
+    {:noreply, scene}
   end
 end

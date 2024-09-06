@@ -67,6 +67,33 @@ defmodule Flamelex.Fluxus.RadixReducer do
   #   {:ok, new_radix_state}
   # end
 
+  def process(
+        %{
+          layers: %{
+            one: %{
+              layout: :full_screen,
+              active_app: {Flamelex.GUI.Component.TODOlist, todo_list}
+            }
+          }
+        } = rdx_state,
+        {[app: Flamelex.GUI.Component.TODOlist], {:open_todo, t}}
+      ) do
+    rdx_state
+    |> put_in([:layers, :one, :layout], :split_screen)
+    |> put_in([:layers, :one, :active_app], [
+      {Flamelex.GUI.Component.TODOlist, todo_list},
+      {Flamelex.GUI.Component.TODOdetails, t}
+    ])
+  end
+
+  require Logger
+
+  def process(rdx_state, action) do
+    Logger.error("Unable to process action. #{inspect(action)}")
+    IO.inspect(rdx_state)
+    :ignore
+  end
+
   # def process(radix_state, :open_memex) do
   #   new_radix_state =
   #     radix_state
