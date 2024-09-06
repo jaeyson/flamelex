@@ -53,12 +53,88 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
     |> put_in([:layers, :one, :active_app], {Flamelex.GUI.Component.TODOlist, todo_list})
   end
 
-  def process(radix_state, {:tidbit_saved, _t}) do
-    todo_list = Memelex.My.TODOs.all()
-
+  def process(radix_state, {:tidbit_saved, t}) do
+    # todo_list = Memelex.My.TODOs.all()
     radix_state
-    |> put_in([:layers, :one, :active_app], Flamelex.GUI.Component.TODOlist)
-    |> put_in([:layers, :one, :todos], todo_list)
+    |> maybe_update_todos({:tidbit_saved, t})
+
+    # if get_in(radix_state, [:layers, :one, :active_app]) == {Flamelex.GUI.Component.TODOlist, _todo_list} do
+    #   Logger.info("TODOlist is active, updating...")
+    #   radix_state
+    #   |> put_in([:layers, :one, :active_app], {Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()})
+    # else
+    #   Logger.info("TODOlist is not active, ignoring...")
+    #   radix_state
+    # end
+
+    # radix_state
+    # |> put_in([:layers, :one, :active_app], {Flamelex.GUI.Component.TODOlist, todo_list})
+  end
+
+  defp maybe_update_todos(
+         %{layers: %{one: %{active_app: {Flamelex.GUI.Component.TODOlist, todo_list}}}} =
+           radix_state,
+         {:tidbit_saved, t}
+       ) do
+    if Enum.member?(Enum.map(todo_list, & &1.uuid), t.uuid) do
+      Logger.info("TODOlist is active, updating...")
+
+      radix_state
+      |> put_in(
+        [:layers, :one, :active_app],
+        {Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()}
+      )
+    else
+      # Logger.info("TODOlist is not active, ignoring...")
+      radix_state
+    end
+  end
+
+  defp maybe_update_todos(
+         %{
+           layers: %{
+             one: %{
+               active_app: [
+                 {Flamelex.GUI.Component.TODOlist, todo_list},
+                 {Flamelex.GUI.Component.TODOdetails, selected_todo}
+               ]
+             }
+           }
+         } = radix_state,
+         {:tidbit_saved, t}
+       ) do
+    if Enum.member?(Enum.map(todo_list, & &1.uuid), t.uuid) do
+      Logger.info("TODOlist is active, updating...")
+
+      if t.uuid == selected_todo.uuid do
+        radix_state
+        |> put_in(
+          [:layers, :one, :active_app],
+          [
+            {Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()},
+            {Flamelex.GUI.Component.TODOdetails, t}
+          ]
+        )
+      else
+        radix_state
+        |> put_in(
+          [:layers, :one, :active_app],
+          [
+            {Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()},
+            {Flamelex.GUI.Component.TODOdetails, selected_todo}
+          ]
+        )
+      end
+
+      # radix_state
+      # |> put_in(
+      #   [:layers, :one, :active_app],
+      #   {Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()}
+      # )
+    else
+      # Logger.info("TODOlist is not active, ignoring...")
+      radix_state
+    end
   end
 
   # def process(_rdx, unknown_event) do

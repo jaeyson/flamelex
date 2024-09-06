@@ -117,6 +117,19 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
     {:ok, graph}
   end
 
+  def render(_f, layer_state) do
+    Logger.error("Unrecognised LayerState:\n\n#{prettify_map(layer_state)}")
+    graph = Scenic.Graph.build()
+    {:ok, graph}
+  end
+
+  def prettify_map(map) when is_map(map) do
+    map
+    |> Inspect.Algebra.to_doc(%Inspect.Opts{pretty: true, width: 80})
+    |> Inspect.Algebra.format(80)
+    |> IO.iodata_to_binary()
+  end
+
   def calc_app_frame(full_window_frame, %{menubar: %{height: menubar_h}}) do
     [_menubar_frame, app_frame] = Frame.v_split(full_window_frame, px: menubar_h)
 

@@ -24,7 +24,7 @@ defmodule Flamelex.GUI.Component.TODOdetails do
 
     # Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
 
-    {:ok, scene}
+    {:ok, init_scene}
   end
 
   def render(graph, %{
@@ -54,8 +54,11 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     |> Scenic.Primitives.group(
       fn graph ->
         graph
-        |> Scenic.Components.button("Lower priority", id: :sample_btn_id, t: {10, 10})
-        |> Scenic.Components.button("Higher priority", id: :sample_btn_id, t: {10 + @spacing, 10})
+        |> Scenic.Components.button("Lower priority", id: :lower_priority, t: {10, 10})
+        |> Scenic.Components.button("Higher priority",
+          id: :higher_priority,
+          t: {10 + @spacing, 10}
+        )
         |> Scenic.Components.button("Add Due date",
           id: :sample_btn_id,
           t: {10 + 2 * @spacing, 10}
@@ -75,9 +78,19 @@ defmodule Flamelex.GUI.Component.TODOdetails do
           id: :sample_btn_id,
           t: {10 + 3 * @spacing, 60}
         )
+        ## next row
+        |> Scenic.Components.button("Last movement", id: :sample_btn_id, t: {10, 110})
+        |> Scenic.Components.button("Next action", id: :sample_btn_id, t: {10 + 1 * @spacing, 110})
       end,
       translate: {20, f.size.height - 200}
     )
+  end
+
+  def handle_event({:click, :higher_priority}, _from, scene) do
+    scene.assigns.state
+    |> Memelex.My.Wiki.update(%{priority: :higher})
+
+    {:noreply, scene}
   end
 
   def handle_event({:click, btn}, _from, scene) do
