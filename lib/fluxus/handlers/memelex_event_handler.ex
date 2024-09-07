@@ -98,7 +98,7 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
            layers: %{
              one: %{
                active_app: [
-                 {Flamelex.GUI.Component.TODOlist, todo_list},
+                 {Flamelex.GUI.Component.TODOlist, %{list: todo_list} = todo_app_state},
                  {Flamelex.GUI.Component.TODOdetails, selected_todo}
                ]
              }
@@ -114,7 +114,8 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
         |> put_in(
           [:layers, :one, :active_app],
           [
-            {Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()},
+            {Flamelex.GUI.Component.TODOlist,
+             Map.merge(todo_app_state, %{list: Memelex.My.TODOs.all()})},
             {Flamelex.GUI.Component.TODOdetails, t}
           ]
         )
@@ -123,7 +124,8 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
         |> put_in(
           [:layers, :one, :active_app],
           [
-            {Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()},
+            {Flamelex.GUI.Component.TODOlist,
+             Map.merge(todo_app_state, %{list: Memelex.My.TODOs.all()})},
             {Flamelex.GUI.Component.TODOdetails, selected_todo}
           ]
         )

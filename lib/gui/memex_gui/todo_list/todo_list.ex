@@ -75,7 +75,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
       # temporarily increase the size of this frame so I dont have to solve the dropdown menu box problem yet
       size: {
         component_frame.size.width,
-        0.4 * component_frame.size.height
+        0.1 * component_frame.size.height
       }
     })
   end
@@ -131,7 +131,8 @@ defmodule Flamelex.GUI.Component.TODOlist do
       fn graph ->
         graph
         # |> Frame.draw_guidewires(frame, color: :green)
-        |> Scenic.Component.Input.Dropdown.add_to_graph(
+        # |> Scenic.Component.Input.Dropdown.add_to_graph(
+        |> ScenicWidgets.SpareParts.LukesDropDown.add_to_graph(
           {[
              {"Top Ten", :top_ten},
              {"Oldest", :oldest},
@@ -184,9 +185,26 @@ defmodule Flamelex.GUI.Component.TODOlist do
   # TODO hacky but maybe will work, introduce de-bounding of clicked items here lol
   # if we get 2 clicks in certain number of milliseconds, then we can assume it's a double click
   # this might solve the issue where clicking a menubar item which is hovering over something below it triggers both
+  def handle_cast({:click, %Memelex.TidBit{} = t}, %{assigns: %{dropdown_mode: true}} = scene) do
+    IO.puts("IGNOREING THE CLICK CSUE WE'RE IN DROPDOWN MODE")
+    # {:noreply, scene}
+    # Flamelex.Fluxus.action({[app: __MODULE__], {:open_todo, t}})
+    {:noreply, scene}
+  end
+
   def handle_cast({:click, %Memelex.TidBit{} = t}, scene) do
     Flamelex.Fluxus.action({[app: __MODULE__], {:open_todo, t}})
     {:noreply, scene}
+  end
+
+  def handle_cast({:focus, _id}, scene) do
+    # this is a bit of a hack but basically when the dropdown
+    # drops it will msg the todo list (it's parent), we
+    # set the whole component into dropdown mode, and in dropdown
+    # mode we dont handle clicks from anything except the dropdown
+    # - this will hopefully fix the bug ("workaround") where clicking
+    # on a dropdown also clicks the item (usually a TODO) below it (in the z plane)
+    {:noreply, scene |> assign(dropdown_mode: true)}
   end
 
   def handle_event({:value_changed, :filter_select, filter_by}, _context, scene) do

@@ -32,6 +32,12 @@ defmodule Flamelex.GUI.Component.TODOdetails do
         state: %Memelex.TidBit{} = t
       }) do
     graph
+    |> render_raw_tidbit(f, t)
+    |> render_tools(f)
+  end
+
+  def render_raw_tidbit(graph, frame, %Memelex.TidBit{} = t) do
+    graph
     |> Scenic.Primitives.group(
       fn graph ->
         graph
@@ -42,9 +48,8 @@ defmodule Flamelex.GUI.Component.TODOdetails do
           fill: :white,
           translate: {20, 50}
         )
-        |> render_tools(f)
       end,
-      translate: f.pin.point
+      translate: frame.pin.point
     )
   end
 
@@ -82,7 +87,8 @@ defmodule Flamelex.GUI.Component.TODOdetails do
         |> Scenic.Components.button("Last movement", id: :sample_btn_id, t: {10, 110})
         |> Scenic.Components.button("Next action", id: :sample_btn_id, t: {10 + 1 * @spacing, 110})
       end,
-      translate: {20, f.size.height - 200}
+      # translate: {20, f.size.height - 200}
+      translate: {f.pin.x + 20, f.pin.y + f.size.height - 200}
     )
     # close button
     |> Scenic.Components.button("Close", id: :close, t: {450, 20})
