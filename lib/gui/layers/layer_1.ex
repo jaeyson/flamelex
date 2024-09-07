@@ -71,7 +71,29 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
         full_window_frame,
         %{
           layout: :full_screen,
-          active_app: {Flamelex.GUI.Component.TODOlist, todo_list}
+          active_app: {Flamelex.GUI.Component.TODOlist, app_args}
+        } = layer_state
+      ) do
+    # we can't use the entire screen when the menubar is visible
+    app_frame = calc_app_frame(full_window_frame, layer_state)
+
+    IO.puts("DEPRECATE ACTIVE APP AS A TUPLE NOT A LIST & make it avctive apps instead")
+
+    graph =
+      Scenic.Graph.build()
+      |> Flamelex.GUI.Component.TODOlist.add_to_graph(%{
+        frame: app_frame,
+        state: app_args
+      })
+
+    {:ok, graph}
+  end
+
+  def render(
+        full_window_frame,
+        %{
+          layout: :full_screen,
+          active_app: [{Flamelex.GUI.Component.TODOlist, app_args}]
         } = layer_state
       ) do
     # we can't use the entire screen when the menubar is visible
@@ -81,7 +103,7 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
       Scenic.Graph.build()
       |> Flamelex.GUI.Component.TODOlist.add_to_graph(%{
         frame: app_frame,
-        state: %{items: calc_todo_widgets(todo_list)}
+        state: app_args
       })
 
     {:ok, graph}
@@ -92,8 +114,9 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
         %{
           layout: :split_screen,
           active_app: [
-            {Flamelex.GUI.Component.TODOlist, todo_list},
-            {Flamelex.GUI.Component.TODOdetails, tidbit}
+            # {Flamelex.GUI.Component.TODOlist, %{list: todo_list}},
+            {Flamelex.GUI.Component.TODOlist, todo_args},
+            {Flamelex.GUI.Component.TODOdetails, details_args}
           ]
         } = layer_state
       ) do
@@ -101,18 +124,18 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
     app_frame = calc_app_frame(full_window_frame, layer_state)
     [todo_frame, details_frame] = Frame.h_split(app_frame)
 
+    # TODO this could perhaps be automated if each component onlyt ever took in one argument `args`
     graph =
       Scenic.Graph.build()
       |> Flamelex.GUI.Component.TODOlist.add_to_graph(%{
         frame: todo_frame,
-        state: %{items: calc_todo_widgets(todo_list)}
+        # state: %{items: calc_todo_widgets(todo_list)}
+        state: todo_args
       })
       |> Flamelex.GUI.Component.TODOdetails.add_to_graph(%{
         frame: details_frame,
-        state: tidbit
+        state: details_args
       })
-
-    # TODO add next component
 
     {:ok, graph}
   end

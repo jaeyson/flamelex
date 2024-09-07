@@ -84,12 +84,19 @@ defmodule Flamelex.GUI.Component.TODOdetails do
       end,
       translate: {20, f.size.height - 200}
     )
+    # close button
+    |> Scenic.Components.button("Close", id: :close, t: {450, 20})
   end
 
   def handle_event({:click, :higher_priority}, _from, scene) do
     scene.assigns.state
     |> Memelex.My.Wiki.update(%{priority: :higher})
 
+    {:noreply, scene}
+  end
+
+  def handle_event({:click, :close}, _from, scene) do
+    Flamelex.Fluxus.action({[app: __MODULE__], :close_todo})
     {:noreply, scene}
   end
 

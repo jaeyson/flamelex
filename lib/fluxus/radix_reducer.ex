@@ -72,7 +72,28 @@ defmodule Flamelex.Fluxus.RadixReducer do
           layers: %{
             one: %{
               layout: :full_screen,
-              active_app: {Flamelex.GUI.Component.TODOlist, todo_list}
+              active_app: {Flamelex.GUI.Component.TODOlist, todo_app_state}
+            }
+          }
+        } = rdx_state,
+        {[app: Flamelex.GUI.Component.TODOlist], {:open_todo, t}}
+      ) do
+    IO.puts("DEPRECATE USING TUPLE FOR ACTIVE APP WHEN ONLY ONE APPPPP")
+
+    rdx_state
+    |> put_in([:layers, :one, :layout], :split_screen)
+    |> put_in([:layers, :one, :active_app], [
+      {Flamelex.GUI.Component.TODOlist, todo_app_state},
+      {Flamelex.GUI.Component.TODOdetails, t}
+    ])
+  end
+
+  def process(
+        %{
+          layers: %{
+            one: %{
+              layout: :full_screen,
+              active_app: [{Flamelex.GUI.Component.TODOlist, todo_app_state}]
             }
           }
         } = rdx_state,
@@ -81,7 +102,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
     rdx_state
     |> put_in([:layers, :one, :layout], :split_screen)
     |> put_in([:layers, :one, :active_app], [
-      {Flamelex.GUI.Component.TODOlist, todo_list},
+      {Flamelex.GUI.Component.TODOlist, todo_app_state},
       {Flamelex.GUI.Component.TODOdetails, t}
     ])
   end
@@ -91,7 +112,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
           layers: %{
             one: %{
               active_app: [
-                {Flamelex.GUI.Component.TODOlist, todo_list},
+                {Flamelex.GUI.Component.TODOlist, todo_app_state},
                 {Flamelex.GUI.Component.TODOdetails, t}
               ]
             }
@@ -101,9 +122,114 @@ defmodule Flamelex.Fluxus.RadixReducer do
       ) do
     rdx_state
     |> put_in([:layers, :one, :active_app], [
-      {Flamelex.GUI.Component.TODOlist, todo_list},
+      {Flamelex.GUI.Component.TODOlist, todo_app_state},
       {Flamelex.GUI.Component.TODOdetails, new_todo}
     ])
+  end
+
+  def app_is_active?(rdx_state, app) do
+    # TODO this is one reason to clean up and just have active_apps as a list of only one item even if only one app is active
+    case rdx_state[:layers][:one][:active_app] do
+      {^app, _args} ->
+        true
+
+      app_list when is_list(app_list) ->
+        Enum.reduce(app_list, false, fn {a, _}, acc ->
+          if a == app do
+            true
+          else
+            acc
+          end
+        end)
+    end
+  end
+
+  # def process(
+  #       %{
+  #         layers: %{
+  #           one: %{
+  #             active_app: [
+  #               {Flamelex.GUI.Component.TODOlist, todo_app_state},
+  #               {Flamelex.GUI.Component.TODOdetails, t}
+  #             ]
+  #           }
+  #         }
+  #       } = rdx_state,
+  #       {[app: Flamelex.GUI.Component.TODOlist], {:open_todo, new_todo}}
+  #     ) do
+  #   rdx_state
+  #   |> put_in([:layers, :one, :active_app], [
+  #     {Flamelex.GUI.Component.TODOlist, todo_app_state},
+  #     {Flamelex.GUI.Component.TODOdetails, new_todo}
+  #   ])
+  # end
+
+  def process(
+        %{
+          layers: %{
+            one: %{
+              active_app: [
+                {Flamelex.GUI.Component.TODOlist, todo_app_state},
+                {Flamelex.GUI.Component.TODOdetails, _t}
+              ]
+            }
+          }
+        } = rdx_state,
+        {[app: Flamelex.GUI.Component.TODOdetails], :close_todo}
+      ) do
+    rdx_state
+    |> put_in([:layers, :one, :layout], :full_screen)
+    |> put_in([:layers, :one, :active_app], [
+      {Flamelex.GUI.Component.TODOlist, todo_app_state}
+    ])
+  end
+
+  def process(rdx_state, {[app: app], {:filter_todos, filter_by}}) do
+    if rdx_state |> app_is_active?(app) do
+      new_todos = Memelex.My.TODOs.all(filter: filter_by)
+
+      # hack hack this to work for only havinbg one active app
+      [{todo_list_module, app_state}] = rdx_state[:layers][:one][:active_app]
+
+      new_app_state = app_state |> Map.put(:list, new_todos)
+      # update_active_app(rdx_state, app, merge: %{todo_list: new_todos})
+      # {:ok, new_rdx_state}= update_app_status(rdx_state, app, merge: %{todo_list: new_todos})
+      # case update_app_status(rdx_state, app, merge: %{todo_list: new_todos}) do
+      #   {:ok, new_rdx_state} ->
+      #     new_rdx_state+
+
+      #   :error ->
+      #     rdx_state
+      # end
+
+      rdx_state
+      |> put_in([:layers, :one, :active_app], [{todo_list_module, new_app_state}])
+
+      #   {Flamelex.GUI.Component.TODOlist, filter_todos(rdx_state, filter_by)}
+      # ])
+    else
+      rdx_state
+    end
+
+    # Logger.error("Unable to process action. #{inspect(action)}")
+    # IO.inspect(rdx_state)
+    # :ignore
+  end
+
+  def update_active_app(rdx_state, app, merge: new_state) do
+    new_active_apps =
+      rdx_state[:layers][:one][:active_app]
+      |> Enum.map(fn
+        {a, s} when a == app -> {a, s |> Map.merge(new_state)}
+        {a, s} -> {a, s}
+      end)
+
+    rdx_state
+    |> put_in([:layers, :one, :active_app], new_active_apps)
+
+    # |> put_in([:layers, :one, :active_app], [
+    #   {app, rdx_state[:layers][:one][:active_app][app] |> Map.merge(new_state)}
+    # ])
   end
 
   require Logger

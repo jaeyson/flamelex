@@ -2,7 +2,7 @@ defmodule Flamelex.GUI.Components.NeoHyperCard do
   use Scenic.Component
   require Logger
 
-  def validate(%{frame: _frame, tidbit: %Memelex.TidBit{} = _t} = data) do
+  def validate(%{frame: %Widgex.Frame{} = _f, tidbit: %Memelex.TidBit{} = _t} = data) do
     {:ok, data}
   end
 
