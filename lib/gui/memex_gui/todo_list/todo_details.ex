@@ -38,17 +38,72 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     #     {NeoHyperCard, %{tidbit: t}}
     #   end)
 
+    # title_h = 60
+    title_h = 0.1 * f.size.height
     panel_h = 300
 
+    draw_action_list = fn graph, %{frame: f} = args ->
+      graph
+      |> Scenic.Primitives.rect(
+        f.size.box,
+        fill: :grey,
+        translate: f.pin.point
+      )
+      |> Scenic.Primitives.text("Action list",
+        font: :ibm_plex_mono,
+        font_size: 24,
+        fill: :white,
+        translate: {f.pin.x + 20, f.pin.y + 20}
+      )
+    end
+
+    draw_raw_tidbit = fn graph, %{frame: f} = args ->
+      graph
+      |> Scenic.Primitives.text("#{prettify_map(t)}",
+        font: :ibm_plex_mono,
+        font_size: 24,
+        fill: :white,
+        translate: {f.pin.x + 20, f.pin.y + 20}
+      )
+    end
+
     blocks = [
-      {ScenicWidgets.FrameBox,
-       %{frame: Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, 0}})}},
-      {ScenicWidgets.FrameBox,
-       %{frame: Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {20, panel_h}})}},
-      {ScenicWidgets.FrameBox,
-       %{frame: Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {40, 2 * panel_h}})}},
-      {ScenicWidgets.FrameBox,
-       %{frame: Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {60, 3 * panel_h}})}}
+      {ScenicWidgets.Markup.Header1,
+       %{frame: Widgex.Frame.new(%{size: {f.size.width, title_h}, pin: {0, 0}}), text: t.title}},
+      {draw_raw_tidbit,
+       %{
+         frame:
+           Widgex.Frame.new(%{size: {f.size.width, 2 * panel_h}, pin: {0, title_h + 0 * panel_h}})
+       }},
+      {draw_action_list,
+       %{
+         frame:
+           Widgex.Frame.new(%{
+             size: {f.size.width, 1.5 * panel_h},
+             pin: {0, title_h + 2 * panel_h}
+           })
+       }}
+
+      # {ScenicWidgets.FrameBox,
+      #  %{
+      #    frame:
+      #      Widgex.Frame.new(%{size: {f.size.width, 2 * panel_h}, pin: {0, title_h + 0 * panel_h}})
+      #  }}
+      # {ScenicWidgets.FrameBox,
+      #  %{
+      #    frame:
+      #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 1 * panel_h}})
+      #  }},
+      # {ScenicWidgets.FrameBox,
+      #  %{
+      #    frame:
+      #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 2 * panel_h}})
+      #  }},
+      # {ScenicWidgets.FrameBox,
+      #  %{
+      #    frame:
+      #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 3 * panel_h}})
+      #  }}
     ]
 
     graph

@@ -106,7 +106,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
       fn graph ->
         graph
         # |> Frame.draw_guidewires(frame)
-        |> ScenicWidgets.Markup.Header1.draw(frame, title)
+        |> ScenicWidgets.Markup.Header1.draw(%{frame: frame, text: title})
 
         # |> Scenic.Primitives.rect(frame.size.box, fill: :green)
         #  stroke: {border_stroke, stroke_color},
