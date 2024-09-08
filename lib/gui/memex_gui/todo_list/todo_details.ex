@@ -52,6 +52,22 @@ defmodule Flamelex.GUI.Component.TODOdetails do
       )
     end
 
+    # tidbit_actions = ["Action 1", "Action 2", "Action 3", "Action 4", "Action 5"]
+    tidbit_actions =
+      case t.meta do
+        [%{"actions" => actions}] ->
+          Enum.map(actions, fn
+            a when is_binary(a) ->
+              a
+
+            %{title: t} ->
+              t
+          end)
+
+        _otherwise ->
+          ["No actions"]
+      end
+
     blocks = [
       {ScenicWidgets.Markup.Header1,
        %{frame: Widgex.Frame.new(%{size: {f.size.width, title_h}, pin: {0, 0}}), text: t.title}},
@@ -66,7 +82,8 @@ defmodule Flamelex.GUI.Component.TODOdetails do
            Widgex.Frame.new(%{
              size: {f.size.width, 1.5 * panel_h},
              pin: {0, title_h + 2 * panel_h}
-           })
+           }),
+         actions: tidbit_actions
        }}
 
       # {ScenicWidgets.FrameBox,
@@ -102,19 +119,12 @@ defmodule Flamelex.GUI.Component.TODOdetails do
   end
 
   def draw_action_list_fn do
-    fn graph, %{frame: f} = args ->
+    fn graph, %{frame: f, actions: actions} = args ->
       # Calculate the center for the header text
       header_text = "Action List"
       header_font_size = 32
 
-      # header_text_width =
-      #   Scenic.Primitives.Text.width(header_text,
-      #     font: :ibm_plex_mono,
-      #     font_size: header_font_size
-      #   )
-
       box_width = f.size.width
-      # center_x = f.pin.x + box_width / 2 - header_text_width / 2
       center_x = f.pin.x + box_width / 2
 
       # Draw the outer round-rectangle with margin
@@ -125,16 +135,13 @@ defmodule Flamelex.GUI.Component.TODOdetails do
         translate: f.pin.point
       )
       |> Scenic.Primitives.rrect(
-        # Added margin to width and height, with corner radius 10
         {f.size.width - 20, f.size.height - 20, 20},
         stroke: {2, :grey},
         fill: :transparent,
-        # Translate to account for the margin
         translate: {f.pin.x + 10, f.pin.y + 10}
       )
       # Fill the box with color
       |> Scenic.Primitives.rrect(
-        # Rounded box with corner radius 10
         {f.size.width - 20, f.size.height - 20, 10},
         fill: :black,
         translate: {f.pin.x + 10, f.pin.y + 10}
@@ -144,20 +151,38 @@ defmodule Flamelex.GUI.Component.TODOdetails do
         font: :ibm_plex_mono,
         font_size: header_font_size,
         fill: :white,
-        # Adjusted to place it centered and slightly down
         translate: {center_x, f.pin.y + 50},
-        # align: :center
         text_align: :center
       )
-      # Add the normal text below the header inside the border
-      |> Scenic.Primitives.text("Some additional content here",
+      # Add the bullet-pointed action list
+      |> draw_bullet_points(f, actions)
+    end
+  end
+
+  defp draw_bullet_points(graph, frame, actions) do
+    # Starting y-position below the header
+    start_y = frame.pin.y + 90
+    # Adjust space between bullet points
+    bullet_spacing = 40
+
+    Enum.reduce(actions, graph, fn action, g ->
+      bullet_y = start_y + bullet_spacing * Enum.find_index(actions, fn x -> x == action end)
+
+      g
+      # small circle for bullet point
+      |> Scenic.Primitives.circle(5,
+        fill: :white,
+        # Position for the bullet point
+        translate: {frame.pin.x + 20, bullet_y - 9}
+      )
+      |> Scenic.Primitives.text(action,
         font: :ibm_plex_mono,
         font_size: 24,
         fill: :white,
-        # Below the header
-        translate: {f.pin.x + 20, f.pin.y + 90}
+        # Position for the text next to the bullet point
+        translate: {frame.pin.x + 35, bullet_y}
       )
-    end
+    end)
   end
 
   def old_render(graph, %{
