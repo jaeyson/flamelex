@@ -43,17 +43,59 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     panel_h = 300
 
     draw_action_list = fn graph, %{frame: f} = args ->
+      # Calculate the center for the header text
+      header_text = "Action List"
+      header_font_size = 32
+
+      # header_text_width =
+      #   Scenic.Primitives.Text.width(header_text,
+      #     font: :ibm_plex_mono,
+      #     font_size: header_font_size
+      #   )
+
+      box_width = f.size.width
+      # center_x = f.pin.x + box_width / 2 - header_text_width / 2
+      center_x = f.pin.x + box_width / 2
+
+      # Draw the outer round-rectangle with margin
       graph
       |> Scenic.Primitives.rect(
         f.size.box,
         fill: :grey,
         translate: f.pin.point
       )
-      |> Scenic.Primitives.text("Action list",
+      |> Scenic.Primitives.rrect(
+        # Added margin to width and height, with corner radius 10
+        {f.size.width - 20, f.size.height - 20, 20},
+        stroke: {2, :grey},
+        fill: :transparent,
+        # Translate to account for the margin
+        translate: {f.pin.x + 10, f.pin.y + 10}
+      )
+      # Fill the box with color
+      |> Scenic.Primitives.rrect(
+        # Rounded box with corner radius 10
+        {f.size.width - 20, f.size.height - 20, 10},
+        fill: :black,
+        translate: {f.pin.x + 10, f.pin.y + 10}
+      )
+      # Draw the centered header text
+      |> Scenic.Primitives.text(header_text,
+        font: :ibm_plex_mono,
+        font_size: header_font_size,
+        fill: :white,
+        # Adjusted to place it centered and slightly down
+        translate: {center_x, f.pin.y + 50},
+        # align: :center
+        text_align: :center
+      )
+      # Add the normal text below the header inside the border
+      |> Scenic.Primitives.text("Some additional content here",
         font: :ibm_plex_mono,
         font_size: 24,
         fill: :white,
-        translate: {f.pin.x + 20, f.pin.y + 20}
+        # Below the header
+        translate: {f.pin.x + 20, f.pin.y + 90}
       )
     end
 
