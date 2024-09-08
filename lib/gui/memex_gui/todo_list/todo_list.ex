@@ -163,11 +163,21 @@ defmodule Flamelex.GUI.Component.TODOlist do
     )
   end
 
+  @todo_height 60
   def render_todo_list(graph, frame, args) do
     todo_widgets =
       args.state.list
-      |> Enum.map(fn t ->
-        {NeoHyperCard, %{tidbit: t}}
+      |> Enum.with_index()
+      |> Enum.map(fn {t, index} ->
+        {NeoHyperCard,
+         %{
+           tidbit: t,
+           frame:
+             Widgex.Frame.new(%{
+               size: {frame.size.width, @todo_height},
+               pin: {0, @todo_height * index}
+             })
+         }}
       end)
 
     graph

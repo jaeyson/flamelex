@@ -12,6 +12,7 @@ defmodule Flamelex.GUI.Component.TODOdetails do
   end
 
   def init(scene, args, opts) do
+    # init_graph = old_render(Scenic.Graph.build(), args)
     init_graph = render(Scenic.Graph.build(), args)
 
     init_scene =
@@ -28,6 +29,39 @@ defmodule Flamelex.GUI.Component.TODOdetails do
   end
 
   def render(graph, %{
+        frame: %Widgex.Frame{} = f,
+        state: %Memelex.TidBit{} = t
+      }) do
+    # todo_widgets =
+    #   args.state.list
+    #   |> Enum.map(fn t ->
+    #     {NeoHyperCard, %{tidbit: t}}
+    #   end)
+
+    panel_h = 300
+
+    blocks = [
+      {ScenicWidgets.FrameBox,
+       %{frame: Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, 0}})}},
+      {ScenicWidgets.FrameBox,
+       %{frame: Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {20, panel_h}})}},
+      {ScenicWidgets.FrameBox,
+       %{frame: Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {40, 2 * panel_h}})}},
+      {ScenicWidgets.FrameBox,
+       %{frame: Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {60, 3 * panel_h}})}}
+    ]
+
+    graph
+    |> Scenic.Primitives.group(
+      fn graph ->
+        graph
+        |> ScenicWidgets.VerticalList.add_to_graph(%{frame: f, items: blocks})
+      end,
+      translate: f.pin.point
+    )
+  end
+
+  def old_render(graph, %{
         frame: %Widgex.Frame{} = f,
         state: %Memelex.TidBit{} = t
       }) do
