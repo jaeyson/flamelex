@@ -42,7 +42,67 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     title_h = 0.1 * f.size.height
     panel_h = 300
 
-    draw_action_list = fn graph, %{frame: f} = args ->
+    draw_raw_tidbit = fn graph, %{frame: f} = args ->
+      graph
+      |> Scenic.Primitives.text("#{prettify_map(t)}",
+        font: :ibm_plex_mono,
+        font_size: 24,
+        fill: :white,
+        translate: {f.pin.x + 20, f.pin.y + 20}
+      )
+    end
+
+    blocks = [
+      {ScenicWidgets.Markup.Header1,
+       %{frame: Widgex.Frame.new(%{size: {f.size.width, title_h}, pin: {0, 0}}), text: t.title}},
+      {draw_raw_tidbit,
+       %{
+         frame:
+           Widgex.Frame.new(%{size: {f.size.width, 2 * panel_h}, pin: {0, title_h + 0 * panel_h}})
+       }},
+      {draw_action_list_fn(),
+       %{
+         frame:
+           Widgex.Frame.new(%{
+             size: {f.size.width, 1.5 * panel_h},
+             pin: {0, title_h + 2 * panel_h}
+           })
+       }}
+
+      # {ScenicWidgets.FrameBox,
+      #  %{
+      #    frame:
+      #      Widgex.Frame.new(%{size: {f.size.width, 2 * panel_h}, pin: {0, title_h + 0 * panel_h}})
+      #  }}
+      # {ScenicWidgets.FrameBox,
+      #  %{
+      #    frame:
+      #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 1 * panel_h}})
+      #  }},
+      # {ScenicWidgets.FrameBox,
+      #  %{
+      #    frame:
+      #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 2 * panel_h}})
+      #  }},
+      # {ScenicWidgets.FrameBox,
+      #  %{
+      #    frame:
+      #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 3 * panel_h}})
+      #  }}
+    ]
+
+    graph
+    |> Scenic.Primitives.group(
+      fn graph ->
+        graph
+        |> ScenicWidgets.VerticalList.add_to_graph(%{frame: f, items: blocks})
+      end,
+      translate: f.pin.point
+    )
+  end
+
+  def draw_action_list_fn do
+    fn graph, %{frame: f} = args ->
       # Calculate the center for the header text
       header_text = "Action List"
       header_font_size = 32
@@ -98,64 +158,6 @@ defmodule Flamelex.GUI.Component.TODOdetails do
         translate: {f.pin.x + 20, f.pin.y + 90}
       )
     end
-
-    draw_raw_tidbit = fn graph, %{frame: f} = args ->
-      graph
-      |> Scenic.Primitives.text("#{prettify_map(t)}",
-        font: :ibm_plex_mono,
-        font_size: 24,
-        fill: :white,
-        translate: {f.pin.x + 20, f.pin.y + 20}
-      )
-    end
-
-    blocks = [
-      {ScenicWidgets.Markup.Header1,
-       %{frame: Widgex.Frame.new(%{size: {f.size.width, title_h}, pin: {0, 0}}), text: t.title}},
-      {draw_raw_tidbit,
-       %{
-         frame:
-           Widgex.Frame.new(%{size: {f.size.width, 2 * panel_h}, pin: {0, title_h + 0 * panel_h}})
-       }},
-      {draw_action_list,
-       %{
-         frame:
-           Widgex.Frame.new(%{
-             size: {f.size.width, 1.5 * panel_h},
-             pin: {0, title_h + 2 * panel_h}
-           })
-       }}
-
-      # {ScenicWidgets.FrameBox,
-      #  %{
-      #    frame:
-      #      Widgex.Frame.new(%{size: {f.size.width, 2 * panel_h}, pin: {0, title_h + 0 * panel_h}})
-      #  }}
-      # {ScenicWidgets.FrameBox,
-      #  %{
-      #    frame:
-      #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 1 * panel_h}})
-      #  }},
-      # {ScenicWidgets.FrameBox,
-      #  %{
-      #    frame:
-      #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 2 * panel_h}})
-      #  }},
-      # {ScenicWidgets.FrameBox,
-      #  %{
-      #    frame:
-      #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 3 * panel_h}})
-      #  }}
-    ]
-
-    graph
-    |> Scenic.Primitives.group(
-      fn graph ->
-        graph
-        |> ScenicWidgets.VerticalList.add_to_graph(%{frame: f, items: blocks})
-      end,
-      translate: f.pin.point
-    )
   end
 
   def old_render(graph, %{
