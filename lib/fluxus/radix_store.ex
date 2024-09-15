@@ -6,9 +6,9 @@ defmodule Flamelex.Fluxus.Radix do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
-  def get do
-    GenServer.call(__MODULE__, :get_state)
-  end
+  # def get do
+  #   GenServer.call(__MODULE__, :get_state)
+  # end
 
   def init(args) do
     # Use :continue to initialize state after normal GenServer startup
@@ -55,6 +55,15 @@ defmodule Flamelex.Fluxus.Radix do
 
     {:noreply, :initialization_failure}
   end
+
+  # def handle_cast(:re_render, radix_state) do
+  #   Flamelex.Lib.Utils.PubSub.broadcast(
+  #     topic: :radix_state_change,
+  #     msg: {:radix_state_change, radix_state}
+  #   )
+
+  #   {:noreply, radix_state}
+  # end
 
   def handle_cast({:event, e, e_shadow}, radix_state) do
     case Wormhole.capture(handle_event_fn(radix_state, e, e_shadow), crush_report: true) do
