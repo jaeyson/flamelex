@@ -176,7 +176,18 @@ defmodule Flamelex.GUI.Menus.MainMenu do
       {"my_modz", fn -> raise "man we should have this!" end},
       {"my TODOs", &Memelex.My.TODOs.show/0},
       # {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end},
-      {"journal", fn -> Memelex.My.Journal.today() end}
+      # {"journal", fn -> Memelex.My.Journal.today() end}
+      {:sub_menu, "Journal",
+       [
+         {"today", fn -> Memelex.My.Journal.today() end},
+         {"yesterday", fn -> Memelex.My.Journal.yesterday() end},
+         {"tomorrow", fn -> Memelex.My.Journal.tomorrow() end}
+       ]},
+      {:sub_menu, "Calendar",
+       [
+         {"GOTO today",
+          fn -> Memelex.My.Calendar.open(%{"date" => Date.utc_today(), "view" => "week"}) end}
+       ]}
     ]
 
     full_menu =
@@ -307,6 +318,8 @@ defmodule Flamelex.GUI.Menus.MainMenu do
   #     }
   #   ]
   # end
+
+  # TODO feature flags menus under DevTools
 
   def devtools do
     {:sub_menu, "DevTools",

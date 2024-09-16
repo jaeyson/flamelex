@@ -1,15 +1,16 @@
 defmodule Memelex.GUI.Component.Memex.SideBar do
   use Scenic.Component
   # use Flamelex.ProjectAliases
+  alias Widgex.Frame
   require Logger
-  alias ScenicWidgets.Core.Structs.Frame
+  # alias ScenicWidgets.Core.Structs.Frame
   # alias Flamelex.GUI.Component.Memex
   # alias Flamelex.Fluxus.Reducers.Memex, as: RootReducer
 
   # this is where we split the sidebar into upper & lower pane
   @split 0.618
 
-  def validate(%{frame: %Frame{} = _f, state: _state} = data) do
+  def validate(%{frame: %Widgex.Frame{} = _f, state: _state} = data) do
     Logger.debug("#{__MODULE__} accepted params: #{inspect(data)}")
     {:ok, data}
   end
@@ -49,12 +50,12 @@ defmodule Memelex.GUI.Component.Memex.SideBar do
         |> render_lower_pane(args)
       end,
       id: __MODULE__,
-      translate: args.frame.pin
+      translate: args.frame.pin.point
     )
   end
 
   def handle_cast({:click, :new_tidbit}, scene) do
-    Memelex.My.Wiki.new()
+    # Memelex.My.Wiki.new()
     {:noreply, scene}
   end
 
@@ -128,12 +129,15 @@ defmodule Memelex.GUI.Component.Memex.SideBar do
   end
 
   def render_personal_tile(graph, args) do
-    tile_height = (1 - @split) * args.frame.dimens.height
+    # tile_height = (1 - @split) * args.frame.dimens.height
+    tile_height = (1 - @split) * args.frame.size.height
 
     graph
-    |> Scenic.Primitives.rect({args.frame.dimens.width, tile_height}, fill: :violet)
+    # |> Scenic.Primitives.rect({args.frame.dimens.width, tile_height}, fill: :violet)
+    |> Scenic.Primitives.rect({args.frame.size.width, tile_height}, fill: :violet)
+
     # here we render the name of the Memex
-    |> Scenic.Primitives.text(args.state.name || "no name", translate: {12, tile_height - 65})
+    # |> Scenic.Primitives.text(args.state.name || "no name", translate: {12, tile_height - 65})
   end
 
   def render_toolbar(graph, args) do
@@ -141,7 +145,8 @@ defmodule Memelex.GUI.Component.Memex.SideBar do
     |> Scenic.Primitives.group(
       fn graph ->
         graph
-        |> Scenic.Primitives.rect({args.frame.dimens.width, 50}, fill: :forest_green)
+        # |> Scenic.Primitives.rect({args.frame.dimens.width, 50}, fill: :forest_green)
+        |> Scenic.Primitives.rect({args.frame.size.width, 50}, fill: :forest_green)
         |> Memelex.GUI.Components.IconButton.add_to_graph(
           %{
             frame: Frame.new(pin: {0 * 50, 0}, size: {50, 50}),
@@ -163,14 +168,16 @@ defmodule Memelex.GUI.Component.Memex.SideBar do
           },
           id: :search_memex
         )
-        |> ScenicWidgets.IconButton.add_to_graph(
-          %{frame: Frame.new(pin: {3 * 50, 0}, size: {50, 50}), hover_highlight?: false},
-          id: :cog
-        )
+
+        # |> ScenicWidgets.IconButton.add_to_graph(
+        #   %{frame: Frame.new(pin: {3 * 50, 0}, size: {50, 50}), hover_highlight?: false},
+        #   id: :cog
+        # )
 
         # |> Scenic.Primitives.rect({32, 32}, fill: {:image, "icons/add.png"})
       end,
-      translate: {0, (1 - @split) * args.frame.dimens.height - 50}
+      # translate: {0, (1 - @split) * args.frame.dimens.height - 50}
+      translate: {0, (1 - @split) * args.frame.size.height - 50}
     )
   end
 
@@ -249,15 +256,19 @@ defmodule Memelex.GUI.Component.Memex.SideBar do
     |> Scenic.Primitives.group(
       fn graph ->
         graph
-        |> Scenic.Primitives.rect(lower_pane_frame.size, fill: :dark_gray)
+        |> Scenic.Primitives.rect(lower_pane_frame.size.box, fill: :dark_gray)
         |> render_open_tidbits(lower_pane_frame, open_tidbits)
       end,
       id: {__MODULE__, :lower_pane},
-      translate: lower_pane_frame.pin
+      translate: lower_pane_frame.pin.point
     )
   end
 
-  def calc_lower_pane_frame(%{coords: %{x: x, y: y}, dimens: %{width: w, height: h}}) do
+  # def calc_lower_pane_frame(%{coords: %{x: x, y: y}, dimens: %{width: w, height: h}}) do
+  #   Frame.new(pin: {0, (1 - @split) * h}, size: {w, @split * h})
+  # end
+
+  def calc_lower_pane_frame(%{pin: %{x: x, y: y}, size: %{width: w, height: h}}) do
     Frame.new(pin: {0, (1 - @split) * h}, size: {w, @split * h})
   end
 
@@ -274,7 +285,7 @@ defmodule Memelex.GUI.Component.Memex.SideBar do
         button_frame =
           Frame.new(%{
             pin: {0, offset_count * btn_height},
-            size: {sidebar_frame.dimens.width, btn_height}
+            size: {sidebar_frame.size.width, btn_height}
           })
 
         new_graph =

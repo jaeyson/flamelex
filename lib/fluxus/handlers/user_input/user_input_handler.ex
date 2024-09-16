@@ -4,73 +4,100 @@ defmodule Flamelex.Fluxus.UserInputHandler do
   through this module.
   """
   use Flamelex.Keymaps.Editor.GlobalBindings
+  alias Flamelex.Fluxus.UserInputHandler.Utils
   require Logger
 
-  # NOTE: kommander.hidden? == false, means it is NOT hidden, i.e. KommandBuffer is visible
-  def process(%{kommander: %{hidden?: false}} = radix_state, input) do
-    Flamelex.Keymaps.Kommander |> process_with_rescue(radix_state, input)
-  end
+  # #   # TODO look for this module/file & see if it exists before attempting this
+  # #   case Memelex.My.Modz.CustomInputHandler.process(radix_state, input) do
+  # #     :ignore ->
+  # #       Logger.debug("Memelex.My.Modz.CustomInputHandler ignoring... #{inspect(%{input: input})}")
+  # #       EventBus.mark_as_completed({__MODULE__, event_shadow})
 
-  def process(%{root: %{active_app: :desktop}} = radix_state, input) do
-    Flamelex.Keymaps.Desktop |> process_with_rescue(radix_state, input)
-  end
+  # #     {:ok, ^radix_state} ->
+  # #       # Logger.debug "#{Memelex.My.Modz.CustomInputHandler} ignoring (no state-change)..."
+  # #       EventBus.mark_as_completed({__MODULE__, event_shadow})
 
-  def process(%{root: %{active_app: :editor}} = radix_state, input) do
-    # TODO route this to QuillEx
-    # QuillEx.Fluxus.input(input)
-    Flamelex.Keymaps.Editor |> process_with_rescue(radix_state, input)
-  end
+  # #     {:ok, new_radix_state} ->
+  # #       # Logger.debug "#{Memelex.My.Modz.CustomInputHandler} processed event, state changed..."
+  # #       # NOTE - we only need to `put` user input into the store, dont call `update` because we dont need to broadcast this out to all components...
+  # #       Flamelex.Fluxus.RadixStore.put(new_radix_state)
+  # #       EventBus.mark_as_completed({__MODULE__, event_shadow})
+  # #   end
+  # # end
 
-  def process(%{root: %{active_app: :memex}} = radix_state, input) do
-    # fire it off to Memelex, they can worry about this one...
-    # Memelex.Fluxus.input(input)
-    Logger.warn("NEED TO HANDLE MEMEX INPUT")
+  # this note was in an old file... maybe red herring or maybe secret mystery revealsed!
+  # # TODO add an atom here to say we came from Flamelex, not Memelex or QuillEx, to make pattern matching easier when writing custom key bindings
+
+  # # NOTE: kommander.hidden? == false, means it is NOT hidden, i.e. KommandBuffer is visible
+  # def process(%{kommander: %{hidden?: false}} = radix_state, input) do
+  #   Flamelex.Keymaps.Kommander |> process_with_rescue(radix_state, input)
+  # end
+
+  # def process(%{root: %{active_app: :desktop}} = radix_state, input) do
+  #   Flamelex.Keymaps.Desktop |> process_with_rescue(radix_state, input)
+  # end
+
+  # def process(%{root: %{active_app: :editor}} = radix_state, input) do
+  #   # TODO route this to QuillEx
+  #   # QuillEx.Fluxus.input(input)
+  #   Flamelex.Keymaps.Editor |> process_with_rescue(radix_state, input)
+  # end
+
+  # def process(%{root: %{active_app: :memex}} = radix_state, input) do
+  #   # fire it off to Memelex, they can worry about this one...
+  #   # Memelex.Fluxus.input(input)
+  #   Logger.warn("NEED TO HANDLE MEMEX INPUT")
+  #   :ignore
+  # end
+
+  def process(
+        %{
+          layers: %{
+            one: %{
+              active_apps: [
+                {Flamelex.GUI.Component.TODOlist, _args1},
+                {Flamelex.GUI.Component.TODOdetails, _args2}
+              ]
+            }
+          }
+        },
+        @space_bar
+      ) do
+    # Logger.warn("ignoring input: #{inspect(input)}")
+    IO.puts("GOT SPACE")
     :ignore
   end
 
-  def process(_radix_state, input) do
+  def process(
+        %{
+          layers: %{
+            one: %{
+              layout: :split_screen,
+              active_apps: [
+                {Flamelex.GUI.Component.TODOlist, todos},
+                {Flamelex.GUI.Component.TODOdetails, _args2}
+              ]
+            }
+          }
+        } = rdx,
+        @escape_key
+      ) do
+    rdx
+    |> put_in([:layers, :one, :layout], :full_screen)
+    |> put_in(
+      [:layers, :one, :active_apps],
+      [{Flamelex.GUI.Component.TODOlist, todos}]
+    )
+  end
+
+  def process(_rdx, input) do
+    # IO.puts("#{inspect(@space_bar)}")
+    # IO.inspect(rdx.layers.one.active_app)
     # Logger.warn("ignoring input: #{inspect(input)}")
     :ignore
   end
 
   # ------
-
-  defp process_with_rescue(reducer, radix_state, input) do
-    try do
-      reducer.process(radix_state, input)
-    rescue
-      FunctionClauseError ->
-        Logger.warn("input: #{inspect(input)} not handled by Reducer `#{inspect(reducer)}`")
-        # TODO should we still record this input??
-        # {:ok, radix_state |> record_input(input)}
-        :ignore
-    else
-      :ok ->
-        {:ok, radix_state |> record_input(input)}
-
-      # TODO I don't think we should allow any InputHandler to return a RadixState, since we dont broadcast out from them...
-      # {:ok, new_radix_state} ->
-      #    {:ok, new_radix_state |> record_input(input)}
-      :ignore ->
-        :ignore
-
-      :error ->
-        :error
-    end
-  end
-
-  defp record_input(radix_state, {:key, {key, @key_pressed, []}} = input)
-       when input in @valid_text_input_characters do
-    # Logger.debug "-- Recording INPUT: #{inspect key}"
-    # NOTE: We store the latest keystroke at the front of the list, not the back
-    radix_state
-    |> put_in([:history, :keystrokes], radix_state.history.keystrokes |> List.insert_at(0, input))
-  end
-
-  defp record_input(radix_state, input) do
-    # Logger.debug "NOT recording: #{inspect input} as input..."
-    radix_state
-  end
 end
 
 #   # IN THE FUTURE - we route all input to the GUI.Controller

@@ -26,6 +26,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
       |> assign(frame: args.frame)
       # |> assign(theme: theme)
       |> assign(state: args.state)
+      |> assign(filter: :all)
       |> push_graph(init_graph)
 
     # Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
@@ -136,10 +137,20 @@ defmodule Flamelex.GUI.Component.TODOlist do
           {[
              {"Top Ten", :top_ten},
              {"Oldest", :oldest},
+             {"Newest", :newest},
+             {"This week", :this_week},
+             {"This month", :this_month},
+             {"Next month", :next_month},
              {"Most urgent", :most_urgent},
+             {"Overdue", :overdue},
+             {"Random 5", :random_5},
              {"Priority", :priority},
              {"Soonest deadline", :soonest},
              {"Un-prioritized", :un_prioritized},
+             # upcoming should show 3 columns, today, this month, this quarter, and then optionally 6 months 1 year 5 year 10 years
+             {"Upcoming", :upcoming},
+             {"Done", :done},
+             {"Cancelled", :cancelled},
              {"All", :all}
            ], :all},
           id: :filter_select,
@@ -223,7 +234,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
     #     end
     # IO.inspect("#{inspect(e)}")
     Flamelex.Fluxus.action({[app: __MODULE__], {:filter_todos, filter_by}})
-    {:noreply, scene}
+    {:noreply, scene |> assign(filter: filter_by)}
   end
 
   # def handle_event(e, scene) do

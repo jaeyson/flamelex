@@ -437,7 +437,7 @@
 #   #     ) do
 #   #   {:ok,
 #   #    Scenic.Graph.build()
-#   #    |> Memelex.GUI.Components.MemDesk.add_to_graph(%{
+#   #    |> Memelex.GUI.Components.Projector.add_to_graph(%{
 #   #      frame: frame,
 #   #      state: Flamelex.Fluxus.MemexStore.get()
 #   #    })}

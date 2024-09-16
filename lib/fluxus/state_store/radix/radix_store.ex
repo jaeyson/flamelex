@@ -86,7 +86,7 @@ defmodule Flamelex.Fluxus.Radix do
         reason: #{inspect(reason)}
         |
 
-        Logger.error("#{__MODULE__} failed to process event.#{formatted_error}")
+        Logger.error("#{__MODULE__}Store failed to process event.#{formatted_error}")
 
         {:noreply, radix_state}
     end

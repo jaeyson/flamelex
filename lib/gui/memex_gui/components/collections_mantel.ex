@@ -2,7 +2,8 @@ defmodule Memelex.GUI.Components.CollectionsMantel do
   use Scenic.Component
   # use Flamelex.ProjectAliases
   require Logger
-  alias ScenicWidgets.Core.Structs.Frame
+  # alias ScenicWidgets.Core.Structs.Frame
+  alias Widgex.Frame
   # alias Flamelex.GUI.Component.Memex
   # alias Flamelex.Fluxus.Reducers.Memex, as: RootReducer
 

@@ -24,7 +24,7 @@ defmodule Flamelex.Fluxus.RadixState do
       layers: %{
         one: %{
           layout: :full_screen,
-          active_app: nil
+          active_apps: []
         }
       }
     }
@@ -301,6 +301,6 @@ end
 
 #   def mutate(radix_state, :open_widget_workbench) do
 #     radix_state
-#     |> put_in([:root, :active_app], :widget_workbench)
+#     |> put_in([:root, :active_apps], :widget_workbench)
 #   end
 # end

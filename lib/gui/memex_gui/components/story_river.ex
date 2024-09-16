@@ -1,6 +1,6 @@
 defmodule Memelex.GUI.Components.StoryRiver do
   use Scenic.Component
-  alias ScenicWidgets.Core.Structs.Frame
+  # alias ScenicWidgets.Core.Structs.Frame
   require Logger
 
   # TODO when we need to render a list, need to stash them inside temp state memory until we get "next render" msg from last HyperCard
@@ -26,7 +26,7 @@ defmodule Memelex.GUI.Components.StoryRiver do
 
   def validate(
         %{
-          frame: %Frame{} = _f,
+          frame: %Widgex.Frame{} = _f,
           state: %{
             open_tidbits: _open_tidbits_list,
             scroll: {_x, _y}
@@ -357,7 +357,8 @@ defmodule Memelex.GUI.Components.StoryRiver do
 
   def calc_hypercard_frame(%{
         assigns: %{
-          frame: %Frame{coords: %{x: x, y: y}, dimens: %{width: w, height: h}},
+          # frame: %Frame{coords: %{x: x, y: y}, dimens: %{width: w, height: h}},
+          frame: %Widgex.Frame{pin: %{x: x, y: y}, size: %{width: w, height: h}},
           state: %{
             open_tidbits: open_tidbits_list
           }
@@ -367,7 +368,7 @@ defmodule Memelex.GUI.Components.StoryRiver do
     open_tidbits_offset = 500 * Enum.count(open_tidbits_list)
     extra_vertial_space = @spacing_buffer * Enum.count(open_tidbits_list)
 
-    Frame.new(
+    Widgex.Frame.new(
       pin: {x + @spacing_buffer, y + @spacing_buffer + open_tidbits_offset + extra_vertial_space},
       #  size: {w-(2*@spacing_buffer), {:flex_grow, %{min_height: 500}}})
       # TODO

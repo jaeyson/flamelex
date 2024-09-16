@@ -25,11 +25,13 @@ defmodule Flamelex.GUI.Components.NeoHyperCard do
     # need to anchor the new frame within this one, not re-use the same pin
     header_frame = Widgex.Frame.new(%{pin: {0, 0}, size: frame.size.box})
 
+    fill_color = calc_fill_color(t)
+
     graph
     |> Scenic.Primitives.group(
       fn graph ->
         graph
-        |> Scenic.Primitives.rect(frame.size.box, fill: :yellow, stroke: {2, :blue})
+        |> Scenic.Primitives.rect(frame.size.box, fill: fill_color, stroke: {2, :blue})
         |> ScenicWidgets.Markup.Header6.draw(header_frame, t.title)
 
         # |> Scenic.Primitives.text(t.title,
@@ -66,6 +68,15 @@ defmodule Flamelex.GUI.Components.NeoHyperCard do
   def handle_input({:cursor_button, _otherwise}, _context, scene) do
     # Logger.debug "#{__MODULE__} ignoring input: #{inspect input}..."
     {:noreply, scene}
+  end
+
+  def calc_fill_color(%Memelex.TidBit{} = t) do
+    cond do
+      t.status in [:done, "done"] -> :green
+      Memelex.My.TODOs.action_date_passed?(t) -> :red
+      t.status in [:in_progress, "in_progress"] -> :green
+      true -> :grey
+    end
   end
 
   # next 2 todos for todo list

@@ -1,28 +1,36 @@
 defmodule Flamelex.Fluxus.Reducers.Memex do
   @moduledoc false
   alias Memelex.Reducers.MemexReducer
+  alias Flamelex.Fluxus.Layer01Mutators
+  alias Memelex.GUI.Components.RapidSelector
 
   #     def process(%{root: %{active_app: :memex}} = radix_state, :open_memex) do
   #         Logger.debug "ignoring a command to open the memex, the memex is already active"
   #         :ignore
   #     end
 
-  def process(radix_state, :open_memex) do
-    new_radix_state =
-      radix_state
-      |> put_in([:root, :active_app], :memex)
-
-    {:ok, new_radix_state}
+  def process(
+        %{
+          memex: %{
+            active?: true,
+            env: %Memelex.Environment{} = mmx_env
+          }
+        } = rdx_state,
+        :open_memex
+      ) do
+    rdx_state
+    |> Layer01Mutators.set_active_app({RapidSelector, RapidSelector.State.new()})
+    |> Layer01Mutators.set_layout(:full_screen)
   end
 
-  def process(radix_state, :close_memex) do
-    # TODO maybe look in history for previously open app?
-    new_radix_state =
-      radix_state
-      |> put_in([:root, :active_app], :desktop)
+  # def process(radix_state, :close_memex) do
+  #   # TODO maybe look in history for previously open app?
+  #   new_radix_state =
+  #     radix_state
+  #     |> put_in([:root, :active_apps], :desktop)
 
-    {:ok, new_radix_state}
-  end
+  #   {:ok, new_radix_state}
+  # end
 
   # def process(_radix_state, ) do
   #    new_buf_list = buf_list |> Enum.reject(&(&1.id == buf_to_close))
@@ -30,7 +38,7 @@ defmodule Flamelex.Fluxus.Reducers.Memex do
   #    new_radix_state =
   #      if new_buf_list == [] do
   #        radix_state
-  #        |> put_in([:root, :active_app], :desktop)
+  #        |> put_in([:root, :active_apps], :desktop)
   #        |> put_in([:editor, :buffers], new_buf_list)
   #        |> put_in([:editor, :active_buf], nil)
   #      else
@@ -70,7 +78,7 @@ end
 #     def process(radix_state, {:edit_tidbit, %{tidbit_uuid: tidbit_uuid}}) do
 #         new_open_tidbits_list =
 #             radix_state.memex.story_river.open_tidbits
-#             |> Enum.map(fn 
+#             |> Enum.map(fn
 #                     %{uuid: ^tidbit_uuid} = tidbit ->
 #                         tidbit |> Map.merge(%{
 #                             mode: :edit,
@@ -94,7 +102,7 @@ end
 
 #         new_open_tidbits_list =
 #             radix_state.memex.story_river.open_tidbits
-#             |> Enum.map(fn 
+#             |> Enum.map(fn
 #                     %{uuid: ^tidbit_uuid} = tidbit ->
 #                         saved_tidbit |> Map.merge(%{
 #                             mode: :read_only,
@@ -113,7 +121,7 @@ end
 #     def process(radix_state, {:switch_mode, :read_only, %{tidbit_uuid: tidbit_uuid}}) do
 #         new_open_tidbits_list =
 #             radix_state.memex.story_river.open_tidbits
-#             |> Enum.map(fn 
+#             |> Enum.map(fn
 #                     %{uuid: ^tidbit_uuid} = tidbit ->
 #                         tidbit |> Map.merge(%{
 #                             mode: :edit,
@@ -135,7 +143,7 @@ end
 #     # def process(radix_state, {:update_tidbit, %{uuid: tidbit_uuid} = new_tidbit}) do
 #     #     new_open_tidbits_list =
 #     #         radix_state.memex.story_river.open_tidbits
-#     #         |> Enum.map(fn 
+#     #         |> Enum.map(fn
 #     #                 %{uuid: ^tidbit_uuid} ->
 #     #                     new_tidbit
 #     #                 other_tidbit ->
@@ -213,7 +221,7 @@ end
 #     def process(radix_state, {:save_tidbit, %{tidbit_uuid: tidbit_uuid}}) do
 #         new_open_tidbits_list =
 #             radix_state.memex.story_river.open_tidbits
-#             |> Enum.map(fn 
+#             |> Enum.map(fn
 #                     %{uuid: ^tidbit_uuid, mode: :edit, volatile?: true} = tidbit ->
 #                         #NOTE: a "volatile_tidbit" is one which only exists inside temporary
 #                         #      memory inside Flamelex, and hasn't been saved into the Memex proper

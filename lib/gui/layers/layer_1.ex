@@ -6,9 +6,9 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
 
   def cast_rdx_to_layer_state(%{
         menubar: %{height: menubar_h},
-        layers: %{one: %{active_app: nil}}
+        layers: %{one: %{active_apps: []}}
       }) do
-    %{active_app: nil, menubar: %{height: menubar_h}}
+    %{active_apps: [], menubar: %{height: menubar_h}}
   end
 
   def cast_rdx_to_layer_state(%{
@@ -16,13 +16,13 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
         layers: %{
           one: %{
             layout: layout,
-            active_app: active_app
+            active_apps: active_apps
           }
         }
       }) do
     %{
       layout: layout,
-      active_app: active_app,
+      active_apps: active_apps,
       menubar: %{height: menubar_h}
     }
   end
@@ -57,7 +57,7 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
   # NOTE having an intermediate component which listens to memelex events vs radix state holding everything...
   # I'm just gonna go all in on radix state & see where that breaks - it's simpler & I _need_ to start making actual progress on this project...
 
-  def render(frame, %{active_app: nil} = _layer_state) do
+  def render(frame, %{active_apps: []} = _layer_state) do
     # Logger.debug("Rendering layer 1 when the active app was set to nil...")
 
     graph =
@@ -71,7 +71,7 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
         full_window_frame,
         %{
           layout: :full_screen,
-          active_app: {Flamelex.GUI.Component.TODOlist, app_args}
+          active_apps: {Flamelex.GUI.Component.TODOlist, app_args}
         } = layer_state
       ) do
     # we can't use the entire screen when the menubar is visible
@@ -93,7 +93,7 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
         full_window_frame,
         %{
           layout: :full_screen,
-          active_app: [{Flamelex.GUI.Component.TODOlist, app_args}]
+          active_apps: [{Flamelex.GUI.Component.TODOlist, app_args}]
         } = layer_state
       ) do
     # we can't use the entire screen when the menubar is visible
@@ -113,7 +113,7 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
         full_window_frame,
         %{
           layout: :split_screen,
-          active_app: [
+          active_apps: [
             # {Flamelex.GUI.Component.TODOlist, %{list: todo_list}},
             {Flamelex.GUI.Component.TODOlist, todo_args},
             {Flamelex.GUI.Component.TODOdetails, details_args}
@@ -135,6 +135,23 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
       |> Flamelex.GUI.Component.TODOdetails.add_to_graph(%{
         frame: details_frame,
         state: details_args
+      })
+
+    {:ok, graph}
+  end
+
+  # this one is good! It's generic enough to handle any active app
+  def render(
+        full_window_frame,
+        %{layout: :full_screen, active_apps: [{component_module, args}]} = layer_state
+      ) do
+    app_frame = calc_app_frame(full_window_frame, layer_state)
+
+    graph =
+      Scenic.Graph.build()
+      |> component_module.add_to_graph(%{
+        frame: app_frame,
+        state: args
       })
 
     {:ok, graph}

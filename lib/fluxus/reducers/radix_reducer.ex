@@ -62,7 +62,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
   # def process(radix_state, :show_agents) do
   #   new_radix_state =
   #     radix_state
-  #     |> put_in([:root, :active_app], :high_council)
+  #     |> put_in([:root, :active_apps], :high_council)
 
   #   {:ok, new_radix_state}
   # end
@@ -72,7 +72,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
           layers: %{
             one: %{
               layout: :full_screen,
-              active_app: {Flamelex.GUI.Component.TODOlist, todo_app_state}
+              active_apps: {Flamelex.GUI.Component.TODOlist, todo_app_state}
             }
           }
         } = rdx_state,
@@ -82,7 +82,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
 
     rdx_state
     |> put_in([:layers, :one, :layout], :split_screen)
-    |> put_in([:layers, :one, :active_app], [
+    |> put_in([:layers, :one, :active_apps], [
       {Flamelex.GUI.Component.TODOlist, todo_app_state},
       {Flamelex.GUI.Component.TODOdetails, t}
     ])
@@ -93,7 +93,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
           layers: %{
             one: %{
               layout: :full_screen,
-              active_app: [{Flamelex.GUI.Component.TODOlist, todo_app_state}]
+              active_apps: [{Flamelex.GUI.Component.TODOlist, todo_app_state}]
             }
           }
         } = rdx_state,
@@ -101,7 +101,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
       ) do
     rdx_state
     |> put_in([:layers, :one, :layout], :split_screen)
-    |> put_in([:layers, :one, :active_app], [
+    |> put_in([:layers, :one, :active_apps], [
       {Flamelex.GUI.Component.TODOlist, todo_app_state},
       {Flamelex.GUI.Component.TODOdetails, t}
     ])
@@ -111,7 +111,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
         %{
           layers: %{
             one: %{
-              active_app: [
+              active_apps: [
                 {Flamelex.GUI.Component.TODOlist, todo_app_state},
                 {Flamelex.GUI.Component.TODOdetails, t}
               ]
@@ -121,7 +121,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
         {[app: Flamelex.GUI.Component.TODOlist], {:open_todo, new_todo}}
       ) do
     rdx_state
-    |> put_in([:layers, :one, :active_app], [
+    |> put_in([:layers, :one, :active_apps], [
       {Flamelex.GUI.Component.TODOlist, todo_app_state},
       {Flamelex.GUI.Component.TODOdetails, new_todo}
     ])
@@ -129,7 +129,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
 
   def app_is_active?(rdx_state, app) do
     # TODO this is one reason to clean up and just have active_apps as a list of only one item even if only one app is active
-    case rdx_state[:layers][:one][:active_app] do
+    case rdx_state[:layers][:one][:active_apps] do
       {^app, _args} ->
         true
 
@@ -158,7 +158,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
   #       {[app: Flamelex.GUI.Component.TODOlist], {:open_todo, new_todo}}
   #     ) do
   #   rdx_state
-  #   |> put_in([:layers, :one, :active_app], [
+  #   |> put_in([:layers, :one, :active_apps], [
   #     {Flamelex.GUI.Component.TODOlist, todo_app_state},
   #     {Flamelex.GUI.Component.TODOdetails, new_todo}
   #   ])
@@ -179,31 +179,72 @@ defmodule Flamelex.Fluxus.RadixReducer do
       ) do
     rdx_state
     |> put_in([:layers, :one, :layout], :full_screen)
-    |> put_in([:layers, :one, :active_app], [
+    |> put_in([:layers, :one, :active_apps], [
       {Flamelex.GUI.Component.TODOlist, todo_app_state}
     ])
+  end
+
+  def update_app_state(rdx_state, [:layers, :one, :active_apps], app, merge: new_state) do
+    # |> put_in([:layers, :one, :active_apps], [
+    #   {Flamelex.GUI.Component.TODOlist, Map.merge(todo_app_state, merge)}
+    # ])
+    # TODO use the incoming path somehow instead of hard coding this
+    # IO.inspect(rdx_state[:layers][:one][:active_apps])
+
+    new_active_apps =
+      case rdx_state[:layers][:one][:active_apps] do
+        {mod, args} ->
+          if mod == app do
+            # note swap to using list here
+            [{mod, Map.merge(args, new_state)}]
+          else
+            [{mod, args}]
+          end
+
+        app_list when is_list(app_list) ->
+          Enum.map(app_list, fn {a, old_state} ->
+            if a == app do
+              {a, Map.merge(old_state, new_state)}
+            else
+              {a, old_state}
+            end
+          end)
+      end
+
+    # Enum.map(rdx_state[:layers][:one][:active_apps], fn {a, old_state}, acc ->
+    #   if a == app do
+    #     {a, Map.merge(old_state, new_state)}
+    #   else
+    #     a
+    #   end
+    # end)
+
+    rdx_state
+    |> put_in([:layers, :one, :active_apps], new_active_apps)
   end
 
   def process(rdx_state, {[app: app], {:filter_todos, filter_by}}) do
     if rdx_state |> app_is_active?(app) do
       new_todos = Memelex.My.TODOs.all(filter: filter_by)
-
       # hack hack this to work for only havinbg one active app
-      [{todo_list_module, app_state}] = rdx_state[:layers][:one][:active_app]
-
-      new_app_state = app_state |> Map.put(:list, new_todos)
-      # update_active_app(rdx_state, app, merge: %{todo_list: new_todos})
-      # {:ok, new_rdx_state}= update_app_status(rdx_state, app, merge: %{todo_list: new_todos})
-      # case update_app_status(rdx_state, app, merge: %{todo_list: new_todos}) do
-      #   {:ok, new_rdx_state} ->
-      #     new_rdx_state+
-
-      #   :error ->
-      #     rdx_state
-      # end
-
+      # [{todo_list_module, app_state}] = rdx_state[:layers][:one][:active_apps]
+      # new_rdx_state =
       rdx_state
-      |> put_in([:layers, :one, :active_app], [{todo_list_module, new_app_state}])
+      |> update_app_state([:layers, :one, :active_apps], app, merge: %{list: new_todos})
+
+      # new_app_state = app_state |> Map.put(:list, new_todos)
+      # # update_active_app(rdx_state, app, merge: %{todo_list: new_todos})
+      # # {:ok, new_rdx_state}= update_app_status(rdx_state, app, merge: %{todo_list: new_todos})
+      # # case update_app_status(rdx_state, app, merge: %{todo_list: new_todos}) do
+      # #   {:ok, new_rdx_state} ->
+      # #     new_rdx_state+
+
+      # #   :error ->
+      # #     rdx_state
+      # # end
+
+      # rdx_state
+      # |> put_in([:layers, :one, :active_apps], [{todo_list_module, new_app_state}])
 
       #   {Flamelex.GUI.Component.TODOlist, filter_todos(rdx_state, filter_by)}
       # ])
@@ -218,57 +259,50 @@ defmodule Flamelex.Fluxus.RadixReducer do
 
   def update_active_app(rdx_state, app, merge: new_state) do
     new_active_apps =
-      rdx_state[:layers][:one][:active_app]
+      rdx_state[:layers][:one][:active_apps]
       |> Enum.map(fn
         {a, s} when a == app -> {a, s |> Map.merge(new_state)}
         {a, s} -> {a, s}
       end)
 
     rdx_state
-    |> put_in([:layers, :one, :active_app], new_active_apps)
+    |> put_in([:layers, :one, :active_apps], new_active_apps)
 
-    # |> put_in([:layers, :one, :active_app], [
-    #   {app, rdx_state[:layers][:one][:active_app][app] |> Map.merge(new_state)}
+    # |> put_in([:layers, :one, :active_apps], [
+    #   {app, rdx_state[:layers][:one][:active_apps][app] |> Map.merge(new_state)}
     # ])
   end
-
-  require Logger
-
-  def process(rdx_state, action) do
-    Logger.error("Unable to process action. #{inspect(action)}")
-    IO.inspect(rdx_state)
-    :ignore
-  end
-
-  # def process(radix_state, :open_memex) do
-  #   new_radix_state =
-  #     radix_state
-  #     |> put_in([:root, :active_app], :memex)
-
-  #   {:ok, new_radix_state}
-  # end
-
-  # def process(radix_state, {reducer, action}) when is_atom(reducer) do
-  #   # Instead of try catch, look in the module, see if there's a function called that.
-
-  #   # That could be cool, if we make all actions an actual function in the processor??
-
-  #   # If that fails/doesn't work, we want to look up custom keymaps in the my_modz.ex (???)
-
-  #   try do
-  #     reducer.process(radix_state, action)
-  #   rescue
-  #     e in FunctionClauseError ->
-  #       IO.inspect(e)
-
-  #       {:error,
-  #        "#{__MODULE__} -- Reducer `#{inspect(reducer)}` could not match action: #{inspect(action)}"}
-  #   end
-  # end
 
   # # TODO here, we should have a module of transformations for the radix state!
   # # Make RadixState a struct!?!?
   # defp open_widget_workbench(radix_state) do
   #   Flamelex.Fluxus.Structs.RadixState.mutate(radix_state, :open_widget_workbench)
   # end
+
+  require Logger
+
+  # todo use_module would be better but the compiler hates it
+  def process(radix_state, {reducer, action}) when is_atom(reducer) do
+    # Instead of try catch, look in the module, see if there's a function called that.
+
+    # That could be cool, if we make all actions an actual function in the processor?? (in the end, this is cool but ultimately just pointless complication...
+    # but the idea _is_ cool, we would call MFA.apply(reducer, action, args) or something like that, and it would look up the function in the module and call it
+
+    # If that fails/doesn't work, we want to look up custom keymaps in the my_modz.ex (???)
+
+    try do
+      reducer.process(radix_state, action)
+    rescue
+      e in FunctionClauseError ->
+        IO.inspect(e)
+
+        {:error,
+         "#{__MODULE__} -- Reducer `#{inspect(reducer)}` could not match action: #{inspect(action)}"}
+    end
+  end
+
+  def process(rdx_state, action) do
+    Logger.error("#{__MODULE__} unable to process action. #{inspect(action)}")
+    :ignore
+  end
 end
