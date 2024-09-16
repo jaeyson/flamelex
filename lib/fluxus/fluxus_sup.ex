@@ -16,6 +16,7 @@ defmodule Flamelex.Fluxus.Supervisor do
 
     children = [
       pubsub_tree(),
+      # TODO rename this module back to RadixStore
       {Flamelex.Fluxus.Radix, args}
     ]
 
