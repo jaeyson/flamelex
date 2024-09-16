@@ -2,6 +2,7 @@ defmodule Memelex.GUI.Components.HyperCard do
   use Scenic.Component
   alias Memelex.Fluxus.Reducers.RadixReducer
   alias Memelex.Fluxus.Reducers.TidbitReducer
+  alias Flamelex.Fluxus.Reducers.Memex, as: MemexReducer
 
   # TODO document this point
   # TODO good idea: render each sub-component as a seperate graph,
@@ -53,44 +54,46 @@ defmodule Memelex.GUI.Components.HyperCard do
   def handle_cast({:click, {:close, tidbit_uuid}}, scene) do
     # TODO pass it up to the story river (including tidbit info)
     # which will then in turn call the API to close it?? Or just keep doing it here??
-    Memelex.Fluxus.action({TidbitReducer, {:close_tidbit, %{tidbit_uuid: tidbit_uuid}}})
+    # Memelex.Fluxus.action({TidbitReducer, {:close_tidbit, %{tidbit_uuid: tidbit_uuid}}})
+    Flamelex.Fluxus.action({MemexReducer, {:close_tidbit, %{tidbit_uuid: tidbit_uuid}}})
+
     {:noreply, scene}
   end
 
-  def handle_cast({:click, {:edit, tidbit_uuid}}, scene) do
-    Memelex.Fluxus.action({TidbitReducer, {:set_gui_mode, :edit, %{tidbit_uuid: tidbit_uuid}}})
-    {:noreply, scene}
-  end
+  # def handle_cast({:click, {:edit, tidbit_uuid}}, scene) do
+  #   Memelex.Fluxus.action({TidbitReducer, {:set_gui_mode, :edit, %{tidbit_uuid: tidbit_uuid}}})
+  #   {:noreply, scene}
+  # end
 
-  def handle_cast({:click, {:save, tidbit_uuid}}, scene) do
-    Memelex.Fluxus.action({TidbitReducer, {:save_tidbit, %{tidbit_uuid: tidbit_uuid}}})
-    {:noreply, scene}
-  end
+  # def handle_cast({:click, {:save, tidbit_uuid}}, scene) do
+  #   Memelex.Fluxus.action({TidbitReducer, {:save_tidbit, %{tidbit_uuid: tidbit_uuid}}})
+  #   {:noreply, scene}
+  # end
 
-  def handle_cast({:click, {:discard_changes, tidbit_uuid}}, scene) do
-    Memelex.Fluxus.action({TidbitReducer, {:discard_changes, %{tidbit_uuid: tidbit_uuid}}})
-    {:noreply, scene}
-  end
+  # def handle_cast({:click, {:discard_changes, tidbit_uuid}}, scene) do
+  #   Memelex.Fluxus.action({TidbitReducer, {:discard_changes, %{tidbit_uuid: tidbit_uuid}}})
+  #   {:noreply, scene}
+  # end
 
-  def handle_cast({:click, {:delete, tidbit_uuid}}, scene) do
-    Memelex.Fluxus.action({TidbitReducer, {:delete_tidbit, %{tidbit_uuid: tidbit_uuid}}})
-    {:noreply, scene}
-  end
+  # def handle_cast({:click, {:delete, tidbit_uuid}}, scene) do
+  #   Memelex.Fluxus.action({TidbitReducer, {:delete_tidbit, %{tidbit_uuid: tidbit_uuid}}})
+  #   {:noreply, scene}
+  # end
 
-  def handle_event({:click, {:open_external_textfile, filepath}}, _from, scene) do
-    IO.puts("Sample button was clicked! #{filepath}")
-    Memelex.Utils.ToolBag.open_external_textfile(filepath)
-    {:noreply, scene}
-  end
+  # def handle_event({:click, {:open_external_textfile, filepath}}, _from, scene) do
+  #   IO.puts("Sample button was clicked! #{filepath}")
+  #   Memelex.Utils.ToolBag.open_external_textfile(filepath)
+  #   {:noreply, scene}
+  # end
 
-  def handle_info({:radix_state_change, new_radix_state}, scene) do
-    # TODO would be better if we caught spcific TidBit changes here, rather
-    # than re-rendering the entire StoryRiver...
-    {:noreply, scene}
-  end
+  # def handle_info({:radix_state_change, new_radix_state}, scene) do
+  #   # TODO would be better if we caught spcific TidBit changes here, rather
+  #   # than re-rendering the entire StoryRiver...
+  #   {:noreply, scene}
+  # end
 
-  def handle_info({:wiki_server, :memex_saved_to_disc}, scene) do
-    # get child processes & cast update to SideNav
-    {:noreply, scene}
-  end
+  # def handle_info({:wiki_server, :memex_saved_to_disc}, scene) do
+  #   # get child processes & cast update to SideNav
+  #   {:noreply, scene}
+  # end
 end

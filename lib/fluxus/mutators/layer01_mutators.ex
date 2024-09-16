@@ -31,6 +31,19 @@ defmodule Flamelex.Fluxus.Layer01Mutators do
     end)
   end
 
+  def close_tidbit(
+        %{layers: %{one: %{active_apps: [{RapidSelector, state}]}}} = rdx_state,
+        %{tidbit_uuid: tidbit_uuid}
+      ) do
+    rdx_state
+    |> update_app_state(RapidSelector, fn state ->
+      state
+      |> update_in([:story_river, :open_tidbits], fn open_tidbits ->
+        Enum.reject(open_tidbits, &(&1.uuid == tidbit_uuid))
+      end)
+    end)
+  end
+
   def update_app_state(rdx_state, app_name, fun) do
     update_in(
       rdx_state[:layers][:one][:active_apps],

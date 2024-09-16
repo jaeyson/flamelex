@@ -23,33 +23,77 @@ defmodule Flamelex.Fluxus.Reducers.Memex do
     |> Layer01Mutators.set_layout(:full_screen)
   end
 
-  # def process(radix_state, :close_memex) do
-  #   # TODO maybe look in history for previously open app?
-  #   new_radix_state =
-  #     radix_state
-  #     |> put_in([:root, :active_apps], :desktop)
+  def process(
+        %{
+          layers: %{
+            one: %{active_apps: [{RapidSelector, _state}]}
+          }
+        } = radix_state,
+        {:open_tidbit, t}
+      ) do
+    case GenServer.call(Memelex.WikiServer, {:get, t}) do
+      {:ok, tidbit} ->
+        radix_state
+        |> Layer01Mutators.open_tidbit(
+          Map.merge(tidbit, %{
+            gui: %{
+              mode: :normal,
+              focus: :title,
+              cursors: %{
+                # TODO we need to ensure no titles contain newoine chars, or if we do, then we need to allow ourselves to handle it - probably we should be able to just say "put the cursor in final position" & let TextPad figure it out...
+                # we need the +1 because a string of length zero is still position 1 in our editor
+                title: %{line: 1, col: String.length(t.title) + 1},
+                body: %{line: 1, col: 1}
+              }
+            }
+          })
+        )
 
-  #   {:ok, new_radix_state}
-  # end
+      {:error, _msg} ->
+        Logger.warning("Could not open the TidBit, no modification to radix_state was made.")
+        radix_state
+    end
+  end
 
-  # def process(_radix_state, ) do
-  #    new_buf_list = buf_list |> Enum.reject(&(&1.id == buf_to_close))
-
-  #    new_radix_state =
-  #      if new_buf_list == [] do
-  #        radix_state
-  #        |> put_in([:root, :active_apps], :desktop)
-  #        |> put_in([:editor, :buffers], new_buf_list)
-  #        |> put_in([:editor, :active_buf], nil)
-  #      else
-  #        radix_state
-  #        |> put_in([:editor, :buffers], new_buf_list)
-  #        |> put_in([:editor, :active_buf], hd(new_buf_list).id)
-  #      end
-
-  #    {:ok, new_radix_state}
-  #  end
+  def process(
+        %{
+          layers: %{
+            one: %{active_apps: [{RapidSelector, _state}]}
+          }
+        } = radix_state,
+        {:close_tidbit, t}
+      ) do
+    radix_state |> Layer01Mutators.close_tidbit(t)
+  end
 end
+
+# def process(radix_state, :close_memex) do
+#   # TODO maybe look in history for previously open app?
+#   new_radix_state =
+#     radix_state
+#     |> put_in([:root, :active_apps], :desktop)
+
+#   {:ok, new_radix_state}
+# end
+
+# def process(_radix_state, ) do
+#    new_buf_list = buf_list |> Enum.reject(&(&1.id == buf_to_close))
+
+#    new_radix_state =
+#      if new_buf_list == [] do
+#        radix_state
+#        |> put_in([:root, :active_apps], :desktop)
+#        |> put_in([:editor, :buffers], new_buf_list)
+#        |> put_in([:editor, :active_buf], nil)
+#      else
+#        radix_state
+#        |> put_in([:editor, :buffers], new_buf_list)
+#        |> put_in([:editor, :active_buf], hd(new_buf_list).id)
+#      end
+
+#    {:ok, new_radix_state}
+#  end
+# end
 
 #     def process(%{memex: memex} = radix_state, :new_tidbit) do
 #         Logger.debug "creating a new TidBit..."

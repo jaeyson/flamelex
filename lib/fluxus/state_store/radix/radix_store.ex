@@ -1,4 +1,5 @@
-defmodule Flamelex.Fluxus.Radix do
+defmodule Flamelex.Fluxus.RadixStore do
+  # https://www.bounga.org/elixir/2020/02/29/genserver-supervision-tree-and-state-recovery-after-crash/
   use GenServer
   require Logger
 
@@ -55,15 +56,6 @@ defmodule Flamelex.Fluxus.Radix do
 
     {:noreply, :initialization_failure}
   end
-
-  # def handle_cast(:re_render, radix_state) do
-  #   Flamelex.Lib.Utils.PubSub.broadcast(
-  #     topic: :radix_state_change,
-  #     msg: {:radix_state_change, radix_state}
-  #   )
-
-  #   {:noreply, radix_state}
-  # end
 
   def handle_cast({:event, e, e_shadow}, radix_state) do
     case Wormhole.capture(handle_event_fn(radix_state, e, e_shadow), crush_report: true) do
@@ -130,19 +122,14 @@ defmodule Flamelex.Fluxus.Radix do
       {__MODULE__,
        [
          to_string(:flx_actions),
-         to_string(:memelex),
-         to_string(:flx_user_input)
+         to_string(:flx_user_input),
+         to_string(:memelex)
        ]}
     )
   end
 end
 
-# defmodule Flamelex.Fluxus.RadixStore do
-#   @moduledoc """
-#   This module just stores the actual state itself - modifications are
-#   made elsewhere.
-
-#   https://www.bounga.org/elixir/2020/02/29/genserver-supervision-tree-and-state-recovery-after-crash/
+#
 
 #   The GUI.Component and the Buffer.Component have a shared state, via an
 #   Agent process. They receive an action, they go fetch the state, they

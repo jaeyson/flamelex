@@ -4,6 +4,7 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   """
   alias Flamelex.Fluxus.Layer01Mutators
   alias Memelex.GUI.Components.RapidSelector
+  alias Flamelex.Fluxus.Reducers.Memex, as: MemexReducer
   require Logger
 
   def process(radix_state, {:loaded_memex, new_memex_env}) do
@@ -36,44 +37,15 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   #   })
   # end
 
-  def process(
-        %{
-          layers: %{
-            one: %{active_apps: [{RapidSelector, _state}]}
-          }
-        } = radix_state,
-        {:open_tidbit, t}
-      ) do
-    case GenServer.call(Memelex.WikiServer, {:get, t}) do
-      {:ok, tidbit} ->
-        tidbit_with_gui_args =
-          Map.merge(tidbit, %{
-            gui: %{
-              mode: :normal,
-              focus: :title,
-              cursors: %{
-                # TODO we need to ensure no titles contain newoine chars, or if we do, then we need to allow ourselves to handle it - probably we should be able to just say "put the cursor in final position" & let TextPad figure it out...
-                # we need the +1 because a string of length zero is still position 1 in our editor
-                title: %{line: 1, col: String.length(t.title) + 1},
-                body: %{line: 1, col: 1}
-              }
-            }
-          })
-
-        radix_state
-        |> Layer01Mutators.open_tidbit(tidbit_with_gui_args)
-
-      {:error, _msg} ->
-        Logger.warning("Could not open the TidBit, no modification to radix_state was made.")
-        radix_state
-    end
-
-    # raise "Flamelex not handling the event to open a TidBit yet"
-    # {:ok, new_memex_state} =
-    #   Memelex.Fluxus.Reducers.TidbitReducer.process(memex_state, {:open_tidbit, t})
-
-    # {:ok, radix_state, new_memex_state}
+  def process(radix_state, {:open_tidbit, t}) do
+    MemexReducer.process(radix_state, {:open_tidbit, t})
   end
+
+  # raise "Flamelex not handling the event to open a TidBit yet"
+  # {:ok, new_memex_state} =
+  #   Memelex.Fluxus.Reducers.TidbitReducer.process(memex_state, {:open_tidbit, t})
+
+  # {:ok, radix_state, new_memex_state}
 
   def process(radix_state, :show_todos) do
     # raise("THIS IS SUPPOSED TO SO THE THING")
