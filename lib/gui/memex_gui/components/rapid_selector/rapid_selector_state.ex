@@ -11,8 +11,7 @@ defmodule Memelex.GUI.Components.RapidSelector.State do
               scroll: {0, 0}
             },
             sidebar: %{},
-            history: %{keystrokes: []},
-            turbo?: false
+            history: %{keystrokes: []}
 
   # Initialize a new state using the struct
   def new do

@@ -31,6 +31,21 @@ defmodule Flamelex.Fluxus.UserInputHandler do
           layers: %{
             one: %{
               active_apps: [
+                {Flamelex.GUI.Component.TODOlist, _state1}
+              ]
+            }
+          }
+        } = rdx,
+        input
+      ) do
+    Flamelex.Fluxus.TODOsUserInputHandler.process(rdx, input)
+  end
+
+  def process(
+        %{
+          layers: %{
+            one: %{
+              active_apps: [
                 {Flamelex.GUI.Component.TODOlist, _state1},
                 {Flamelex.GUI.Component.TODOdetails, _state2}
               ]

@@ -8,7 +8,8 @@ defmodule Flamelex.GUI.Component.TODOlist do
 
   # TODO accept `selected` as an argument & change background opr whjatever when it's selected
   # def validate(%{frame: %Frame{} = _f, state: %{items: _i}} = data) do
-  def validate(%{frame: %Frame{} = _f, state: %{list: todos}} = data) when is_list(todos) do
+  def validate(%{frame: %Frame{} = _f, state: %{turbo?: _t?, list: todos}} = data)
+      when is_list(todos) do
     # Logger.debug "#{__MODULE__} accepted params: #{inspect data}"
     {:ok, data}
   end
@@ -220,6 +221,17 @@ defmodule Flamelex.GUI.Component.TODOlist do
 
   def handle_cast({:click, %Memelex.TidBit{} = t}, scene) do
     Flamelex.Fluxus.action({[app: __MODULE__], {:open_todo, t}})
+    {:noreply, scene}
+  end
+
+  def handle_cast(
+        {:cursor_scroll, TODOlist, {{_dx_scroll, dy_scroll}, coords}},
+        %{
+          assigns: %{state: %{turbo?: true}}
+        } = scene
+      ) do
+    fast_scroll = {0, 100 * dy_scroll}
+    cast_children(scene, {:scroll, fast_scroll})
     {:noreply, scene}
   end
 

@@ -6,21 +6,23 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
 
   def cast_rdx_to_layer_state(%{
         menubar: %{height: menubar_h},
-        layers: %{one: %{active_apps: []}}
+        layers: %{one: %{turbo?: turbo?, active_apps: []}}
       }) do
-    %{active_apps: [], menubar: %{height: menubar_h}}
+    %{turbo?: turbo?, active_apps: [], menubar: %{height: menubar_h}}
   end
 
   def cast_rdx_to_layer_state(%{
         menubar: %{height: menubar_h},
         layers: %{
           one: %{
+            turbo?: turbo?,
             layout: layout,
             active_apps: active_apps
           }
         }
       }) do
     %{
+      turbo?: turbo?,
       layout: layout,
       active_apps: active_apps,
       menubar: %{height: menubar_h}
@@ -77,13 +79,11 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
     # we can't use the entire screen when the menubar is visible
     app_frame = calc_app_frame(full_window_frame, layer_state)
 
-    IO.puts("DEPRECATE ACTIVE APP AS A TUPLE NOT A LIST & make it avctive apps instead")
-
     graph =
       Scenic.Graph.build()
       |> Flamelex.GUI.Component.TODOlist.add_to_graph(%{
         frame: app_frame,
-        state: app_args
+        state: app_args |> Map.merge(%{turbo?: layer_state.turbo?})
       })
 
     {:ok, graph}
@@ -103,7 +103,7 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
       Scenic.Graph.build()
       |> Flamelex.GUI.Component.TODOlist.add_to_graph(%{
         frame: app_frame,
-        state: app_args
+        state: app_args |> Map.merge(%{turbo?: layer_state.turbo?})
       })
 
     {:ok, graph}
@@ -130,7 +130,7 @@ defmodule Flamelex.GUI.Layers.NeoLayer01 do
       |> Flamelex.GUI.Component.TODOlist.add_to_graph(%{
         frame: todo_frame,
         # state: %{items: calc_todo_widgets(todo_list)}
-        state: todo_args
+        state: todo_args |> Map.merge(%{turbo?: layer_state.turbo?})
       })
       |> Flamelex.GUI.Component.TODOdetails.add_to_graph(%{
         frame: details_frame,

@@ -23,6 +23,7 @@ defmodule Flamelex.Fluxus.RadixState do
       },
       layers: %{
         one: %{
+          turbo?: false,
           layout: :full_screen,
           active_apps: []
         }
