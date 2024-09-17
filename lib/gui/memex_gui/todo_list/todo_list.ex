@@ -31,7 +31,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
 
     # Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
 
-    {:ok, scene}
+    {:ok, init_scene}
   end
 
   # def handle_call(:get_selected_todo, _from, %{selected: %Memelex.TidBit{} = t} = state) do
@@ -195,9 +195,14 @@ defmodule Flamelex.GUI.Component.TODOlist do
     |> Scenic.Primitives.group(
       fn graph ->
         graph
-        |> Frame.draw_guidewires(frame, color: :white)
-        |> ScenicWidgets.VerticalList.add_to_graph(%{frame: frame, items: todo_widgets})
+        # |> Frame.draw_guidewires(frame, color: :white)
+        |> ScenicWidgets.VerticalList.add_to_graph(%{
+          id: TODOlist,
+          frame: frame,
+          items: todo_widgets
+        })
       end,
+      # id: TODOlist,
       translate: frame.pin.point
       # scissor: frame.size.box
     )
@@ -215,6 +220,12 @@ defmodule Flamelex.GUI.Component.TODOlist do
 
   def handle_cast({:click, %Memelex.TidBit{} = t}, scene) do
     Flamelex.Fluxus.action({[app: __MODULE__], {:open_todo, t}})
+    {:noreply, scene}
+  end
+
+  def handle_cast({:cursor_scroll, TODOlist, {{_dx_scroll, dy_scroll}, coords}}, scene) do
+    fast_scroll = {0, 20 * dy_scroll}
+    cast_children(scene, {:scroll, fast_scroll})
     {:noreply, scene}
   end
 
@@ -245,5 +256,28 @@ defmodule Flamelex.GUI.Component.TODOlist do
   # def handle_info(msg, scene) do
   #   IO.inspect("#{inspect(msg)}")
   #   {:noreply, scene}
+  # end
+
+  # @fast_scroll_speed 20
+  # def compute_scroll({_x, _y} = current_cumulative_scroll, {_dx, dy}) do
+  #   # TODO cap scroll - right now we just dont allow negative scrolling
+
+  #   # speed up scrolling, and we never scroll in x direction (yet)
+  #   fast_scroll = {0, @fast_scroll_speed * dy}
+
+  #   new_cumulative_scroll =
+  #     current_cumulative_scroll
+  #     |> Scenic.Math.Vector2.add(fast_scroll)
+
+  #   case new_cumulative_scroll do
+  #     {x, y} when y > 0 ->
+  #       # we want to be able to scroll "down" the list but
+  #       # not "up" past the starting point, therefore
+  #       # we only allow negative y values when scrolling
+  #       {x, 0}
+
+  #     {x, y} ->
+  #       {x, y}
+  #   end
   # end
 end

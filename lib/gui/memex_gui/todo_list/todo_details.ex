@@ -112,7 +112,11 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     |> Scenic.Primitives.group(
       fn graph ->
         graph
-        |> ScenicWidgets.VerticalList.add_to_graph(%{frame: f, items: blocks})
+        |> ScenicWidgets.VerticalList.add_to_graph(%{
+          id: {TODOdetails, t},
+          frame: f,
+          items: blocks
+        })
       end,
       translate: f.pin.point
     )

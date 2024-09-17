@@ -44,6 +44,14 @@ defmodule Flamelex.Fluxus.Layer01Mutators do
     end)
   end
 
+  def set_turbo(%{layers: %{one: %{active_apps: [{RapidSelector, state}]}}} = rdx_state, turbo?)
+      when is_boolean(turbo?) do
+    rdx_state
+    |> update_app_state(RapidSelector, fn state ->
+      %{state | turbo?: turbo?}
+    end)
+  end
+
   def update_app_state(rdx_state, app_name, fun) do
     update_in(
       rdx_state[:layers][:one][:active_apps],
