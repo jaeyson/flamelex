@@ -63,6 +63,26 @@ defmodule Flamelex.Fluxus.RadixStore do
         {:noreply, radix_state}
 
       {:ok, new_radix_state} ->
+        # so for now, we're just going to double-down on this being the single channel
+        # I have a big debate about this because I feel like this is going to be very expensive,
+        # broadcasting out multiple copies of the RadixState! However, this is
+        # the simplest way to do it, and we can always optimize later. I am not able to
+        # really wrap my head around how I would do it otherwise... maybe I simply push the radix state
+        # through a reducer which has side-effects of broadcasting out messages on specific channels?
+        # that might make it possible to broadcast smaller state changes
+
+        # one idea would be to broadcast the action first to radix state, then radix state
+        # has control and can broadcast (potentially modified) actions down to it's
+        # children (or just publish it on a channel), the child stores can then
+        # update their state and broadcast out their changes
+
+        # The problem becomes when we need to access different parts of the state tree, or if
+        # something deeply nested within the state tree ends up affecting decisions made early/high in the funnel,
+        # which maybe shouldn't happen but somehow it seems to all the time...
+
+        # there's another idea which is, broadcast actions out to _all_ the stores, they decide individually if
+        # they care about it, and if they do, then they might broadcast just their own state changes out on their own channel
+        # to whatever GUI components are listening to those changes
         Flamelex.Lib.Utils.PubSub.broadcast(
           topic: :radix_state_change,
           msg: {:radix_state_change, new_radix_state}
@@ -78,7 +98,7 @@ defmodule Flamelex.Fluxus.RadixStore do
         reason: #{inspect(reason)}
         |
 
-        Logger.error("#{__MODULE__}Store failed to process event.#{formatted_error}")
+        Logger.error("#{__MODULE__} failed to process event.#{formatted_error}")
 
         {:noreply, radix_state}
     end
@@ -116,6 +136,75 @@ defmodule Flamelex.Fluxus.RadixStore do
       end
     end
   end
+
+  # defp handle_event_fn(radix_state, %{topic: :flx_actions, data: action}, e_shadow) do
+  #   # have to return a zero arity function for Task.async
+  #   fn ->
+  #     # Logger.debug("#{__MODULE__} handling event: #{inspect(event)}, topic: #{inspect(topic)}...")
+
+  #     # handler =
+  #     #   case topic do
+  #     #     :flx_actions -> Flamelex.Fluxus.RadixReducer
+  #     #     :flx_user_input -> Flamelex.Fluxus.UserInputHandler
+  #     #     :memelex -> Flamelex.Fluxus.MemelexEventHandler
+  #     #   end
+
+  #     case Flamelex.Fluxus.RadixReducer.process(radix_state, action) do
+  #       :ignore ->
+  #         EventBus.mark_as_completed({__MODULE__, e_shadow})
+  #         :ignore
+
+  #       ^radix_state ->
+  #         EventBus.mark_as_completed({__MODULE__, e_shadow})
+  #         :ignore
+
+  #       new_radix_state ->
+  #         EventBus.mark_as_completed({__MODULE__, e_shadow})
+  #         new_radix_state
+  #     end
+  #   end
+  # end
+
+  # defp handle_event_fn(radix_state, %{topic: topic, data: event}, e_shadow) do
+  #   # have to return a zero arity function for Task.async
+  #   fn ->
+  #     # Logger.debug("#{__MODULE__} handling event: #{inspect(event)}, topic: #{inspect(topic)}...")
+
+  #     handler =
+  #       case topic do
+  #         :flx_user_input -> Flamelex.Fluxus.UserInputHandler
+  #         :memelex -> Flamelex.Fluxus.MemelexEventHandler
+  #       end
+
+  #     # handlers should return a list of actions, not mutate the state directly, then we
+  #     # map those actions to a change in state - we could update state here and also broadcast the action out???
+  #     # broadcast the input out to components???
+
+  #     # for now though I wrote my handlers badly and they mutate the radix state
+
+  #     # case handler.handle(radix_state, event) do
+  #     #   {:ok, actions} ->
+  #     #     actions
+  #     #     |> Enum.reduce(radix_state, fn action, acc ->
+  #     #       Flamelex.Fluxus.RadixReducer.process(acc, action)
+  #     #     end)
+  #     # end
+
+  #     case handler.process(radix_state, event) do
+  #       :ignore ->
+  #         EventBus.mark_as_completed({__MODULE__, e_shadow})
+  #         :ignore
+
+  #       ^radix_state ->
+  #         EventBus.mark_as_completed({__MODULE__, e_shadow})
+  #         :ignore
+
+  #       new_radix_state ->
+  #         EventBus.mark_as_completed({__MODULE__, e_shadow})
+  #         new_radix_state
+  #     end
+  #   end
+  # end
 
   defp subscribe_to_pubsub_topics do
     EventBus.subscribe(
