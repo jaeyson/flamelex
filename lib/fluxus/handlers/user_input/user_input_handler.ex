@@ -27,11 +27,11 @@ defmodule Flamelex.Fluxus.UserInputHandler do
   #   Flamelex.Fluxus.RapidSelectorUserInputHandler.process(rdx, input)
   # end
 
-  def process(
-        %{layers: %{one: %{active_apps: [TODOlist]}}} = rdx,
+  def handle(
+        %{layers: %{one: %{active_apps: [app]}}} = rdx,
         input
       ) do
-    TODOlist.UserInputHandler.process(rdx, input)
+    Module.concat(app, UserInputHandler).handle(rdx, input)
   end
 
   # def process(

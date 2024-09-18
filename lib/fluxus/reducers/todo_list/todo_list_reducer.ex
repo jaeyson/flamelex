@@ -8,6 +8,10 @@ defmodule Flamelex.GUI.Component.TODOlist.Reducer do
     |> Flamelex.Fluxus.TODOsMutators.refresh_todo_list()
   end
 
+  def process(rdx, {:set_turbo, turbo?}) when is_boolean(turbo?) do
+    rdx |> TODOlist.State.set_turbo(turbo?)
+  end
+
   # def process(rdx, {:set_turbo, turbo?}) when is_boolean(turbo?) do
   #   rdx
   #   # |> Flamelex.Fluxus.Layer01Mutators.set_turbo(turbo)

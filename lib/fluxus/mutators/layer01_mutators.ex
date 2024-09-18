@@ -49,14 +49,14 @@ defmodule Flamelex.Fluxus.Layer01Mutators do
     end)
   end
 
-  def set_turbo(rdx_state, turbo?) when is_boolean(turbo?) do
-    update_in(
-      rdx_state[:layers][:one],
-      fn layer_one ->
-        %{layer_one | turbo?: turbo?}
-      end
-    )
-  end
+  # def set_turbo(rdx_state, turbo?) when is_boolean(turbo?) do
+  #   update_in(
+  #     rdx_state[:layers][:one],
+  #     fn layer_one ->
+  #       %{layer_one | turbo?: turbo?}
+  #     end
+  #   )
+  # end
 
   # def set_scroll(rdx_state, app_name, {_x, _y} = scroll) do
   #   update_app_state(rdx_state, app_name, fn state ->

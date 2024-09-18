@@ -2,10 +2,13 @@ defmodule Flamelex.GUI.Component.TODOlist.UserInputHandler do
   require Logger
   use ScenicWidgets.ScenicEventsDefinitions
   alias Flamelex.GUI.Component.TODOlist
-  # alias Flamelex.Fluxus.Layer01Mutators
 
   def handle(rdx, @left_shift) do
     [{TODOlist.Reducer, {:set_turbo, true}}]
+  end
+
+  def handle(rdx, @left_shift_up) do
+    [{TODOlist.Reducer, {:set_turbo, false}}]
   end
 
   # def process(
