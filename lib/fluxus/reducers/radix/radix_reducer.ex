@@ -67,45 +67,47 @@ defmodule Flamelex.Fluxus.RadixReducer do
   #   {:ok, new_radix_state}
   # end
 
-  def process(
-        %{
-          layers: %{
-            one: %{
-              layout: :full_screen,
-              active_apps: {Flamelex.GUI.Component.TODOlist, todo_app_state}
-            }
-          }
-        } = rdx_state,
-        {[app: Flamelex.GUI.Component.TODOlist], {:open_todo, t}}
-      ) do
-    IO.puts("DEPRECATE USING TUPLE FOR ACTIVE APP WHEN ONLY ONE APPPPP")
+  # def process(
+  #       %{
+  #         layers: %{
+  #           one: %{
+  #             layout: :full_screen,
+  #             active_apps: {Flamelex.GUI.Component.TODOlist, todo_app_state}
+  #           }
+  #         }
+  #       } = rdx_state,
+  #       {[app: Flamelex.GUI.Component.TODOlist], {:open_todo, t}}
+  #       {Flamelex.Fluxus.TODOlistReducer, {:open_todo, t}}
+  #     ) do
+  #   IO.puts("DEPRECATE USING TUPLE FOR ACTIVE APP WHEN ONLY ONE APPPPP")
 
-    rdx_state
-    |> put_in([:layers, :one, :layout], :split_screen)
-    |> put_in([:layers, :one, :active_apps], [
-      {Flamelex.GUI.Component.TODOlist, todo_app_state},
-      {Flamelex.GUI.Component.TODOdetails, t}
-    ])
-  end
+  #   rdx_state
+  #   |> put_in([:layers, :one, :layout], :split_screen)
+  #   |> put_in([:layers, :one, :active_apps], [
+  #     {Flamelex.GUI.Component.TODOlist, todo_app_state},
+  #     {Flamelex.GUI.Component.TODOdetails, t}
+  #   ])
+  # end
 
-  def process(
-        %{
-          layers: %{
-            one: %{
-              layout: :full_screen,
-              active_apps: [{Flamelex.GUI.Component.TODOlist, todo_app_state}]
-            }
-          }
-        } = rdx_state,
-        {[app: Flamelex.GUI.Component.TODOlist], {:open_todo, t}}
-      ) do
-    rdx_state
-    |> put_in([:layers, :one, :layout], :split_screen)
-    |> put_in([:layers, :one, :active_apps], [
-      {Flamelex.GUI.Component.TODOlist, todo_app_state},
-      {Flamelex.GUI.Component.TODOdetails, t}
-    ])
-  end
+  # def process(
+  #       %{
+  #         layers: %{
+  #           one: %{
+  #             layout: :full_screen,
+  #             # active_apps: [{Flamelex.GUI.Component.TODOlist, todo_app_state}]
+  #             active_apps: [Flamelex.GUI.Component.TODOlist]
+  #           }
+  #         }
+  #       } = rdx_state,
+  #       {[app: Flamelex.GUI.Component.TODOlist], {:open_todo, t}}
+  #     ) do
+  #   rdx_state
+  #   |> put_in([:layers, :one, :layout], :split_screen)
+  #   |> put_in([:layers, :one, :active_apps], [
+  #     {Flamelex.GUI.Component.TODOlist, todo_app_state},
+  #     {Flamelex.GUI.Component.TODOdetails, t}
+  #   ])
+  # end
 
   def process(
         %{
@@ -127,8 +129,11 @@ defmodule Flamelex.Fluxus.RadixReducer do
     ])
   end
 
+  # def process(rdx_state, {Flamelex.GUI.Component.TODOlist, action}) do
+  #   Flamelex.Fluxus.TODOlistReducer.process(rdx_state, {Flamelex.GUI.Component.TODOlist, action})
+  # end
+
   def app_is_active?(rdx_state, app) do
-    # TODO this is one reason to clean up and just have active_apps as a list of only one item even if only one app is active
     case rdx_state[:layers][:one][:active_apps] do
       {^app, _args} ->
         true

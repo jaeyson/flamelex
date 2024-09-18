@@ -9,8 +9,12 @@ defmodule Flamelex.GUI.RootScene do
   alias Widgex.Structs.LayerCake
   require Logger
 
-  alias Flamelex.GUI.Layers.NeoLayer01
+  alias Flamelex.GUI.Layers.Layer01
   alias Flamelex.GUI.Layers.NeoLayer02
+
+  # def re_render do
+  #   GenServer.cast(__MODULE__, :re_render)
+  # end
 
   # NOTE:
   # This Scenic.Scene contains the root graph. Re-drawing anything which
@@ -46,19 +50,19 @@ defmodule Flamelex.GUI.RootScene do
     # Flamelex.Fluxus.RadixStore.put_viewport(init_scene.viewport)
     # TODO put this in radix state? gui.theme?
     # init_theme = ScenicWidgets.Utils.Theme.get_theme(opts)
-    # radix_state = Flamelex.Fluxus.RadixStore.get()
-    {:ok, radix_state} = GenServer.call(Flamelex.Fluxus.Radix, :get_state)
+
+    rdx = Flamelex.Fluxus.RadixStore.get()
 
     # We update a few details in the RadixStore which are
     # force-refreshed due to this process starting up
-    {:ok, root_graph} = render_layers(scene.viewport, radix_state)
+    {:ok, root_graph} = render_layers(scene.viewport, rdx)
 
     new_scene =
       scene
       |> assign(graph: root_graph)
       |> push_graph(root_graph)
 
-    request_input(new_scene, [:viewport, :cursor_button, :cursor_scroll, :key])
+    request_input(new_scene, [:viewport, :key])
 
     {:ok, new_scene}
   end
@@ -97,10 +101,10 @@ defmodule Flamelex.GUI.RootScene do
   # end
 
   # Ignore key releases
-  def handle_input({:key, {key, @key_released, _opts}}, _context, scene) do
-    # Logger.debug "#{__MODULE__} `key_released` for keypress: #{inspect key}"
-    {:noreply, scene}
-  end
+  # def handle_input({:key, {key, @key_released, _opts}}, _context, scene) do
+  #   # Logger.debug "#{__MODULE__} `key_released` for keypress: #{inspect key}"
+  #   {:noreply, scene}
+  # end
 
   def handle_input({:key, {key, @key_held, []}} = input, context, scene) do
     # If we hold down any kind of valid text input, pretend we just pressed it again
@@ -130,6 +134,20 @@ defmodule Flamelex.GUI.RootScene do
     {:noreply, scene}
   end
 
+  # def handle_cast(:re_render, scene) do
+  #   IO.puts("Re-rendering the root scene...")
+
+  #   rdx = Flamelex.Fluxus.RadixStore.get()
+  #   {:ok, graph} = render_layers(scene.viewport, rdx)
+
+  #   new_scene =
+  #     scene
+  #     |> assign(graph: graph)
+  #     |> push_graph(graph)
+
+  #   {:noreply, new_scene}
+  # end
+
   # TODO this is the MainEntry for rendering the graph - this is the highest level
   # function, where we map from radix_state to the graph
   def render_layers(viewport, radix_state) do
@@ -139,16 +157,15 @@ defmodule Flamelex.GUI.RootScene do
     # this is why we reverse the list at the end of this function
 
     full_window = Widgex.Frame.new(viewport)
+    app_frame = calc_app_frame(full_window, radix_state)
 
     full_graph =
       Scenic.Graph.build()
-      |> NeoLayer01.add_to_graph(%{
-        id: :apps,
-        frame: full_window,
-        # we can use this to resize the frame to accomodate menubar space, once I get that working again...
-        # frame: NeoLayer01.compute_frame(viewport, radix_state),
-        state: NeoLayer01.cast_rdx_to_layer_state(radix_state)
-        # pubsub: Flamelex.Lib.Utils.PubSub
+      # TODO experiment with the idea of each layer fetching their own state from RadixState during init...
+      |> Layer01.add_to_graph(%{
+        # radix: radix_state,
+        state: radix_state.layers.one,
+        frame: app_frame
       })
       |> NeoLayer02.add_to_graph(%{
         id: :menubar,
@@ -164,6 +181,11 @@ defmodule Flamelex.GUI.RootScene do
     # |> kommander_layer(radix_state)
 
     {:ok, full_graph}
+  end
+
+  def calc_app_frame(full_window_frame, %{menubar: %{height: menubar_h}}) do
+    [_menubar_frame, app_frame] = Widgex.Frame.v_split(full_window_frame, px: menubar_h)
+    app_frame
   end
 
   # def base_layer(graph, :renseijin, radix_state) do

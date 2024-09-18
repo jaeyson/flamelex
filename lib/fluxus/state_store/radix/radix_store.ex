@@ -7,9 +7,10 @@ defmodule Flamelex.Fluxus.RadixStore do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
-  # def get do
-  #   GenServer.call(__MODULE__, :get_state)
-  # end
+  def get do
+    {:ok, rdx_state} = GenServer.call(__MODULE__, :get_state)
+    rdx_state
+  end
 
   def init(args) do
     # Use :continue to initialize state after normal GenServer startup

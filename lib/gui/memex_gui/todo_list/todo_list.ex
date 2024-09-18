@@ -5,12 +5,19 @@ defmodule Flamelex.GUI.Component.TODOlist do
   use Scenic.Component
   alias Widgex.Frame
   alias Flamelex.GUI.Components.NeoHyperCard
+  alias Flamelex.Fluxus.TODOlistReducer
 
   # TODO accept `selected` as an argument & change background opr whjatever when it's selected
   # def validate(%{frame: %Frame{} = _f, state: %{items: _i}} = data) do
-  def validate(%{frame: %Frame{} = _f, state: %{turbo?: _t?, list: todos}} = data)
-      when is_list(todos) do
+  def validate(
+        %{
+          frame: %Frame{} = _f
+        } = data
+      ) do
     # Logger.debug "#{__MODULE__} accepted params: #{inspect data}"
+    # new_state = Map.merge(state, %{scroll: {0, 0}})
+    # {:ok, assign(data, state: new_state)}
+    # {:ok, %{data | state: new_state}}
     {:ok, data}
   end
 
@@ -19,6 +26,8 @@ defmodule Flamelex.GUI.Component.TODOlist do
   # end
 
   def init(scene, args, opts) do
+    rdx = Flamelex.Fluxus.RadixStore.get()
+    args = Map.merge(args, %{state: rdx.apps.todo_list})
     init_graph = init_render(args)
 
     init_scene =
@@ -27,17 +36,12 @@ defmodule Flamelex.GUI.Component.TODOlist do
       |> assign(frame: args.frame)
       # |> assign(theme: theme)
       |> assign(state: args.state)
+      # TODO filter should be apart of state..
       |> assign(filter: :all)
       |> push_graph(init_graph)
 
-    # Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
-
     {:ok, init_scene}
   end
-
-  # def handle_call(:get_selected_todo, _from, %{selected: %Memelex.TidBit{} = t} = state) do
-  #   {:reply, t, state}
-  # end
 
   def init_render(args) do
     [title_frame, tools_frame, list_frame] = calc_layout_frames(args.frame)
@@ -48,6 +52,12 @@ defmodule Flamelex.GUI.Component.TODOlist do
     |> render_todo_list(list_frame, args)
     # render tools last because it needs to be drawn on top of the app layer due to dropdown menus
     |> render_tools(tools_frame, "tools")
+  end
+
+  def handle_cast({:radix_state_change, new_rdx}, scene) do
+    # new_state = Map.merge(scene.assigns.state, %{scroll: new_scroll})
+    IO.puts("TODO getting pushed msgs")
+    {:noreply, scene}
   end
 
   def calc_layout_frames(%Frame{} = component_frame) do
@@ -198,9 +208,10 @@ defmodule Flamelex.GUI.Component.TODOlist do
         graph
         # |> Frame.draw_guidewires(frame, color: :white)
         |> ScenicWidgets.VerticalList.add_to_graph(%{
-          id: TODOlist,
+          id: VList,
           frame: frame,
-          items: todo_widgets
+          items: todo_widgets,
+          scroll: args.state.scroll
         })
       end,
       # id: TODOlist,
@@ -220,25 +231,82 @@ defmodule Flamelex.GUI.Component.TODOlist do
   end
 
   def handle_cast({:click, %Memelex.TidBit{} = t}, scene) do
-    Flamelex.Fluxus.action({[app: __MODULE__], {:open_todo, t}})
+    Flamelex.Fluxus.action({TODOlistReducer, {:open_todo, t}})
     {:noreply, scene}
   end
 
-  def handle_cast(
-        {:cursor_scroll, TODOlist, {{_dx_scroll, dy_scroll}, coords}},
-        %{
-          assigns: %{state: %{turbo?: true}}
-        } = scene
-      ) do
-    fast_scroll = {0, 100 * dy_scroll}
-    cast_children(scene, {:scroll, fast_scroll})
-    {:noreply, scene}
-  end
+  # def handle_cast(
+  #       {:cursor_scroll, TODOlist, {{_dx, dy} = delta_scroll, coords}},
+  #       %{
+  #         assigns: %{state: %{turbo?: true}}
+  #       } = scene
+  #     ) do
+  #   fast_scroll = {0, 100 * dy}
 
-  def handle_cast({:cursor_scroll, TODOlist, {{_dx_scroll, dy_scroll}, coords}}, scene) do
-    fast_scroll = {0, 20 * dy_scroll}
-    cast_children(scene, {:scroll, fast_scroll})
-    {:noreply, scene}
+  #   new_scroll =
+  #     scene.assigns.scroll
+  #     |> Scenic.Math.Vector2.add(delta_scroll)
+
+  #   cast_children(scene, {:set_scroll, new_scroll})
+  #   {:noreply, scene |> assign(scroll: new_scroll)}
+  # end
+
+  # def handle_cast({:cursor_scroll, TODOlist, {{_dx, dy} = delta_scroll, coords}}, scene) do
+  #
+
+  #   new_scroll =
+  #     scene.assigns.scroll
+  #     |> Scenic.Math.Vector2.add(delta_scroll)
+
+  #   cast_children(scene, {:set_scroll, new_scroll})
+  #   {:noreply, scene |> assign(scroll: new_scroll)}
+  # end
+
+  def handle_cast({:cursor_scroll, VList, {{_dx, dy} = delta_scroll, coords}}, scene) do
+    # TODO debate
+    # there is some debate that I should send this scroll up to the top layer,
+    # because maybe I dont want to scroll this maybe I want to scroll the whole page or something
+
+    # and that is valid
+
+    # however in this case, right here and now, I dont need to do that, and it's slow
+    # and causes problems - I'm currently refactoring the entire way I store state
+    # to work around this issue
+
+    # we appreciate your patience in the mean time
+
+    scroll_speed = if scene.assigns.state.turbo_scroll?, do: 100, else: 20
+
+    new_scroll =
+      scene.assigns.state.scroll
+      |> Scenic.Math.Vector2.add({0, scroll_speed * dy})
+
+    # Flamelex.Fluxus.action({__MODULE__, {:set_scroll, new_scroll}})
+
+    # new_state = Map.merge(scene.assigns.state, %{scroll: new_scroll})
+    # {:noreply, scene |> assign(state: new_state)}
+
+    new_state = scene.assigns.state |> put_in([:scroll], new_scroll)
+
+    cast_children(scene, {:set_scroll, new_scroll})
+    {:noreply, scene |> assign(state: new_state)}
+
+    # new_graph =
+    #   scene.assigns.graph
+    #   |> Scenic.Graph.modify(
+    #     __MODULE__,
+    #     &Scenic.Primitives.update_opts(&1, translate: new_scroll)
+    #   )
+
+    # new_state = scene.assigns.state |> put_in([:scroll], new_scroll)
+
+    # new_scene =
+    #   scene
+    #   |> assign(graph: new_graph)
+    #   |> assign(state: new_state)
+    #   |> push_graph(new_graph)
+
+    # {:noreply, scene}
   end
 
   def handle_cast({:focus, _id}, scene) do

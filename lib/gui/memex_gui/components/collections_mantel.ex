@@ -119,16 +119,16 @@ defmodule Memelex.GUI.Components.CollectionsMantel do
     ]
   end
 
-  def handle_info({:wiki_server, :memex_saved_to_disc}, scene) do
-    # get child processes & cast update to SideNav
+  # def handle_info({:wiki_server, :memex_saved_to_disc}, scene) do
+  #   # get child processes & cast update to SideNav
 
-    new_tree = construct_collections_nav_tree()
+  #   new_tree = construct_collections_nav_tree()
 
-    {:ok, [pid]} = Scenic.Scene.child(scene, {__MODULE__, :side_nav})
-    GenServer.cast(pid, {:state_change, new_tree})
+  #   {:ok, [pid]} = Scenic.Scene.child(scene, {__MODULE__, :side_nav})
+  #   GenServer.cast(pid, {:state_change, new_tree})
 
-    {:noreply, scene}
-  end
+  #   {:noreply, scene}
+  # end
 
   def handle_info({:radix_state_change, _rx}, scene) do
     {:noreply, scene}

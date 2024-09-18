@@ -10,14 +10,19 @@ defmodule Flamelex.Fluxus.Layer01Mutators do
     |> put_in([:layers, :one, :layout], layout)
   end
 
-  def set_active_app(
-        %{layers: %{one: %{active_apps: []}}} = rdx_state,
-        {_component_module, _args} = app
-      ) do
+  # def set_active_app(
+  #       %{layers: %{one: %{active_apps: []}}} = rdx_state,
+  #       {_component_module, _args} = app
+  #     ) do
+  #   rdx_state
+  #   |> put_in([:layers, :one, :active_apps], [
+  #     app
+  #   ])
+  # end
+
+  def set_active_apps(rdx_state, active_apps) when is_list(active_apps) do
     rdx_state
-    |> put_in([:layers, :one, :active_apps], [
-      app
-    ])
+    |> put_in([:layers, :one, :active_apps], active_apps)
   end
 
   def open_tidbit(
@@ -52,6 +57,13 @@ defmodule Flamelex.Fluxus.Layer01Mutators do
       end
     )
   end
+
+  # def set_scroll(rdx_state, app_name, {_x, _y} = scroll) do
+  #   update_app_state(rdx_state, app_name, fn state ->
+  #     state
+  #     |> put_in([:scroll], scroll)
+  #   end)
+  # end
 
   def update_app_state(rdx_state, app_name, fun) do
     update_in(

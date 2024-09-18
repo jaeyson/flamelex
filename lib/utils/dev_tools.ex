@@ -3,8 +3,8 @@ defmodule Flamelex.DevTools do
   Returns the current input mode.
   """
   def current_mode do
-    radix = GenServer.call(Flamelex.FluxusRadix, :get_state)
-    radix.mode
+    # radix = GenServer.call(Flamelex.FluxusRadix, :get_state)
+    Flamelex.Fluxus.RadixStore.get().mode
   end
 
   def switch_mode(m) do

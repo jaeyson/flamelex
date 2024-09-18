@@ -2,7 +2,7 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   @moduledoc """
   This is where Flamelex is able to handle events from Memelex.
   """
-  alias Flamelex.Fluxus.Layer01Mutators
+  alias Flamelex.GUI.Component.TODOlist
   alias Memelex.GUI.Components.RapidSelector
   alias Flamelex.Fluxus.Reducers.Memex, as: MemexReducer
   require Logger
@@ -37,8 +37,8 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   #   })
   # end
 
-  def process(radix_state, {:open_tidbit, t}) do
-    MemexReducer.process(radix_state, {:open_tidbit, t})
+  def process(rdx, {:open_tidbit, t}) do
+    MemexReducer.process(rdx, {:open_tidbit, t})
   end
 
   # raise "Flamelex not handling the event to open a TidBit yet"
@@ -47,47 +47,15 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
 
   # {:ok, radix_state, new_memex_state}
 
-  def process(radix_state, :show_todos) do
-    # raise("THIS IS SUPPOSED TO SO THE THING")
-
-    # notes - this should really be cleaner, but in principle
-    # it's a very simple way to define the logic.. the problem is that
-    # although this is basically where we want to define the logic of
-    # what changes when we get "show_todos", we don't want to have to
-    # know the details of how RadixState works... we just want to declare
-    # what we want to happen, on the level of this module at least...
-
-    # that's why a "Layer01.show_todos" function would be nice, but it
-    # will go hand in hand with some of the other layer refacoring I want
-    # to do, which will mean instead of creating the same 'type' of ScenicComponent,
-    # the 'Layer' component, I'm going to just create new LayerComponents
-    # which implement a layer behaviour - then instead of needing to define
-    # layer structs and cast functions and etc etc, I want to be able to just
-    # have the layer components implement the behaviour, and then a reducer
-    # function will be able to convert radix_state to radix_state for certain actions
-
-    #   # |> Flamelex.GUI.Layers.Layer01.show_todos()
-    #   |> put_in([:root, :layers, :one, :layout], %{todo_list: :full_screen})
-
-    #   |> put_in([:root, :active_apps], :todos)
-
-    # Fluxus.radixify(radix_state, :todos)
-
-    # new_radix_state =
-    #   radix_state
-    #   |> Layer01.
-
-    # {:ok, Flamelex.GUI.Layers.Layer01.show_todo_list(radix_state, :full_screen)}
-
-    # {:ok, Fluxus.radixify(radix_state, :todos)}
-
-    todo_list = Memelex.My.TODOs.all()
-
-    radix_state
-    |> put_in(
-      [:layers, :one, :active_apps],
-      [{Flamelex.GUI.Component.TODOlist, %{list: todo_list, selected: nil}}]
-    )
+  # TODO eventually dont return a changes radix state, return a list of actions
+  def process(rdx, :show_todos) do
+    # DONT change the TODOlist state here since we are just switching to it!
+    # OR alternatively, why not refresh it?? Plus we need to initialize it _somewhere_ !
+    # If we don't do it here then there's a chance we will switch back and the data will be stale
+    rdx
+    |> Flamelex.Fluxus.Layer01Mutators.set_layout(:full_screen)
+    |> Flamelex.Fluxus.Layer01Mutators.set_active_apps([TODOlist])
+    |> Flamelex.Fluxus.TODOsMutators.refresh_todo_list()
   end
 
   def process(radix_state, {:reloaded_my_modz, t}) do
@@ -95,23 +63,24 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
     :ignore
   end
 
-  def process(radix_state, {:tidbit_saved, t}) do
-    # todo_list = Memelex.My.TODOs.all()
-    radix_state
-    |> maybe_update_todos({:tidbit_saved, t})
+  # def process(radix_state, {:tidbit_saved, t}) do
+  #   # todo_list = Memelex.My.TODOs.all()
+  #   IO.puts("DO SOMETHING")
+  #   radix_state
+  #   # |> maybe_update_todos({:tidbit_saved, t})
 
-    # if get_in(radix_state, [:layers, :one, :active_apps]) == {Flamelex.GUI.Component.TODOlist, _todo_list} do
-    #   Logger.info("TODOlist is active, updating...")
-    #   radix_state
-    #   |> put_in([:layers, :one, :active_apps], {Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()})
-    # else
-    #   Logger.info("TODOlist is not active, ignoring...")
-    #   radix_state
-    # end
+  #   # if get_in(radix_state, [:layers, :one, :active_apps]) == {Flamelex.GUI.Component.TODOlist, _todo_list} do
+  #   #   Logger.info("TODOlist is active, updating...")
+  #   #   radix_state
+  #   #   |> put_in([:layers, :one, :active_apps], {Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()})
+  #   # else
+  #   #   Logger.info("TODOlist is not active, ignoring...")
+  #   #   radix_state
+  #   # end
 
-    # radix_state
-    # |> put_in([:layers, :one, :active_apps], {Flamelex.GUI.Component.TODOlist, todo_list})
-  end
+  #   # radix_state
+  #   # |> put_in([:layers, :one, :active_apps], {Flamelex.GUI.Component.TODOlist, todo_list})
+  # end
 
   # defp maybe_update_todos(
   #        %{layers: %{one: %{active_app: {Flamelex.GUI.Component.TODOlist, todo_list}}}} =
@@ -132,78 +101,78 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   #   end
   # end
 
-  defp maybe_update_todos(
-         %{layers: %{one: %{active_apps: [{Flamelex.GUI.Component.TODOlist, todo_list}]}}} =
-           radix_state,
-         {:tidbit_saved, _t}
-       ) do
-    # if Enum.member?(Enum.map(todo_list, & &1.uuid), t.uuid) do
-    #   Logger.info("TODOlist is active, updating...")
+  # defp maybe_update_todos(
+  #        %{layers: %{one: %{active_apps: [{Flamelex.GUI.Component.TODOlist, todo_list}]}}} =
+  #          radix_state,
+  #        {:tidbit_saved, _t}
+  #      ) do
+  #   # if Enum.member?(Enum.map(todo_list, & &1.uuid), t.uuid) do
+  #   #   Logger.info("TODOlist is active, updating...")
 
-    #   radix_state
-    #   |> put_in(
-    #     [:layers, :one, :active_apps],
-    #     [{Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()}]
-    #   )
-    # else
-    #   # Logger.info("TODOlist is not active, ignoring...")
-    #   radix_state
-    # end
-    radix_state
-    |> put_in(
-      [:layers, :one, :active_apps],
-      [{Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()}]
-    )
-  end
+  #   #   radix_state
+  #   #   |> put_in(
+  #   #     [:layers, :one, :active_apps],
+  #   #     [{Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()}]
+  #   #   )
+  #   # else
+  #   #   # Logger.info("TODOlist is not active, ignoring...")
+  #   #   radix_state
+  #   # end
+  #   radix_state
+  #   |> put_in(
+  #     [:layers, :one, :active_apps],
+  #     [{Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()}]
+  #   )
+  # end
 
-  defp maybe_update_todos(
-         %{
-           layers: %{
-             one: %{
-               active_apps: [
-                 {Flamelex.GUI.Component.TODOlist, %{list: todo_list} = todo_app_state},
-                 {Flamelex.GUI.Component.TODOdetails, selected_todo}
-               ]
-             }
-           }
-         } = radix_state,
-         {:tidbit_saved, t}
-       ) do
-    # if Enum.member?(Enum.map(todo_list, & &1.uuid), t.uuid) do
-    #   Logger.info("TODOlist is active, updating...")
+  # defp maybe_update_todos(
+  #        %{
+  #          layers: %{
+  #            one: %{
+  #              active_apps: [
+  #                {Flamelex.GUI.Component.TODOlist, %{list: todo_list} = todo_app_state},
+  #                {Flamelex.GUI.Component.TODOdetails, selected_todo}
+  #              ]
+  #            }
+  #          }
+  #        } = radix_state,
+  #        {:tidbit_saved, t}
+  #      ) do
+  #   # if Enum.member?(Enum.map(todo_list, & &1.uuid), t.uuid) do
+  #   #   Logger.info("TODOlist is active, updating...")
 
-    if t.uuid == selected_todo.uuid do
-      radix_state
-      |> put_in(
-        [:layers, :one, :active_apps],
-        [
-          {Flamelex.GUI.Component.TODOlist,
-           Map.merge(todo_app_state, %{list: Memelex.My.TODOs.all()})},
-          {Flamelex.GUI.Component.TODOdetails, t}
-        ]
-      )
-    else
-      radix_state
-      |> put_in(
-        [:layers, :one, :active_apps],
-        [
-          {Flamelex.GUI.Component.TODOlist,
-           Map.merge(todo_app_state, %{list: Memelex.My.TODOs.all()})},
-          {Flamelex.GUI.Component.TODOdetails, selected_todo}
-        ]
-      )
-    end
+  #   if t.uuid == selected_todo.uuid do
+  #     radix_state
+  #     |> put_in(
+  #       [:layers, :one, :active_apps],
+  #       [
+  #         {Flamelex.GUI.Component.TODOlist,
+  #          Map.merge(todo_app_state, %{list: Memelex.My.TODOs.all()})},
+  #         {Flamelex.GUI.Component.TODOdetails, t}
+  #       ]
+  #     )
+  #   else
+  #     radix_state
+  #     |> put_in(
+  #       [:layers, :one, :active_apps],
+  #       [
+  #         {Flamelex.GUI.Component.TODOlist,
+  #          Map.merge(todo_app_state, %{list: Memelex.My.TODOs.all()})},
+  #         {Flamelex.GUI.Component.TODOdetails, selected_todo}
+  #       ]
+  #     )
+  #   end
 
-    # radix_state
-    # |> put_in(
-    #   [:layers, :one, :active_apps],
-    #   {Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()}
-    # )
-    # else
-    #   # Logger.info("TODOlist is not active, ignoring...")
-    #   radix_state
-    # end
-  end
+  #   # radix_state
+  #   # |> put_in(
+  #   #   [:layers, :one, :active_apps],
+  #   #   {Flamelex.GUI.Component.TODOlist, Memelex.My.TODOs.all()}
+  #   # )
+  #   # else
+  #   #   # Logger.info("TODOlist is not active, ignoring...")
+  #   #   radix_state
+  #   # end
+  # end
 
   # def process(_rdx, unknown_event) do
   #   IO.puts("GOT #{inspect(unknown_event)}")

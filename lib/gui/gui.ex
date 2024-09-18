@@ -1,10 +1,10 @@
 defmodule Flamelex.GUI do
-
   # various pre-defined screen resolutions
   @macbook_pro {1440, 855}
-  @window_size_macbook_pro_2 {1680, 1005}
-  @window_size_monitor_32inch {2560, 1395}
-  @window_size_terminal_80col {800, 600} # with size 24 font
+  # @window_size_macbook_pro_2 {1680, 1005}
+  @monitor_32inch {2560, 1395}
+  # with size 24 font
+  @terminal_80col {800, 600}
 
   @doc """
   This is the Scenic Viewport config, passed in to Scenic when
@@ -13,7 +13,7 @@ defmodule Flamelex.GUI do
   def viewport_config do
     [
       name: :main_viewport,
-      size: @macbook_pro,
+      size: Enum.random([@macbook_pro, @monitor_32inch, @terminal_80col]),
       default_scene: {Flamelex.GUI.RootScene, nil},
       drivers: [
         [
@@ -24,6 +24,4 @@ defmodule Flamelex.GUI do
       ]
     ]
   end
-
-
 end

@@ -1,33 +1,51 @@
 defmodule Flamelex.Fluxus.RadixState do
+  use StructAccess
+  alias Flamelex.GUI.Layers.Layer01
+  alias Flamelex.GUI.Component.TODOlist
+
+  # the argument for using radix struct is that I can pattern match on exactly a radix state
+  # the argument against is that I might want to dynamically add keys to it...
+  defstruct theme: nil,
+            menubar: nil,
+            memex: nil,
+            fonts: nil,
+            layers: nil,
+            apps: nil,
+            gui: nil
+
   def new(_args) do
     {:ok, ibm_plex_mono_font_metrics} =
       TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
 
-    %{
+    %__MODULE__{
       theme: theme(),
+      #   # TODO move menubar to some other place in the radix state structure
       menubar: %{
         font: :ibm_plex_mono,
         height: 60
-      },
-      editor: %{
-        buffers: []
       },
       memex: %{
         active?: false,
         env: nil
       },
+      # TODO move fonts to somewhere else too
       fonts: %{
         ibm_plex_mono: %{
           metrics: ibm_plex_mono_font_metrics
         }
       },
       layers: %{
-        one: %{
-          turbo?: false,
-          layout: :full_screen,
-          active_apps: []
+        one: %Layer01.State{}
+      },
+      apps: %{
+        todo_list: TODOlist.State.new(),
+        #     # todo_details: TODOlist.State.new(),
+        #     rapid_selector: %{},
+        editor: %{
+          buffers: []
         }
-      }
+      },
+      gui: %{}
     }
   end
 
