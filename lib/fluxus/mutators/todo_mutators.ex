@@ -11,4 +11,8 @@ defmodule Flamelex.Fluxus.TODOsMutators do
     todo_list = Memelex.My.TODOs.all()
     rdx |> put_in([:apps, :todo_list, :list], todo_list)
   end
+
+  def open_details(rdx, %Memelex.TidBit{} = t) do
+    rdx |> put_in([:apps, :todo_details], t)
+  end
 end

@@ -6,7 +6,6 @@ defmodule Flamelex.GUI.Component.TODOlist do
   alias Widgex.Frame
   alias Flamelex.GUI.Components.NeoHyperCard
   alias Flamelex.GUI.Component.TODOlist
-  alias Flamelex.Fluxus.TODOlistReducer
 
   # TODO accept `selected` as an argument & change background opr whjatever when it's selected
   # def validate(%{frame: %Frame{} = _f, state: %{items: _i}} = data) do
@@ -269,13 +268,11 @@ defmodule Flamelex.GUI.Component.TODOlist do
   # this might solve the issue where clicking a menubar item which is hovering over something below it triggers both
   def handle_cast({:click, %Memelex.TidBit{} = t}, %{assigns: %{dropdown_mode: true}} = scene) do
     IO.puts("IGNOREING THE CLICK CSUE WE'RE IN DROPDOWN MODE")
-    # {:noreply, scene}
-    # Flamelex.Fluxus.action({[app: __MODULE__], {:open_todo, t}})
     {:noreply, scene}
   end
 
   def handle_cast({:click, %Memelex.TidBit{} = t}, scene) do
-    Flamelex.Fluxus.action({TODOlistReducer, {:open_todo, t}})
+    Flamelex.Fluxus.action({TODOlist.Reducer, {:open_todo, t}})
     {:noreply, scene}
   end
 
@@ -306,7 +303,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
   #   {:noreply, scene |> assign(scroll: new_scroll)}
   # end
 
-  def handle_cast({:cursor_scroll, VList, {{_dx, dy} = delta_scroll, coords}}, scene) do
+  def handle_cast({:cursor_scroll, VList, {{_dx, dy}, _coords}}, scene) do
     # TODO consider actually sending this as an action throuigh Fluxus now....
 
     # TODO debate

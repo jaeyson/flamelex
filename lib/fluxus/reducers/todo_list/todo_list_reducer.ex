@@ -1,5 +1,6 @@
 defmodule Flamelex.GUI.Component.TODOlist.Reducer do
   alias Flamelex.GUI.Component.TODOlist
+  alias Flamelex.GUI.Component.TODOdetails
 
   def process(rdx, :show_todos) do
     rdx
@@ -10,6 +11,13 @@ defmodule Flamelex.GUI.Component.TODOlist.Reducer do
 
   def process(rdx, {:set_turbo, turbo?}) when is_boolean(turbo?) do
     rdx |> TODOlist.State.set_turbo(turbo?)
+  end
+
+  def process(rdx, {:open_todo, %Memelex.TidBit{} = t}) do
+    rdx
+    |> Flamelex.Fluxus.Layer01Mutators.set_layout(:split_screen)
+    |> Flamelex.Fluxus.Layer01Mutators.set_active_apps([TODOlist, TODOdetails])
+    |> Flamelex.Fluxus.TODOsMutators.open_details(t)
   end
 
   # def process(rdx, {:set_turbo, turbo?}) when is_boolean(turbo?) do

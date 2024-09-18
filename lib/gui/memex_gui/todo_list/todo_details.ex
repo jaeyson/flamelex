@@ -3,123 +3,144 @@ defmodule Flamelex.GUI.Component.TODOdetails do
 
   def validate(
         %{
-          frame: %Widgex.Frame{} = _f,
-          state: %Memelex.TidBit{} = _t
+          frame: %Widgex.Frame{} = _f
+          # state: %Memelex.TidBit{} = _t
         } = data
       ) do
     # Logger.debug "#{__MODULE__} accepted params: #{inspect data}"
     {:ok, data}
   end
 
-  def init(scene, args, opts) do
-    # init_graph = old_render(Scenic.Graph.build(), args)
-    init_graph = render(Scenic.Graph.build(), args)
+  def init(scene, %{frame: %Widgex.Frame{} = f}, opts) do
+    todo = Flamelex.Fluxus.RadixStore.get().apps.todo_details
+    state = %{todo: todo, scroll: {0, 0}}
+
+    {:ok, graph} = render(f, state)
 
     init_scene =
       scene
-      |> assign(graph: init_graph)
-      |> assign(frame: args.frame)
-      # |> assign(theme: theme)
-      |> assign(state: args.state)
-      |> push_graph(init_graph)
-
-    # Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
+      |> assign(graph: graph)
+      |> assign(frame: f)
+      |> assign(state: state)
+      |> push_graph(graph)
 
     {:ok, init_scene}
   end
 
-  def render(graph, %{
-        frame: %Widgex.Frame{} = f,
-        state: %Memelex.TidBit{} = t
-      }) do
-    # todo_widgets =
-    #   args.state.list
-    #   |> Enum.map(fn t ->
-    #     {NeoHyperCard, %{tidbit: t}}
-    #   end)
+  def handle_cast({:cursor_scroll, v_list, {{_dx, dy}, _coords}}, scene) do
+    scroll_speed = 20
 
-    # title_h = 60
-    title_h = 0.1 * f.size.height
-    panel_h = 300
+    new_scroll =
+      scene.assigns.state.scroll
+      |> Scenic.Math.Vector2.add({0, scroll_speed * dy})
 
-    draw_raw_tidbit = fn graph, %{frame: f} = args ->
-      graph
-      |> Scenic.Primitives.text("#{prettify_map(t)}",
-        font: :ibm_plex_mono,
-        font_size: 24,
-        fill: :white,
-        translate: {f.pin.x + 20, f.pin.y + 20}
-      )
-    end
+    new_state = scene.assigns.state |> put_in([:scroll], new_scroll)
 
-    # tidbit_actions = ["Action 1", "Action 2", "Action 3", "Action 4", "Action 5"]
-    tidbit_actions =
-      case t.meta do
-        [%{"actions" => actions}] ->
-          Enum.map(actions, fn
-            a when is_binary(a) ->
-              a
+    cast_children(scene, {:set_scroll, new_scroll})
+    {:noreply, scene |> assign(state: new_state)}
+  end
 
-            %{title: t} ->
-              t
-          end)
+  def render(frame, state) do
+    Scenic.Graph.build()
+    |> render(frame, state)
+  end
 
-        _otherwise ->
-          ["No actions"]
+  # def render(graph, %Widgex.Frame{} = f, %{state: %Memelex.TidBit{} = t}) do
+  def render(graph, %Widgex.Frame{} = f, %{todo: %Memelex.TidBit{} = t} = state) do
+    Wormhole.capture(fn ->
+      # todo_widgets =
+      #   args.state.list
+      #   |> Enum.map(fn t ->
+      #     {NeoHyperCard, %{tidbit: t}}
+      #   end)
+
+      # title_h = 60
+      title_h = 0.1 * f.size.height
+      panel_h = 300
+
+      draw_raw_tidbit = fn graph, %{frame: f} = args ->
+        graph
+        |> Scenic.Primitives.text("#{prettify_map(t)}",
+          font: :ibm_plex_mono,
+          font_size: 24,
+          fill: :white,
+          translate: {f.pin.x + 20, f.pin.y + 20}
+        )
       end
 
-    blocks = [
-      {ScenicWidgets.Markup.Header1,
-       %{frame: Widgex.Frame.new(%{size: {f.size.width, title_h}, pin: {0, 0}}), text: t.title}},
-      {draw_raw_tidbit,
-       %{
-         frame:
-           Widgex.Frame.new(%{size: {f.size.width, 2 * panel_h}, pin: {0, title_h + 0 * panel_h}})
-       }},
-      {draw_action_list_fn(),
-       %{
-         frame:
-           Widgex.Frame.new(%{
-             size: {f.size.width, 1.5 * panel_h},
-             pin: {0, title_h + 2 * panel_h}
-           }),
-         actions: tidbit_actions
-       }}
+      # tidbit_actions = ["Action 1", "Action 2", "Action 3", "Action 4", "Action 5"]
+      tidbit_actions =
+        case t.meta do
+          [%{"actions" => actions}] ->
+            Enum.map(actions, fn
+              a when is_binary(a) ->
+                a
 
-      # {ScenicWidgets.FrameBox,
-      #  %{
-      #    frame:
-      #      Widgex.Frame.new(%{size: {f.size.width, 2 * panel_h}, pin: {0, title_h + 0 * panel_h}})
-      #  }}
-      # {ScenicWidgets.FrameBox,
-      #  %{
-      #    frame:
-      #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 1 * panel_h}})
-      #  }},
-      # {ScenicWidgets.FrameBox,
-      #  %{
-      #    frame:
-      #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 2 * panel_h}})
-      #  }},
-      # {ScenicWidgets.FrameBox,
-      #  %{
-      #    frame:
-      #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 3 * panel_h}})
-      #  }}
-    ]
+              %{title: t} ->
+                t
+            end)
 
-    graph
-    |> Scenic.Primitives.group(
-      fn graph ->
-        graph
-        |> ScenicWidgets.VerticalList.add_to_graph(%{
-          id: {TODOdetails, t},
-          frame: f,
-          items: blocks
-        })
-      end,
-      translate: f.pin.point
-    )
+          _otherwise ->
+            ["No actions"]
+        end
+
+      blocks = [
+        {ScenicWidgets.Markup.Header1,
+         %{frame: Widgex.Frame.new(%{size: {f.size.width, title_h}, pin: {0, 0}}), text: t.title}},
+        {draw_raw_tidbit,
+         %{
+           frame:
+             Widgex.Frame.new(%{
+               size: {f.size.width, 2 * panel_h},
+               pin: {0, title_h + 0 * panel_h}
+             })
+         }},
+        {draw_action_list_fn(),
+         %{
+           frame:
+             Widgex.Frame.new(%{
+               size: {f.size.width, 1.5 * panel_h},
+               pin: {0, title_h + 2 * panel_h}
+             }),
+           actions: tidbit_actions
+         }}
+
+        # {ScenicWidgets.FrameBox,
+        #  %{
+        #    frame:
+        #      Widgex.Frame.new(%{size: {f.size.width, 2 * panel_h}, pin: {0, title_h + 0 * panel_h}})
+        #  }}
+        # {ScenicWidgets.FrameBox,
+        #  %{
+        #    frame:
+        #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 1 * panel_h}})
+        #  }},
+        # {ScenicWidgets.FrameBox,
+        #  %{
+        #    frame:
+        #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 2 * panel_h}})
+        #  }},
+        # {ScenicWidgets.FrameBox,
+        #  %{
+        #    frame:
+        #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 3 * panel_h}})
+        #  }}
+      ]
+
+      graph
+      |> Scenic.Primitives.group(
+        fn graph ->
+          graph
+          |> ScenicWidgets.VerticalList.add_to_graph(%{
+            id: {TODOdetails, t.uuid},
+            frame: f,
+            items: blocks,
+            scroll: state.scroll
+          })
+        end,
+        translate: f.pin.point
+      )
+    end)
   end
 
   def draw_action_list_fn do

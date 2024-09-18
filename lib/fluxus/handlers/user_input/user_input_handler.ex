@@ -12,21 +12,7 @@ defmodule Flamelex.Fluxus.UserInputHandler do
   require Logger
   alias Flamelex.GUI.Component.TODOlist
 
-  # def process(
-  #       %{
-  #         layers: %{
-  #           one: %{
-  #             active_apps: [
-  #               {Memelex.GUI.Components.RapidSelector, _state}
-  #             ]
-  #           }
-  #         }
-  #       } = rdx,
-  #       input
-  #     ) do
-  #   Flamelex.Fluxus.RapidSelectorUserInputHandler.process(rdx, input)
-  # end
-
+  # if we only have one app open then we can just pass the input to that app
   def handle(
         %{layers: %{one: %{active_apps: [app]}}} = rdx,
         input
@@ -34,27 +20,49 @@ defmodule Flamelex.Fluxus.UserInputHandler do
     Module.concat(app, UserInputHandler).handle(rdx, input)
   end
 
-  # def process(
-  #       %{
-  #         layers: %{
-  #           one: %{
-  #             active_apps: [
-  #               {Flamelex.GUI.Component.TODOlist, _state1},
-  #               {Flamelex.GUI.Component.TODOdetails, _state2}
-  #             ]
-  #           }
-  #         }
-  #       } = rdx,
-  #       input
-  #     ) do
-  #   Flamelex.GUI.Component.TODOlist.UserInputHandler.process(rdx, input)
-  # end
-
-  def process(rdx, input) do
-    # Logger.warn("#{__MODULE__} ignoring input: #{inspect(input)}")
-    :ignore
+  def handle(
+        %{layers: %{one: %{active_apps: [TODOlist | _rest]}}} = rdx,
+        input
+      ) do
+    TODOlist.UserInputHandler.handle(rdx, input)
   end
 end
+
+# def process(
+#       %{
+#         layers: %{
+#           one: %{
+#             active_apps: [
+#               {Flamelex.GUI.Component.TODOlist, _state1},
+#               {Flamelex.GUI.Component.TODOdetails, _state2}
+#             ]
+#           }
+#         }
+#       } = rdx,
+#       input
+#     ) do
+#   Flamelex.GUI.Component.TODOlist.UserInputHandler.process(rdx, input)
+# end
+
+# def process(rdx, input) do
+#   # Logger.warn("#{__MODULE__} ignoring input: #{inspect(input)}")
+#   :ignore
+# end
+
+# def process(
+#       %{
+#         layers: %{
+#           one: %{
+#             active_apps: [
+#               {Memelex.GUI.Components.RapidSelector, _state}
+#             ]
+#           }
+#         }
+#       } = rdx,
+#       input
+#     ) do
+#   Flamelex.Fluxus.RapidSelectorUserInputHandler.process(rdx, input)
+# end
 
 # #   # TODO look for this module/file & see if it exists before attempting this
 # #   case Memelex.My.Modz.CustomInputHandler.process(radix_state, input) do

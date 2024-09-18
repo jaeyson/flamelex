@@ -39,7 +39,7 @@ defmodule Flamelex.Fluxus.RadixState do
       },
       apps: %{
         todo_list: TODOlist.State.new(),
-        #     # todo_details: TODOlist.State.new(),
+        todo_details: nil,
         #     rapid_selector: %{},
         editor: %{
           buffers: []
