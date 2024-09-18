@@ -9,19 +9,19 @@ defmodule Flamelex.Fluxus.Reducers.Memex do
   #         :ignore
   #     end
 
-  def process(
-        %{
-          memex: %{
-            active?: true,
-            env: %Memelex.Environment{} = mmx_env
-          }
-        } = rdx_state,
-        :open_memex
-      ) do
-    rdx_state
-    |> Layer01Mutators.set_active_app({RapidSelector, RapidSelector.State.new()})
-    |> Layer01Mutators.set_layout(:full_screen)
-  end
+  # def process(
+  #       %{
+  #         memex: %{
+  #           active?: true,
+  #           env: %Memelex.Environment{} = mmx_env
+  #         }
+  #       } = rdx_state,
+  #       :open_memex
+  #     ) do
+  #   rdx_state
+  #   # |> Layer01Mutators.set_active_app({RapidSelector, RapidSelector.State.new()})
+  #   |> Layer01Mutators.set_layout(:full_screen)
+  # end
 
   def process(
         %{

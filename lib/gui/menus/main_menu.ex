@@ -79,7 +79,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
 
   def do_buffer_menu(radix_state) do
     [
-      do_open_buffers_menu(radix_state),
+      # do_open_buffers_menu(radix_state),
       {"new", &Flamelex.API.Buffer.new/0},
       #  {"list", &Flamelex.API.Buffer.new/0}, #TODO list should be an arrow-out menudown, that lists open buffers
       {"save", &Flamelex.API.Buffer.save/0},
@@ -87,7 +87,8 @@ defmodule Flamelex.GUI.Menus.MainMenu do
     ]
   end
 
-  def do_open_buffers_menu(%{editor: %{buffers: open_buffers}}) when length(open_buffers) >= 1 do
+  def do_open_buffers_menu(%{apps: %{editor: %{buffers: open_buffers}}})
+      when length(open_buffers) >= 1 do
     # build the open-buffers sub-menu & open the buffer when we click on one
     # TODO if the buffer is unsaved, put an * at the end of it
     open_bufs_sub_menu =

@@ -55,12 +55,12 @@ defmodule Flamelex.GUI.RootScene do
 
     # We update a few details in the RadixStore which are
     # force-refreshed due to this process starting up
-    {:ok, root_graph} = render_layers(scene.viewport, rdx)
+    {:ok, graph} = render_layers(scene.viewport, rdx)
 
     new_scene =
       scene
-      |> assign(graph: root_graph)
-      |> push_graph(root_graph)
+      |> assign(graph: graph)
+      |> push_graph(graph)
 
     request_input(new_scene, [:viewport, :key])
 
@@ -130,6 +130,7 @@ defmodule Flamelex.GUI.RootScene do
 
   def handle_input(input, context, scene) do
     # Logger.debug("#{__MODULE__} recv'd some (non-ignored) input: #{inspect(input)}")
+    # this effectively sends it to the RadixStore
     Flamelex.Fluxus.user_input(input)
     {:noreply, scene}
   end

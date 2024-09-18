@@ -10,52 +10,45 @@ defmodule Flamelex.Fluxus.UserInputHandler do
   our lower-level input handlers.
   """
   require Logger
+  alias Flamelex.GUI.Component.TODOlist
+
+  # def process(
+  #       %{
+  #         layers: %{
+  #           one: %{
+  #             active_apps: [
+  #               {Memelex.GUI.Components.RapidSelector, _state}
+  #             ]
+  #           }
+  #         }
+  #       } = rdx,
+  #       input
+  #     ) do
+  #   Flamelex.Fluxus.RapidSelectorUserInputHandler.process(rdx, input)
+  # end
 
   def process(
-        %{
-          layers: %{
-            one: %{
-              active_apps: [
-                {Memelex.GUI.Components.RapidSelector, _state}
-              ]
-            }
-          }
-        } = rdx,
+        %{layers: %{one: %{active_apps: [TODOlist]}}} = rdx,
         input
       ) do
-    Flamelex.Fluxus.RapidSelectorUserInputHandler.process(rdx, input)
+    TODOlist.UserInputHandler.process(rdx, input)
   end
 
-  def process(
-        %{
-          layers: %{
-            one: %{
-              active_apps: [
-                {Flamelex.GUI.Component.TODOlist, _state1}
-              ]
-            }
-          }
-        } = rdx,
-        input
-      ) do
-    Flamelex.Fluxus.TODOsUserInputHandler.process(rdx, input)
-  end
-
-  def process(
-        %{
-          layers: %{
-            one: %{
-              active_apps: [
-                {Flamelex.GUI.Component.TODOlist, _state1},
-                {Flamelex.GUI.Component.TODOdetails, _state2}
-              ]
-            }
-          }
-        } = rdx,
-        input
-      ) do
-    Flamelex.Fluxus.TODOsUserInputHandler.process(rdx, input)
-  end
+  # def process(
+  #       %{
+  #         layers: %{
+  #           one: %{
+  #             active_apps: [
+  #               {Flamelex.GUI.Component.TODOlist, _state1},
+  #               {Flamelex.GUI.Component.TODOdetails, _state2}
+  #             ]
+  #           }
+  #         }
+  #       } = rdx,
+  #       input
+  #     ) do
+  #   Flamelex.GUI.Component.TODOlist.UserInputHandler.process(rdx, input)
+  # end
 
   def process(rdx, input) do
     # Logger.warn("#{__MODULE__} ignoring input: #{inspect(input)}")

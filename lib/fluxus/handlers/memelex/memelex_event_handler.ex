@@ -7,14 +7,22 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   alias Flamelex.Fluxus.Reducers.Memex, as: MemexReducer
   require Logger
 
-  def process(radix_state, {:loaded_memex, new_memex_env}) do
-    radix_state
-    # TODO when I eventually go multi-env, this may be a problem...
-    |> put_in([:memex, :active?], true)
-    |> put_in([:memex, :env], new_memex_env)
-
-    # |> Flamelex.Fluxus.Structs.RadixState.calc_menu_map()
+  def handle(rdx, {:loaded_memex, %Memelex.Environment{} = env}) do
+    [{:load_memex, env}]
   end
+
+  def handle(rdx, :show_todos) do
+    [{TODOlist.Reducer, :show_todos}]
+  end
+
+  # def process(radix_state, {:loaded_memex, new_memex_env}) do
+  #   radix_state
+  #   # TODO when I eventually go multi-env, this may be a problem...
+  #   |> put_in([:memex, :active?], true)
+  #   |> put_in([:memex, :env], new_memex_env)
+
+  #   # |> Flamelex.Fluxus.Structs.RadixState.calc_menu_map()
+  # end
 
   def process(radix_state, {:open_text_snippet, %{data: %{"file_path" => file_path}}}) do
     # raise "here we should open it in sublime or gedit"
@@ -48,15 +56,15 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   # {:ok, radix_state, new_memex_state}
 
   # TODO eventually dont return a changes radix state, return a list of actions
-  def process(rdx, :show_todos) do
-    # DONT change the TODOlist state here since we are just switching to it!
-    # OR alternatively, why not refresh it?? Plus we need to initialize it _somewhere_ !
-    # If we don't do it here then there's a chance we will switch back and the data will be stale
-    rdx
-    |> Flamelex.Fluxus.Layer01Mutators.set_layout(:full_screen)
-    |> Flamelex.Fluxus.Layer01Mutators.set_active_apps([TODOlist])
-    |> Flamelex.Fluxus.TODOsMutators.refresh_todo_list()
-  end
+  # def process(rdx, :show_todos) do
+  #   # DONT change the TODOlist state here since we are just switching to it!
+  #   # OR alternatively, why not refresh it?? Plus we need to initialize it _somewhere_ !
+  #   # If we don't do it here then there's a chance we will switch back and the data will be stale
+  #   rdx
+  #   |> Flamelex.Fluxus.Layer01Mutators.set_layout(:full_screen)
+  #   |> Flamelex.Fluxus.Layer01Mutators.set_active_apps([TODOlist])
+  #   |> Flamelex.Fluxus.TODOsMutators.refresh_todo_list()
+  # end
 
   def process(radix_state, {:reloaded_my_modz, t}) do
     # dunno what to do about this for now

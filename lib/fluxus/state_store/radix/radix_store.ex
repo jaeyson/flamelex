@@ -59,8 +59,9 @@ defmodule Flamelex.Fluxus.RadixStore do
   end
 
   def handle_cast({:event, e, e_shadow}, radix_state) do
-    case Wormhole.capture(handle_event_fn(radix_state, e, e_shadow), crush_report: true) do
+    case Wormhole.capture(handle_event_fn(radix_state, e)) do
       {:ok, :ignore} ->
+        EventBus.mark_as_completed({__MODULE__, e_shadow})
         {:noreply, radix_state}
 
       {:ok, new_radix_state} ->
@@ -89,18 +90,19 @@ defmodule Flamelex.Fluxus.RadixStore do
           msg: {:radix_state_change, new_radix_state}
         )
 
+        EventBus.mark_as_completed({__MODULE__, e_shadow})
         {:noreply, new_radix_state}
 
-      {:error, reason} ->
+      {:error, _reason} ->
         formatted_error = ~s|\n
         id: #{e.id},
         topic: #{e.topic},
         event: #{inspect(e.data)}
-        reason: #{inspect(reason)}
         |
 
         Logger.error("#{__MODULE__} failed to process event.#{formatted_error}")
 
+        EventBus.mark_as_completed({__MODULE__, e_shadow})
         {:noreply, radix_state}
     end
   end
@@ -110,62 +112,6 @@ defmodule Flamelex.Fluxus.RadixStore do
     fn -> Flamelex.Fluxus.RadixState.new(args) end
   end
 
-  defp handle_event_fn(radix_state, %{topic: topic, data: event}, e_shadow) do
-    # have to return a zero arity function for Task.async
-    fn ->
-      # Logger.debug("#{__MODULE__} handling event: #{inspect(event)}, topic: #{inspect(topic)}...")
-
-      handler =
-        case topic do
-          :flx_actions -> Flamelex.Fluxus.RadixReducer
-          :flx_user_input -> Flamelex.Fluxus.UserInputHandler
-          :memelex -> Flamelex.Fluxus.MemelexEventHandler
-        end
-
-      case handler.process(radix_state, event) do
-        :ignore ->
-          EventBus.mark_as_completed({__MODULE__, e_shadow})
-          :ignore
-
-        ^radix_state ->
-          EventBus.mark_as_completed({__MODULE__, e_shadow})
-          :ignore
-
-        new_radix_state ->
-          EventBus.mark_as_completed({__MODULE__, e_shadow})
-          new_radix_state
-      end
-    end
-  end
-
-  # defp handle_event_fn(radix_state, %{topic: :flx_actions, data: action}, e_shadow) do
-  #   # have to return a zero arity function for Task.async
-  #   fn ->
-  #     # Logger.debug("#{__MODULE__} handling event: #{inspect(event)}, topic: #{inspect(topic)}...")
-
-  #     # handler =
-  #     #   case topic do
-  #     #     :flx_actions -> Flamelex.Fluxus.RadixReducer
-  #     #     :flx_user_input -> Flamelex.Fluxus.UserInputHandler
-  #     #     :memelex -> Flamelex.Fluxus.MemelexEventHandler
-  #     #   end
-
-  #     case Flamelex.Fluxus.RadixReducer.process(radix_state, action) do
-  #       :ignore ->
-  #         EventBus.mark_as_completed({__MODULE__, e_shadow})
-  #         :ignore
-
-  #       ^radix_state ->
-  #         EventBus.mark_as_completed({__MODULE__, e_shadow})
-  #         :ignore
-
-  #       new_radix_state ->
-  #         EventBus.mark_as_completed({__MODULE__, e_shadow})
-  #         new_radix_state
-  #     end
-  #   end
-  # end
-
   # defp handle_event_fn(radix_state, %{topic: topic, data: event}, e_shadow) do
   #   # have to return a zero arity function for Task.async
   #   fn ->
@@ -173,23 +119,10 @@ defmodule Flamelex.Fluxus.RadixStore do
 
   #     handler =
   #       case topic do
+  #         :flx_actions -> Flamelex.Fluxus.RadixReducer
   #         :flx_user_input -> Flamelex.Fluxus.UserInputHandler
   #         :memelex -> Flamelex.Fluxus.MemelexEventHandler
   #       end
-
-  #     # handlers should return a list of actions, not mutate the state directly, then we
-  #     # map those actions to a change in state - we could update state here and also broadcast the action out???
-  #     # broadcast the input out to components???
-
-  #     # for now though I wrote my handlers badly and they mutate the radix state
-
-  #     # case handler.handle(radix_state, event) do
-  #     #   {:ok, actions} ->
-  #     #     actions
-  #     #     |> Enum.reduce(radix_state, fn action, acc ->
-  #     #       Flamelex.Fluxus.RadixReducer.process(acc, action)
-  #     #     end)
-  #     # end
 
   #     case handler.process(radix_state, event) do
   #       :ignore ->
@@ -206,6 +139,68 @@ defmodule Flamelex.Fluxus.RadixStore do
   #     end
   #   end
   # end
+
+  defp handle_event_fn(radix_state, %{topic: :flx_actions, data: action}) do
+    # have to return a zero arity function for Task.async
+    fn ->
+      case Flamelex.Fluxus.RadixReducer.process(radix_state, action) do
+        :ignore ->
+          # EventBus.mark_as_completed({__MODULE__, e_shadow})
+          :ignore
+
+        ^radix_state ->
+          # EventBus.mark_as_completed({__MODULE__, e_shadow})
+          :ignore
+
+        new_radix_state ->
+          # EventBus.mark_as_completed({__MODULE__, e_shadow})
+          new_radix_state
+      end
+    end
+  end
+
+  # TODO expand this to potentially accept a list of actions
+  defp handle_event_fn(rdx, %{topic: topic, data: event}) do
+    # handlers should return a list of actions, not mutate the state directly, then we
+    # map those actions to a change in state - we could update state here and also broadcast the action out???
+    # broadcast the input out to components???
+
+    # for now though I wrote my handlers badly and they mutate the radix state
+
+    # have to return a zero arity function for Task.async
+    fn ->
+      handler =
+        case topic do
+          :flx_user_input -> Flamelex.Fluxus.UserInputHandler
+          :memelex -> Flamelex.Fluxus.MemelexEventHandler
+        end
+
+      case handler.handle(rdx, event) do
+        :ignore ->
+          :ignore
+
+        actions when is_list(actions) ->
+          # apply actions to the radix state in sequence to determine the new state
+          new_rdx =
+            actions
+            |> Enum.reduce(rdx, fn action, rdx_acc ->
+              case Flamelex.Fluxus.RadixReducer.process(rdx_acc, action) do
+                :ignore ->
+                  rdx_acc
+
+                new_rdx ->
+                  new_rdx
+              end
+            end)
+
+          if new_rdx == rdx do
+            :ignore
+          else
+            new_rdx
+          end
+      end
+    end
+  end
 
   defp subscribe_to_pubsub_topics do
     EventBus.subscribe(
