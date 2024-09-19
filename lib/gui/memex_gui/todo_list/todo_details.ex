@@ -24,6 +24,8 @@ defmodule Flamelex.GUI.Component.TODOdetails do
       |> assign(state: state)
       |> push_graph(graph)
 
+    Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
+
     {:ok, init_scene}
   end
 
@@ -38,6 +40,37 @@ defmodule Flamelex.GUI.Component.TODOdetails do
 
     cast_children(scene, {:set_scroll, new_scroll})
     {:noreply, scene |> assign(state: new_state)}
+  end
+
+  def handle_info(
+        {:radix_state_change, %{apps: %{todo_details: %Memelex.TidBit{} = t}}},
+        %{assigns: %{frame: f, state: %{todo: t}}} = scene
+      ) do
+    # state variables in pattern match are the same, therefore no state change occured
+    {:noreply, scene}
+  end
+
+  def handle_info(
+        {:radix_state_change, %{apps: %{todo_details: %Memelex.TidBit{} = new_t}}},
+        %{assigns: %{frame: f, state: old_state}} = scene
+      ) do
+    # # TODO we shouldn't _always_ need to re-render.. should evaluate the changes first
+    # new_state = put_in(old_state, [:todo], new_t)
+    new_state = %{
+      todo: new_t,
+      # reset the scroll if we change the TidBit
+      scroll: {0, 0}
+    }
+
+    {:ok, new_graph} = render(f, new_state)
+
+    new_scene =
+      scene
+      |> assign(graph: new_graph)
+      |> assign(state: new_state)
+      |> push_graph(new_graph)
+
+    {:noreply, new_scene}
   end
 
   def render(frame, state) do

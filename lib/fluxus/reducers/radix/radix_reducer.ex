@@ -136,9 +136,9 @@ defmodule Flamelex.Fluxus.RadixReducer do
   #   ])
   # end
 
-  # def process(rdx_state, {Flamelex.GUI.Component.TODOlist, action}) do
-  #   Flamelex.Fluxus.TODOlistReducer.process(rdx_state, {Flamelex.GUI.Component.TODOlist, action})
-  # end
+  def process(rdx, {Flamelex.GUI.Component.TODOlist, action}) do
+    Flamelex.GUI.Component.TODOlist.Reducer.process(rdx, action)
+  end
 
   # def app_is_active?(rdx_state, app) do
   #   case rdx_state[:layers][:one][:active_apps] do
@@ -285,14 +285,6 @@ defmodule Flamelex.Fluxus.RadixReducer do
   #   # ])
   # end
 
-  # # TODO here, we should have a module of transformations for the radix state!
-  # # Make RadixState a struct!?!?
-  # defp open_widget_workbench(radix_state) do
-  #   Flamelex.Fluxus.Structs.RadixState.mutate(radix_state, :open_widget_workbench)
-  # end
-
-  # require Logger
-
   # todo use_module would be better but the compiler hates it
   # This clause is here to make it easier to route actions straight to the appropriate reducer,
   # for the situations when we know (when we fire the action) which reducer should handle it
@@ -305,12 +297,12 @@ defmodule Flamelex.Fluxus.RadixReducer do
     # If that fails/doesn't work, we want to look up custom keymaps in the my_modz.ex (???)
 
     # try do
-    reducer.process(radix_state, action)
     # rescue
     #   e in FunctionClauseError ->
     #     {:error,
     #      "#{__MODULE__} -- Reducer `#{inspect(reducer)}` could not match action: #{inspect(action)}"}
     # end
+    reducer.process(radix_state, action)
   end
 
   # theoretically we dont need to handle things we dont know how to handle but it does make a lot of noise...

@@ -268,7 +268,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
   # this might solve the issue where clicking a menubar item which is hovering over something below it triggers both
   def handle_cast({:click, %Memelex.TidBit{} = t}, %{assigns: %{dropdown_mode: true}} = scene) do
     IO.puts("IGNOREING THE CLICK CSUE WE'RE IN DROPDOWN MODE")
-    {:noreply, scene}
+    {:noreply, scene |> assign(dropdown_mode: false)}
   end
 
   def handle_cast({:click, %Memelex.TidBit{} = t}, scene) do
@@ -363,12 +363,8 @@ defmodule Flamelex.GUI.Component.TODOlist do
   end
 
   def handle_event({:value_changed, :filter_select, filter_by}, _context, scene) do
-    #         GenServer.cast(Flamelex.GUI.Component.Memex.HyperCard.Sidebar.SearchResults, {:search, value})
-    #         {:noreply, scene}
-    #     end
-    # IO.inspect("#{inspect(e)}")
-    Flamelex.Fluxus.action({[app: __MODULE__], {:filter_todos, filter_by}})
-    {:noreply, scene |> assign(filter: filter_by)}
+    Flamelex.Fluxus.action({__MODULE__, {:filter_todos, filter_by}})
+    {:noreply, scene}
   end
 
   # def handle_event(e, scene) do
