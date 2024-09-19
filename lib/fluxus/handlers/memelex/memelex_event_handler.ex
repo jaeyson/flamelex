@@ -4,7 +4,6 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   """
   alias Flamelex.GUI.Component.TODOlist
   alias Memelex.GUI.Components.RapidSelector
-  alias Flamelex.Fluxus.Reducers.Memex, as: MemexReducer
   require Logger
 
   def handle(rdx, {:loaded_memex, %Memelex.Environment{} = env}) do
@@ -13,6 +12,10 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
 
   def handle(rdx, :show_todos) do
     [{TODOlist.Reducer, :show_todos}]
+  end
+
+  def handle(rdx, {:open_tidbit, t}) do
+    [{RapidSelector.Reducer, {:open_tidbit, t}}]
   end
 
   # def process(radix_state, {:loaded_memex, new_memex_env}) do
@@ -28,6 +31,7 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
     # raise "here we should open it in sublime or gedit"
     # temporarily allow this since flamelex can't open files nicely yet and I still want to be able to do this from within Flamelex
     Memelex.Utils.ToolBag.open_gedit(file_path)
+    :ignore
   end
 
   # def add_gui_args(t) do
@@ -46,7 +50,7 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   # end
 
   def process(rdx, {:open_tidbit, t}) do
-    MemexReducer.process(rdx, {:open_tidbit, t})
+    [{RapidSelector.Reducer, {:open_tidbit, t}}]
   end
 
   # raise "Flamelex not handling the event to open a TidBit yet"

@@ -101,7 +101,7 @@ defmodule Memelex.GUI.Components.StoryRiver do
         scene
       ) do
     # TODO handle all this via a Reducer?? Or just keep it in the component??
-    # Flamelex.Fluxus.action({Flamelex.Fluxus.Reducers.Memex, {:scroll, delta_scroll, __MODULE__}})
+    # Flamelex.Fluxus.action({Memelex.GUI.Components.RapidSelector.Reducer, {:scroll, delta_scroll, __MODULE__}})
 
     fast_scroll = {0, 3 * y_scroll}
     # TODO cap scroll

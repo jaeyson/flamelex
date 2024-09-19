@@ -198,6 +198,10 @@ defmodule Flamelex.Fluxus.RadixStore do
           else
             new_rdx
           end
+
+        other ->
+          Logger.error("Unrecognised handler return value: #{inspect(other)}")
+          :ignore
       end
     end
   end

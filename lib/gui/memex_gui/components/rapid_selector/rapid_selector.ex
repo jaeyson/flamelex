@@ -32,15 +32,19 @@ defmodule Memelex.GUI.Components.RapidSelector do
         } = data
       ) do
     # Logger.debug "#{__MODULE__} accepted params: #{inspect data}"
+    IO.puts("OKOKOKOK DATA")
     {:ok, data}
   end
 
   def init(scene, args, opts) do
     Logger.debug("#{__MODULE__} initializing...")
 
+    # TODO fetch the state don't pass it in
+
     # pubsub_mod = Module.concat(args.app, Utils.PubSub)
     # pubsub_mod.subscribe(topic: :radix_state_change)
 
+    IO.puts("REND ER RAPID SELECTOR")
     init_graph = render(args)
 
     # init_state =

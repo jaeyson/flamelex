@@ -5,7 +5,7 @@ defmodule Memelex.GUI.Components.CollectionsMantel do
   # alias ScenicWidgets.Core.Structs.Frame
   alias Widgex.Frame
   # alias Flamelex.GUI.Component.Memex
-  # alias Flamelex.Fluxus.Reducers.Memex, as: RootReducer
+  # alias Memelex.GUI.Components.RapidSelector.Reducer, as: RootReducer
 
   def validate(%{frame: %Frame{} = _f, state: _state} = data) do
     Logger.debug("#{__MODULE__} accepted params: #{inspect(data)}")
@@ -64,7 +64,7 @@ defmodule Memelex.GUI.Components.CollectionsMantel do
         scene
       ) do
     # TODO handle all this via a Reducer?? Or just keep it in the component??
-    # Flamelex.Fluxus.action({Flamelex.Fluxus.Reducers.Memex, {:scroll, delta_scroll, __MODULE__}})
+    # Flamelex.Fluxus.action({Memelex.GUI.Components.RapidSelector.Reducer, {:scroll, delta_scroll, __MODULE__}})
 
     fast_scroll = {0, 3 * y_scroll}
     # TODO cap scroll

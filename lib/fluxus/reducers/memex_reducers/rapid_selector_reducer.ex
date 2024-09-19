@@ -1,36 +1,35 @@
-defmodule Flamelex.Fluxus.Reducers.Memex do
+defmodule Memelex.GUI.Components.RapidSelector.Reducer do
   @moduledoc false
-  alias Memelex.Reducers.MemexReducer
+  # alias Memelex.Reducers.MemexReducer
   alias Flamelex.Fluxus.Layer01Mutators
   alias Memelex.GUI.Components.RapidSelector
 
-  #     def process(%{root: %{active_app: :memex}} = radix_state, :open_memex) do
-  #         Logger.debug "ignoring a command to open the memex, the memex is already active"
-  #         :ignore
-  #     end
-
-  # def process(
-  #       %{
-  #         memex: %{
-  #           active?: true,
-  #           env: %Memelex.Environment{} = mmx_env
-  #         }
-  #       } = rdx_state,
-  #       :open_memex
-  #     ) do
-  #   rdx_state
-  #   # |> Layer01Mutators.set_active_app({RapidSelector, RapidSelector.State.new()})
-  #   |> Layer01Mutators.set_layout(:full_screen)
-  # end
+  def process(
+        %{
+          memex: %{
+            active?: true,
+            env: %Memelex.Environment{} = _mmx_env
+          }
+        } = rdx_state,
+        :open_memex
+      ) do
+    rdx_state
+    |> Layer01Mutators.set_active_apps([{RapidSelector, RapidSelector.State.new()}])
+    |> Layer01Mutators.set_layout(:full_screen)
+  end
 
   def process(
         %{
           layers: %{
             one: %{active_apps: [{RapidSelector, _state}]}
+            # one: %{active_apps: [RapidSelector]}
           }
         } = radix_state,
+        # radix_state,
         {:open_tidbit, t}
       ) do
+    IO.inspect(radix_state.layers.one.active_apps)
+
     case GenServer.call(Memelex.WikiServer, {:get, t}) do
       {:ok, tidbit} ->
         radix_state
