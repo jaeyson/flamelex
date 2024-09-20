@@ -78,9 +78,9 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
         :start_animation,
         %{assigns: %{state: %State{animate?: true}}} = scene
       ) do
-    Logger.debug(
-      "#{__MODULE__} received msg: :start_animation, but ignoring it because we're already animated..."
-    )
+    # Logger.debug(
+    #   "#{__MODULE__} received msg: :start_animation, but ignoring it because we're already animated..."
+    # )
 
     {:noreply, scene}
   end
@@ -188,7 +188,7 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
       {:noreply, scene}
     else
       # Logger.debug "#{__MODULE__} detected cursor_pos `#{inspect {x, y}}`, and classified it as: outside the inner radius"
-      GenServer.cast(self(), :stop_animation)
+      if scene.assigns.state.animate?, do: GenServer.cast(self(), :stop_animation)
       {:noreply, scene}
     end
   end
