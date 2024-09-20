@@ -37,6 +37,9 @@ defmodule Memelex.GUI.Components.RapidSelector do
 
   def init(scene, %{frame: %Widgex.Frame{} = frame}, opts) do
     # state = Flamelex.Fluxus.RadixStore.get().apps.rapid_selector
+    #     # TODO here, we should fetch the memelex app radix_state & use that going forward, also using that topic
+    #     # dont worry about passing in memex state from above, in fact it wont exist at that level!!
+
     state = RapidSelector.State.new()
     graph = render(frame, state)
 

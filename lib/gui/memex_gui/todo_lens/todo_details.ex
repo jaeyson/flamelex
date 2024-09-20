@@ -4,7 +4,6 @@ defmodule Flamelex.GUI.Component.TODOdetails do
   def validate(
         %{
           frame: %Widgex.Frame{} = _f
-          # state: %Memelex.TidBit{} = _t
         } = data
       ) do
     # Logger.debug "#{__MODULE__} accepted params: #{inspect data}"
