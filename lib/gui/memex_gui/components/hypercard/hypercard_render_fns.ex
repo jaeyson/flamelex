@@ -54,6 +54,7 @@ defmodule Memelex.GUI.Components.HyperCard.Render do
         |> render_header_background(frame, tidbit)
         |> render_title(frame, tidbit)
         |> render_toolbar(frame, tidbit)
+        |> Memelex.GUI.Components.HyperCard.TagsBox.draw(tidbit.tags)
       end,
       id: {:hypercard, tidbit.uuid},
       translate: {@margin, @margin}
