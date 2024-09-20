@@ -1,8 +1,8 @@
 defmodule Memelex.GUI.Components.HyperCard do
   use Scenic.Component
-  alias Memelex.Fluxus.Reducers.RadixReducer
-  alias Memelex.Fluxus.Reducers.TidbitReducer
-  alias Flamelex.Fluxus.Reducers.Memex, as: MemexReducer
+  # alias Memelex.Fluxus.Reducers.RadixReducer
+  # alias Memelex.Fluxus.Reducers.TidbitReducer
+  alias Memelex.GUI.Components.RapidSelector.Reducer
 
   # TODO document this point
   # TODO good idea: render each sub-component as a seperate graph,
@@ -54,9 +54,7 @@ defmodule Memelex.GUI.Components.HyperCard do
   def handle_cast({:click, {:close, tidbit_uuid}}, scene) do
     # TODO pass it up to the story river (including tidbit info)
     # which will then in turn call the API to close it?? Or just keep doing it here??
-    # Memelex.Fluxus.action({TidbitReducer, {:close_tidbit, %{tidbit_uuid: tidbit_uuid}}})
-    Flamelex.Fluxus.action({MemexReducer, {:close_tidbit, %{tidbit_uuid: tidbit_uuid}}})
-
+    Flamelex.Fluxus.action({RapidSelector.Reducer, {:close_tidbit, %{tidbit_uuid: tidbit_uuid}}})
     {:noreply, scene}
   end
 

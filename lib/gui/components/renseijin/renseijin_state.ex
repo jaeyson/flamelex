@@ -84,6 +84,12 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
 
   # @spec cast(map()) :: t()
 
+  def new do
+    %__MODULE__{
+      animate?: true
+    }
+  end
+
   def cast(
         %__MODULE__{
           rotation: r,

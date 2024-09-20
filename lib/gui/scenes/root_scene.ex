@@ -9,6 +9,7 @@ defmodule Flamelex.GUI.RootScene do
   alias Widgex.Structs.LayerCake
   require Logger
 
+  alias Flamelex.GUI.Layers.Layer0
   alias Flamelex.GUI.Layers.Layer01
   alias Flamelex.GUI.Layers.NeoLayer02
 
@@ -163,6 +164,9 @@ defmodule Flamelex.GUI.RootScene do
     full_graph =
       Scenic.Graph.build()
       # TODO experiment with the idea of each layer fetching their own state from RadixState during init...
+      |> Layer0.add_to_graph(%{
+        frame: app_frame
+      })
       |> Layer01.add_to_graph(%{
         # radix: radix_state,
         state: radix_state.layers.one,

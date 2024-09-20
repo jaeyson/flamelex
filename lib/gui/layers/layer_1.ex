@@ -70,15 +70,7 @@ defmodule Flamelex.GUI.Layers.Layer01 do
     |> render(frame, state)
   end
 
-  def render(graph, frame, %{active_apps: []} = _layer_state) do
-    graph =
-      graph
-      |> Scenic.Primitives.rectangle(
-        frame.size.box,
-        fill: :blue,
-        translate: frame.pin.point
-      )
-
+  def render(graph, _frame, %{active_apps: []} = _layer_state) do
     {:ok, graph}
   end
 
