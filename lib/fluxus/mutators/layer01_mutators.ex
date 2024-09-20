@@ -10,43 +10,36 @@ defmodule Flamelex.Fluxus.Layer01Mutators do
     |> put_in([:layers, :one, :layout], layout)
   end
 
-  # def set_active_app(
-  #       %{layers: %{one: %{active_apps: []}}} = rdx_state,
-  #       {_component_module, _args} = app
-  #     ) do
-  #   rdx_state
-  #   |> put_in([:layers, :one, :active_apps], [
-  #     app
-  #   ])
-  # end
-
   def set_active_apps(rdx_state, active_apps) when is_list(active_apps) do
     rdx_state
     |> put_in([:layers, :one, :active_apps], active_apps)
   end
 
   def open_tidbit(
-        %{layers: %{one: %{active_apps: [{RapidSelector, state}]}}} = rdx_state,
+        %{layers: %{one: %{active_apps: [RapidSelector]}}} = rdx_state,
         tidbit
       ) do
-    rdx_state
-    |> update_app_state(RapidSelector, fn state ->
-      state
-      |> put_in([:story_river, :open_tidbits], [tidbit | state.story_river.open_tidbits])
-    end)
+    update_in(
+      rdx_state[:apps][:rapid_selector],
+      fn state ->
+        put_in(state, [:story_river, :open_tidbits], [tidbit | state.story_river.open_tidbits])
+      end
+    )
   end
 
   def close_tidbit(
-        %{layers: %{one: %{active_apps: [{RapidSelector, state}]}}} = rdx_state,
+        %{layers: %{one: %{active_apps: [RapidSelector]}}} = rdx_state,
         %{tidbit_uuid: tidbit_uuid}
       ) do
-    rdx_state
-    |> update_app_state(RapidSelector, fn state ->
-      state
-      |> update_in([:story_river, :open_tidbits], fn open_tidbits ->
-        Enum.reject(open_tidbits, &(&1.uuid == tidbit_uuid))
-      end)
-    end)
+    update_in(
+      rdx_state[:apps][:rapid_selector],
+      fn state ->
+        state
+        |> update_in([:story_river, :open_tidbits], fn open_tidbits ->
+          Enum.reject(open_tidbits, &(&1.uuid == tidbit_uuid))
+        end)
+      end
+    )
   end
 
   # def set_turbo(rdx_state, turbo?) when is_boolean(turbo?) do
@@ -64,19 +57,4 @@ defmodule Flamelex.Fluxus.Layer01Mutators do
   #     |> put_in([:scroll], scroll)
   #   end)
   # end
-
-  def update_app_state(rdx_state, app_name, fun) do
-    update_in(
-      rdx_state[:layers][:one][:active_apps],
-      fn active_apps ->
-        Enum.map(active_apps, fn
-          {^app_name, state} ->
-            {app_name, fun.(state)}
-
-          other_app ->
-            other_app
-        end)
-      end
-    )
-  end
 end

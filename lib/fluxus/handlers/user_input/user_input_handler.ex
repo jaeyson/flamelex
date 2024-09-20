@@ -12,19 +12,20 @@ defmodule Flamelex.Fluxus.UserInputHandler do
   require Logger
   alias Flamelex.GUI.Component.TODOlist
 
-  # if we only have one app open then we can just pass the input to that app
-  def handle(
-        %{layers: %{one: %{active_apps: [app]}}} = rdx,
-        input
-      ) do
-    Module.concat(app, UserInputHandler).handle(rdx, input)
-  end
-
   def handle(
         %{layers: %{one: %{active_apps: [TODOlist | _rest]}}} = rdx,
         input
       ) do
     TODOlist.UserInputHandler.handle(rdx, input)
+  end
+
+  # if we only have one app open then we can just pass the input to that app
+  def handle(
+        %{layers: %{one: %{active_apps: [app]}}} = rdx,
+        input
+      ) do
+    IO.puts("WARNING - App: #{inspect(app)} did not have a specific handler in #{__MODULE__}...")
+    Module.concat(app, UserInputHandler).handle(rdx, input)
   end
 end
 

@@ -11,6 +11,15 @@ defmodule Flamelex.GUI.Component.TODOlist.UserInputHandler do
     [{TODOlist.Reducer, {:set_turbo, false}}]
   end
 
+  @ignored_keys [
+    @left_alt_dn,
+    @left_alt_up
+  ]
+  def handle(rdx, input) when input in @ignored_keys do
+    Logger.warn("#{__MODULE__} ignoring input: #{inspect(input)}")
+    :ignore
+  end
+
   # def process(
   #       %{
   #         layers: %{

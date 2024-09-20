@@ -8,6 +8,8 @@ defmodule Memelex.GUI.Components.HyperCard.Render do
   @header_height 100
   @toolbar_width 150
 
+  alias Memelex.GUI.Components.HyperCard
+
   # - work on body component displaying how we actually want it to work
   # wraps at correct width
   # renders infinitely long
@@ -54,7 +56,7 @@ defmodule Memelex.GUI.Components.HyperCard.Render do
         |> render_header_background(frame, tidbit)
         |> render_title(frame, tidbit)
         |> render_toolbar(frame, tidbit)
-        |> Memelex.GUI.Components.HyperCard.TagsBox.draw(tidbit.tags)
+        |> HyperCard.TagsBox.draw(tidbit.tags)
       end,
       id: {:hypercard, tidbit.uuid},
       translate: {@margin, @margin}

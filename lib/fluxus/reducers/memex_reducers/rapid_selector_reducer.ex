@@ -14,21 +14,42 @@ defmodule Memelex.GUI.Components.RapidSelector.Reducer do
         :open_memex
       ) do
     rdx_state
-    |> Layer01Mutators.set_active_apps([{RapidSelector, RapidSelector.State.new()}])
+    |> Layer01Mutators.set_active_apps([RapidSelector])
     |> Layer01Mutators.set_layout(:full_screen)
+  end
+
+  def process(
+        rdx_state,
+        :open_memex
+      ) do
+    IO.puts("NOT OPENING MEMEX")
+    rdx_state
   end
 
   def process(
         %{
           layers: %{
-            one: %{active_apps: [{RapidSelector, _state}]}
+            one: %{active_apps: [RapidSelector]}
+            # one: %{active_apps: [RapidSelector]}
+          }
+        } = radix_state,
+        {:open_tidbit, {:new, %{mode: :edit}}}
+      ) do
+    IO.puts("NOT OPENING IT YET BUT HOPEFULLY SOONONONON")
+    radix_state
+  end
+
+  def process(
+        %{
+          layers: %{
+            one: %{active_apps: [RapidSelector]}
             # one: %{active_apps: [RapidSelector]}
           }
         } = radix_state,
         # radix_state,
-        {:open_tidbit, t}
+        {:open_tidbit, %Memelex.TidBit{} = t}
       ) do
-    IO.inspect(radix_state.layers.one.active_apps)
+    IO.puts("MAKING THE MUTATION")
 
     case GenServer.call(Memelex.WikiServer, {:get, t}) do
       {:ok, tidbit} ->
@@ -57,7 +78,7 @@ defmodule Memelex.GUI.Components.RapidSelector.Reducer do
   def process(
         %{
           layers: %{
-            one: %{active_apps: [{RapidSelector, _state}]}
+            one: %{active_apps: [RapidSelector]}
           }
         } = radix_state,
         {:close_tidbit, t}

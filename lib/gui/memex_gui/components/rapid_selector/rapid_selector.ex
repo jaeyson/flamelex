@@ -22,69 +22,99 @@ defmodule Memelex.GUI.Components.RapidSelector do
 
   """
   use Scenic.Component
-  alias Memelex.GUI.Components.RapidSelector.State
+  alias Memelex.GUI.Components.RapidSelector
   require Logger
 
   def validate(
         %{
-          frame: %Widgex.Frame{} = _f,
-          state: %State{} = _state
+          frame: %Widgex.Frame{} = _f
         } = data
       ) do
     # Logger.debug "#{__MODULE__} accepted params: #{inspect data}"
-    IO.puts("OKOKOKOK DATA")
+
     {:ok, data}
   end
 
-  def init(scene, args, opts) do
-    Logger.debug("#{__MODULE__} initializing...")
-
-    # TODO fetch the state don't pass it in
-
-    # pubsub_mod = Module.concat(args.app, Utils.PubSub)
-    # pubsub_mod.subscribe(topic: :radix_state_change)
-
-    IO.puts("REND ER RAPID SELECTOR")
-    init_graph = render(args)
-
-    # init_state =
-    #   calc_state(args.radix_state)
+  def init(scene, %{frame: %Widgex.Frame{} = frame}, opts) do
+    # state = Flamelex.Fluxus.RadixStore.get().apps.rapid_selector
+    state = RapidSelector.State.new()
+    graph = render(frame, state)
 
     init_scene =
       scene
-      #   |> assign(app: args.app)
-      #   |> assign(font: args.radix_state.editor.font)
-      #   |> assign(frame: args.frame)
-      |> assign(graph: init_graph)
-      #   |> assign(state: init_state)
-      |> push_graph(init_graph)
+      |> assign(graph: graph)
+      |> assign(state: state)
+      |> assign(frame: frame)
+      |> push_graph(graph)
+
+    Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
 
     {:ok, init_scene}
   end
 
-  def render(%{frame: frame, state: memex_state}) do
-    #  [left_bar | other_frames] = FlexiFrame.columns(frame, 3, :memex)
-    #  [middle_section | right_pane] = other_frames
-    #  right_pane = hd(right_pane)
-    [left_bar, middle_section, right_pane] = Widgex.Frame.col_split(frame, 3)
+  def handle_info(
+        {:radix_state_change, %{apps: %{rapid_selector: state}}},
+        %{assigns: %{frame: f, state: state}} = scene
+      ) do
+    IO.puts("GETTING MSG BUT STATE IS SAME")
+    # state variables in pattern match are the same, therefore no state change occured
+    {:noreply, scene}
+  end
+
+  def handle_info(
+        # {:radix_state_change, %{apps: %{rapid_selector: %RapidSelector.State{} = new_state}}},
+        {:radix_state_change, %{apps: %{rapid_selector: new_state}}},
+        %{assigns: %{frame: f}} = scene
+      ) do
+    # # TODO we shouldn't _always_ need to re-render.. should evaluate the changes first
+    # diff = MapDiff.diff(scene.assigns.state, new_state)
+    # # # IO.inspect(diff)
+    # dbg()
+
+    # if old_state.list == new_state.list
+
+    # keep the old scroll
+    # new_state = put_in(new_state, [:scroll], old_state.scroll)
+    IO.puts("GETTING THE MSG")
+
+    new_graph = render(f, new_state)
+
+    new_scene =
+      scene
+      |> assign(graph: new_graph)
+      |> assign(state: new_state)
+      |> push_graph(new_graph)
+
+    {:noreply, new_scene}
+  end
+
+  def handle_info(msg, scene) do
+    IO.inspect(msg)
+    {:noreply, scene}
+  end
+
+  def render(frame, %RapidSelector.State{} = state) do
+    [left, mid_l, _mid, _mid_r, right] = Widgex.Frame.col_split(frame, 5)
+
+    middle_three =
+      Widgex.Frame.new(%{
+        pin: mid_l.pin,
+        size: {3 * mid_l.size.width, mid_l.size.height}
+      })
 
     Scenic.Graph.build()
-    # |> ScenicWidgets.FrameBox.add_to_graph(%{frame: left_bar, fill: :purple})
-    # |> ScenicWidgets.FrameBox.add_to_graph(%{frame: middle_section, fill: :yellow})
     |> Memelex.GUI.Components.CollectionsMantel.add_to_graph(%{
-      frame: left_bar,
+      frame: left,
       state: %{}
     })
     |> Memelex.GUI.Components.StoryRiver.add_to_graph(%{
-      frame: middle_section,
-      state: memex_state.story_river
+      frame: middle_three,
+      state: state.story_river
     })
     |> Memelex.GUI.Component.Memex.SideBar.add_to_graph(%{
-      frame: right_pane,
-      state: memex_state
+      frame: right,
+      state: state
     })
-
-    # |> ScenicWidgets.FrameBox.add_to_graph(%{frame: right_pane, fill: :red})
 
     # |> Scenic.Primitives.text("Memelex",
     #    font: :ibm_plex_mono,
@@ -95,11 +125,5 @@ defmodule Memelex.GUI.Components.RapidSelector do
     #    # TODO this is what scenic does https://github.com/boydm/scenic/blob/master/lib/scenic/component/input/text_field.ex#L198
     #    translate: {100, 100}
     # )
-
-    #         |> Memex.SideBar.add_to_graph(%{
-    #                 frame: right_quadrant(args.frame),
-    #                 state: args.state.sidebar})
-
-    # |> Scenic.Primitives.line({{10, 10}, {200, 200}}, stroke: {1, :white})
   end
 end
