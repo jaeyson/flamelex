@@ -22,7 +22,7 @@ defmodule Flamelex.GUI.Layers.Layer0 do
       |> assign(graph: graph)
       |> push_graph(graph)
 
-    Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
+    # Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
 
     {:ok, new_scene}
   end
@@ -36,8 +36,6 @@ defmodule Flamelex.GUI.Layers.Layer0 do
     Wormhole.capture(
       fn ->
         r_state = Flamelex.GUI.Component.Renseijin.State.new()
-
-        IO.inspect(frame)
 
         graph
         |> RenseijinComponent.add_to_graph(%{

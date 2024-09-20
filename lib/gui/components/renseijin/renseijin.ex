@@ -173,7 +173,7 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
 
   def handle_info(:tick, %{assigns: %{state: %State{rotation: r} = state}} = scene)
       when r >= 0 and r <= 360 do
-    Logger.debug("#{__MODULE__} received: :tick")
+    # Logger.debug("#{__MODULE__} received: :tick")
 
     new_state = State.cast(state, :tick)
 

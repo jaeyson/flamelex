@@ -58,10 +58,11 @@ defmodule Memelex.GUI.Components.HyperCard do
     {:noreply, scene}
   end
 
-  # def handle_cast({:click, {:edit, tidbit_uuid}}, scene) do
-  #   Memelex.Fluxus.action({TidbitReducer, {:set_gui_mode, :edit, %{tidbit_uuid: tidbit_uuid}}})
-  #   {:noreply, scene}
-  # end
+  def handle_cast({:click, {:edit, tidbit_uuid}}, scene) do
+    IO.puts("SHOULD EDIT TIDBIT")
+    # Memelex.Fluxus.action({TidbitReducer, {:set_gui_mode, :edit, %{tidbit_uuid: tidbit_uuid}}})
+    {:noreply, scene}
+  end
 
   # def handle_cast({:click, {:save, tidbit_uuid}}, scene) do
   #   Memelex.Fluxus.action({TidbitReducer, {:save_tidbit, %{tidbit_uuid: tidbit_uuid}}})
