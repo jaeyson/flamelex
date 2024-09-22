@@ -59,7 +59,10 @@ defmodule Flamelex.Fluxus.RadixStore do
   end
 
   def handle_cast({:event, e, e_shadow}, radix_state) do
-    case Wormhole.capture(handle_event_fn(radix_state, e)) do
+    # this can make a lot of noise, but sometimes I need to see it
+    crush_report? = false
+
+    case Wormhole.capture(handle_event_fn(radix_state, e), crush_report: crush_report?) do
       {:ok, :ignore} ->
         EventBus.mark_as_completed({__MODULE__, e_shadow})
         {:noreply, radix_state}
