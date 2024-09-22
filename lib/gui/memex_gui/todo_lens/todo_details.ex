@@ -41,6 +41,12 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     {:noreply, scene |> assign(state: new_state)}
   end
 
+  def handle_cast({:click, {:edit, tidbit_uuid}}, scene) do
+    # Flamelex.Fluxus.action({[app: __MODULE__], :edit_todo, tidbit_uuid})
+    IO.puts("Edit button clicked for tidbit #{tidbit_uuid}")
+    {:noreply, scene}
+  end
+
   def handle_info(
         {:radix_state_change, %{apps: %{todo_details: %Memelex.TidBit{} = t}}},
         %{assigns: %{frame: f, state: %{todo: t}}} = scene
@@ -162,12 +168,34 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     fn graph, %{frame: f, tidbit: t} = args ->
       graph
       |> draw_neo_card_background(f)
+      |> Memelex.GUI.Components.IconButton.add_to_graph(
+        %{
+          frame: Widgex.Frame.new(pin: {10, 10}, size: {50, 50}),
+          icon: "ionicons/black_32/edit.png"
+        },
+        id: {:edit, t.uuid},
+        # need to move it back twice the width because we're right aligning now
+        translate: {f.size.width - 20 - 50 - 50, f.pin.y + 5}
+      )
       |> Scenic.Primitives.text(t.data,
         font: :ibm_plex_mono,
         font_size: 24,
         fill: :white,
         translate: {f.pin.x + 20, f.pin.y + 20 + 20 + 60}
       )
+
+      # |> ScenicWidgets.TextPad.add_to_graph(
+      #     %{
+      #       frame: body_frame(frame),
+      #       state:
+      #         ScenicWidgets.TextPad.new(%{
+      #           mode: :read_only,
+      #           text: tidbit.data,
+      #           font: body_font()
+      #         })
+      #     },
+      #     id: {:hypercard, :body, :text_pad, tidbit.uuid}
+      #   )
     end
   end
 

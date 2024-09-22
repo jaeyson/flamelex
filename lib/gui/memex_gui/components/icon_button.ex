@@ -35,6 +35,24 @@ defmodule Memelex.GUI.Components.IconButton do
     {:ok, init_scene}
   end
 
+  def bounds(
+        %{frame: %{pin: %{x: top_left_x, y: top_left_y}, size: %{width: width, height: height}}},
+        _opts
+      ) do
+    # NOTE: Because we use this bounds/2 function to calculate whether or
+    # not the mouse is hovering over any particular button, we can't
+    # translate entire groups of sub-menus around. We ned to explicitely
+    # draw buttons in their correct order, and not translate them around,
+    # because bounds/2 doesn't seem to work correctly with translated elements
+    # TODO talk to Boyd and see if I'm wrong about this, or maybe we can improve Scenic to work with it
+    left = top_left_x
+    right = top_left_x + width
+    top = top_left_y
+    bottom = top_left_y + height
+    {left, top, right, bottom}
+  end
+
+  # DEPRECATE BELOW ITS USING THE CURSED SCENIC WIDGETS FRAME
   def bounds(%{frame: %{pin: {top_left_x, top_left_y}, size: {width, height}}}, _opts) do
     # NOTE: Because we use this bounds/2 function to calculate whether or
     # not the mouse is hovering over any particular button, we can't
