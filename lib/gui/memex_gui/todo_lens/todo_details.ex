@@ -135,6 +135,15 @@ defmodule Flamelex.GUI.Component.TODOdetails do
                pin: {0, title_h + 2 * panel_h}
              }),
            actions: tidbit_actions
+         }},
+        {draw_hist_fn(),
+         %{
+           frame:
+             Widgex.Frame.new(%{
+               size: {f.size.width, 1.5 * panel_h},
+               pin: {0, title_h + 3.5 * panel_h}
+             }),
+           actions: tidbit_actions
          }}
 
         # {ScenicWidgets.FrameBox,
@@ -173,6 +182,47 @@ defmodule Flamelex.GUI.Component.TODOdetails do
         translate: f.pin.point
       )
     end)
+  end
+
+  def draw_hist_fn do
+    fn graph, %{frame: f, actions: actions} = args ->
+      # Calculate the center for the header text
+      header_text = "History"
+      header_font_size = 32
+
+      box_width = f.size.width
+      center_x = f.pin.x + box_width / 2
+
+      # Draw the outer round-rectangle with margin
+      graph
+      |> Scenic.Primitives.rect(
+        f.size.box,
+        fill: :grey,
+        translate: f.pin.point
+      )
+      |> Scenic.Primitives.rrect(
+        {f.size.width - 20, f.size.height - 20, 20},
+        stroke: {2, :grey},
+        fill: :transparent,
+        translate: {f.pin.x + 10, f.pin.y + 10}
+      )
+      # Fill the box with color
+      |> Scenic.Primitives.rrect(
+        {f.size.width - 20, f.size.height - 20, 10},
+        fill: :black,
+        translate: {f.pin.x + 10, f.pin.y + 10}
+      )
+      # Draw the centered header text
+      |> Scenic.Primitives.text(header_text,
+        font: :ibm_plex_mono,
+        font_size: header_font_size,
+        fill: :white,
+        translate: {center_x, f.pin.y + 50},
+        text_align: :center
+      )
+      # Add the bullet-pointed action list
+      |> draw_bullet_points(f, actions)
+    end
   end
 
   def draw_action_list_fn do
