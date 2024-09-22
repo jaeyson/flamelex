@@ -177,26 +177,49 @@ defmodule Flamelex.GUI.Component.TODOdetails do
         # need to move it back twice the width because we're right aligning now
         translate: {f.size.width - 20 - 50 - 50, f.pin.y + 5}
       )
-      |> Scenic.Primitives.text(t.data,
-        font: :ibm_plex_mono,
-        font_size: 24,
-        fill: :white,
-        translate: {f.pin.x + 20, f.pin.y + 20 + 20 + 60}
-      )
+      # |> Scenic.Primitives.text(t.data,
+      #   font: :ibm_plex_mono,
+      #   font_size: 24,
+      #   fill: :white,
+      #   translate: {f.pin.x + 20, f.pin.y + 20 + 20 + 60}
+      # )
 
-      # |> ScenicWidgets.TextPad.add_to_graph(
-      #     %{
-      #       frame: body_frame(frame),
-      #       state:
-      #         ScenicWidgets.TextPad.new(%{
-      #           mode: :read_only,
-      #           text: tidbit.data,
-      #           font: body_font()
-      #         })
-      #     },
-      #     id: {:hypercard, :body, :text_pad, tidbit.uuid}
-      #   )
+      |> ScenicWidgets.TextPad.add_to_graph(
+        %{
+          frame:
+            Widgex.Frame.new(
+              pin: {10, 10 + 60},
+              size: {f.size.width - 20, f.size.height - 20 - 60}
+            ),
+          state:
+            ScenicWidgets.TextPad.new(%{
+              mode: :read_only,
+              text: t.data,
+              font: body_font()
+            })
+        },
+        id: {:data, t.uuid},
+        translate: {f.pin.x, f.pin.y}
+      )
     end
+  end
+
+  def body_font do
+    # TODO dont do this here, pass it in from the config
+
+    # TODO...
+    {:ok, ibm_plex_mono_font_metrics} =
+      TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
+
+    # TODO make this more efficient, pass it in same everywhere
+    ascent = FontMetrics.ascent(36, ibm_plex_mono_font_metrics)
+
+    %{
+      name: :ibm_plex_mono,
+      size: 24,
+      metrics: ibm_plex_mono_font_metrics,
+      ascent: ascent
+    }
   end
 
   # def draw_neo_card_background(graph, f) do
