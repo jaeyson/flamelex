@@ -191,11 +191,16 @@ defmodule Flamelex.GUI.Component.TODOdetails do
 
   def draw_neo_card_background(graph, f) do
     radius = 20
-    # You can adjust this value based on your actual header size
     header_height = 60
+    heading = "description"
+    # Adjust the text size as needed
+    text_size = 24
+
+    # Calculate the coordinates for centering the text
+    text_x = f.pin.x + f.size.width / 2 - String.length(heading) * text_size / 4
+    text_y = f.pin.y + header_height / 2 + text_size / 2 + 10
 
     graph
-
     # Fill the main card body with black
     |> Scenic.Primitives.rrect(
       {f.size.width - 20, f.size.height - 20, radius},
@@ -220,6 +225,14 @@ defmodule Flamelex.GUI.Component.TODOdetails do
       {{f.pin.x + 10, f.pin.y + 10 + header_height},
        {f.pin.x + f.size.width - 10, f.pin.y + 10 + header_height}},
       stroke: {2, :blue}
+    )
+    # Add centered text in the header
+    |> Scenic.Primitives.text(
+      heading,
+      font_size: text_size,
+      # You can change this to another color if needed
+      fill: :white,
+      translate: {text_x, text_y}
     )
   end
 
