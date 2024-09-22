@@ -195,12 +195,20 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     header_height = 60
 
     graph
-    # Fill the box with color
+
+    # Fill the main card body with black
     |> Scenic.Primitives.rrect(
       {f.size.width - 20, f.size.height - 20, radius},
       fill: :black,
       translate: {f.pin.x + 10, f.pin.y + 10}
     )
+    # Fill the header section with grey
+    |> Scenic.Primitives.rrect(
+      {f.size.width - 20, header_height, radius},
+      fill: :grey,
+      translate: {f.pin.x + 10, f.pin.y + 10}
+    )
+    # Stroke the card with a blue border
     |> Scenic.Primitives.rrect(
       {f.size.width - 20, f.size.height - 20, radius},
       stroke: {4, :blue},
