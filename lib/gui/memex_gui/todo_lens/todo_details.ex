@@ -88,7 +88,7 @@ defmodule Flamelex.GUI.Component.TODOdetails do
 
       # title_h = 60
       title_h = 0.1 * f.size.height
-      panel_h = 300
+      panel_h = 420
 
       draw_raw_tidbit = fn graph, %{frame: f} = args ->
         graph
@@ -116,35 +116,29 @@ defmodule Flamelex.GUI.Component.TODOdetails do
             ["No actions"]
         end
 
+      # NOTE - I automatically assumed moving things around in this `blocks` list would move them in the UI - and that's a normal good assumptioni!
+      # actually nothying moved because the frames need to be updated, but it would hgave been cooler if the framework understood what I means when I moved the blocks around
+
+      header_f = Widgex.Frame.new(%{size: {f.size.width, title_h}, pin: {0, 0}})
+      first_f = Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h}})
+      second_f = Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + panel_h}})
+
+      third_f_big =
+        Widgex.Frame.new(%{size: {f.size.width, 2 * panel_h}, pin: {0, title_h + 2 * panel_h}})
+
       blocks = [
-        {ScenicWidgets.Markup.Header1,
-         %{frame: Widgex.Frame.new(%{size: {f.size.width, title_h}, pin: {0, 0}}), text: t.title}},
-        {draw_raw_tidbit,
-         %{
-           frame:
-             Widgex.Frame.new(%{
-               size: {f.size.width, 2 * panel_h},
-               pin: {0, title_h + 0 * panel_h}
-             })
-         }},
+        {ScenicWidgets.Markup.Header1, %{frame: header_f, text: t.title}},
         {draw_action_list_fn(),
          %{
-           frame:
-             Widgex.Frame.new(%{
-               size: {f.size.width, 1.5 * panel_h},
-               pin: {0, title_h + 2 * panel_h}
-             }),
+           frame: first_f,
            actions: tidbit_actions
          }},
         {draw_hist_fn(),
          %{
-           frame:
-             Widgex.Frame.new(%{
-               size: {f.size.width, 1.5 * panel_h},
-               pin: {0, title_h + 3.5 * panel_h}
-             }),
+           frame: second_f,
            tidbit: t
-         }}
+         }},
+        {draw_raw_tidbit, %{frame: third_f_big}}
 
         # {ScenicWidgets.FrameBox,
         #  %{
@@ -186,41 +180,25 @@ defmodule Flamelex.GUI.Component.TODOdetails do
 
   def draw_hist_fn do
     fn graph, %{frame: f, tidbit: t} = args ->
-      # Calculate the center for the header text
+      # reverse history so that the most recent updates render up the top
+      bullets =
+        if is_nil(t.history) do
+          []
+        else
+          t.history
+          # sometimes history is a binary, sometimes it's a map
+          |> Enum.map(fn
+            h_log when is_binary(h_log) ->
+              h_log
 
-      # Enum.map(t.history)
+            %{"timestamp" => ts, "log" => log} ->
+              ts <> "\n" <> log
+          end)
+          |> Enum.reverse()
+        end
 
-      # Draw the outer round-rectangle with margin
       graph
-      |> draw_basic_card(f, %{header: "History", bullets: t.history})
-
-      # |> Scenic.Primitives.rect(
-      #   f.size.box,
-      #   fill: :grey,
-      #   translate: f.pin.point
-      # )
-      # |> Scenic.Primitives.rrect(
-      #   {f.size.width - 20, f.size.height - 20, 20},
-      #   stroke: {2, :grey},
-      #   fill: :transparent,
-      #   translate: {f.pin.x + 10, f.pin.y + 10}
-      # )
-      # # Fill the box with color
-      # |> Scenic.Primitives.rrect(
-      #   {f.size.width - 20, f.size.height - 20, 10},
-      #   fill: :black,
-      #   translate: {f.pin.x + 10, f.pin.y + 10}
-      # )
-      # # Draw the centered header text
-      # |> Scenic.Primitives.text(header_text,
-      #   font: :ibm_plex_mono,
-      #   font_size: header_font_size,
-      #   fill: :white,
-      #   translate: {center_x, f.pin.y + 50},
-      #   text_align: :center
-      # )
-      # # Add the bullet-pointed action list
-      # |> draw_bullet_points(f, t.history)
+      |> draw_basic_card(f, %{header: "History", bullets: bullets})
     end
   end
 
@@ -309,7 +287,7 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     # Starting y-position below the header
     start_y = frame.pin.y + 90
     # Adjust space between bullet points
-    bullet_spacing = 40
+    bullet_spacing = 90
 
     Enum.reduce(lines, graph, fn ln, g ->
       bullet_y = start_y + bullet_spacing * Enum.find_index(lines, fn x -> x == ln end)
@@ -329,13 +307,6 @@ defmodule Flamelex.GUI.Component.TODOdetails do
         translate: {frame.pin.x + 35, bullet_y}
       )
     end)
-  end
-
-  defp draw_bullet_points(a, b, c) do
-    IO.inspect(a, label: "AAA")
-    IO.inspect(b, label: "BBB")
-    IO.inspect(c, label: "CCC")
-    raise "draw_bullet_points/3 not implemented"
   end
 
   def old_render(graph, %{
