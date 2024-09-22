@@ -123,43 +123,23 @@ defmodule Flamelex.GUI.Component.TODOdetails do
       first_f = Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h}})
       second_f = Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + panel_h}})
 
-      third_f_big =
-        Widgex.Frame.new(%{size: {f.size.width, 2 * panel_h}, pin: {0, title_h + 2 * panel_h}})
+      third_f =
+        Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 2 * panel_h}})
+
+      fourth_f_big =
+        Widgex.Frame.new(%{size: {f.size.width, 2 * panel_h}, pin: {0, title_h + 3 * panel_h}})
+
+      # extra pin height cause fourth frame is so big
+      fifth_f =
+        Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 5 * panel_h}})
 
       blocks = [
         {ScenicWidgets.Markup.Header1, %{frame: header_f, text: t.title}},
-        {draw_action_list_fn(),
-         %{
-           frame: first_f,
-           actions: tidbit_actions
-         }},
-        {draw_hist_fn(),
-         %{
-           frame: second_f,
-           tidbit: t
-         }},
-        {draw_raw_tidbit, %{frame: third_f_big}}
-
-        # {ScenicWidgets.FrameBox,
-        #  %{
-        #    frame:
-        #      Widgex.Frame.new(%{size: {f.size.width, 2 * panel_h}, pin: {0, title_h + 0 * panel_h}})
-        #  }}
-        # {ScenicWidgets.FrameBox,
-        #  %{
-        #    frame:
-        #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 1 * panel_h}})
-        #  }},
-        # {ScenicWidgets.FrameBox,
-        #  %{
-        #    frame:
-        #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 2 * panel_h}})
-        #  }},
-        # {ScenicWidgets.FrameBox,
-        #  %{
-        #    frame:
-        #      Widgex.Frame.new(%{size: {f.size.width, panel_h}, pin: {0, title_h + 3 * panel_h}})
-        #  }}
+        {draw_data_fn(), %{frame: first_f, tidbit: t}},
+        {draw_action_list_fn(), %{frame: second_f, actions: tidbit_actions}},
+        {draw_hist_fn(), %{frame: third_f, tidbit: t}},
+        {draw_raw_tidbit, %{frame: fourth_f_big}},
+        {draw_hist_fn(), %{frame: fifth_f, tidbit: t}}
       ]
 
       graph
@@ -176,6 +156,84 @@ defmodule Flamelex.GUI.Component.TODOdetails do
         translate: f.pin.point
       )
     end)
+  end
+
+  def draw_data_fn do
+    fn graph, %{frame: f, tidbit: t} = args ->
+      graph
+      |> draw_neo_card_background(f)
+      |> Scenic.Primitives.text(t.data,
+        font: :ibm_plex_mono,
+        font_size: 24,
+        fill: :white,
+        translate: {f.pin.x + 20, f.pin.y + 20 + 20 + 60}
+      )
+    end
+  end
+
+  # def draw_neo_card_background(graph, f) do
+  #   radius = 20
+
+  #   graph
+  #   # Fill the box with color
+  #   |> Scenic.Primitives.rrect(
+  #     {f.size.width - 20, f.size.height - 20, radius},
+  #     fill: :black,
+  #     translate: {f.pin.x + 10, f.pin.y + 10}
+  #   )
+  #   |> Scenic.Primitives.rrect(
+  #     {f.size.width - 20, f.size.height - 20, radius},
+  #     stroke: {4, :blue},
+  #     fill: :transparent,
+  #     translate: {f.pin.x + 10, f.pin.y + 10}
+  #   )
+  # end
+
+  def draw_neo_card_background(graph, f) do
+    radius = 20
+    # You can adjust this value based on your actual header size
+    header_height = 60
+
+    graph
+    # Fill the box with color
+    |> Scenic.Primitives.rrect(
+      {f.size.width - 20, f.size.height - 20, radius},
+      fill: :black,
+      translate: {f.pin.x + 10, f.pin.y + 10}
+    )
+    |> Scenic.Primitives.rrect(
+      {f.size.width - 20, f.size.height - 20, radius},
+      stroke: {4, :blue},
+      fill: :transparent,
+      translate: {f.pin.x + 10, f.pin.y + 10}
+    )
+    # Draw a blue line under the header
+    |> Scenic.Primitives.line(
+      {{f.pin.x + 10, f.pin.y + 10 + header_height},
+       {f.pin.x + f.size.width - 10, f.pin.y + 10 + header_height}},
+      stroke: {2, :blue}
+    )
+  end
+
+  def draw_card_background(graph, %Widgex.Frame{} = f) do
+    graph
+    |> Scenic.Primitives.rect(
+      f.size.box,
+      fill: :grey,
+      translate: f.pin.point
+    )
+    |> Scenic.Primitives.rrect(
+      {f.size.width - 20, f.size.height - 20, 20},
+      stroke: {2, :grey},
+      fill: :transparent,
+      translate: {f.pin.x + 10, f.pin.y + 10}
+    )
+    # Fill the box with color
+    |> Scenic.Primitives.rrect(
+      {f.size.width - 20, f.size.height - 20, 20},
+      fill: :black,
+      translate: {f.pin.x + 10, f.pin.y + 10}
+    )
   end
 
   def draw_hist_fn do
