@@ -143,7 +143,7 @@ defmodule Flamelex.GUI.Component.TODOdetails do
                size: {f.size.width, 1.5 * panel_h},
                pin: {0, title_h + 3.5 * panel_h}
              }),
-           actions: tidbit_actions
+           tidbit: t
          }}
 
         # {ScenicWidgets.FrameBox,
@@ -185,44 +185,83 @@ defmodule Flamelex.GUI.Component.TODOdetails do
   end
 
   def draw_hist_fn do
-    fn graph, %{frame: f, actions: actions} = args ->
+    fn graph, %{frame: f, tidbit: t} = args ->
       # Calculate the center for the header text
-      header_text = "History"
-      header_font_size = 32
 
-      box_width = f.size.width
-      center_x = f.pin.x + box_width / 2
+      # Enum.map(t.history)
 
       # Draw the outer round-rectangle with margin
       graph
-      |> Scenic.Primitives.rect(
-        f.size.box,
-        fill: :grey,
-        translate: f.pin.point
-      )
-      |> Scenic.Primitives.rrect(
-        {f.size.width - 20, f.size.height - 20, 20},
-        stroke: {2, :grey},
-        fill: :transparent,
-        translate: {f.pin.x + 10, f.pin.y + 10}
-      )
-      # Fill the box with color
-      |> Scenic.Primitives.rrect(
-        {f.size.width - 20, f.size.height - 20, 10},
-        fill: :black,
-        translate: {f.pin.x + 10, f.pin.y + 10}
-      )
-      # Draw the centered header text
-      |> Scenic.Primitives.text(header_text,
-        font: :ibm_plex_mono,
-        font_size: header_font_size,
-        fill: :white,
-        translate: {center_x, f.pin.y + 50},
-        text_align: :center
-      )
-      # Add the bullet-pointed action list
-      |> draw_bullet_points(f, actions)
+      |> draw_basic_card(f, %{header: "History", bullets: t.history})
+
+      # |> Scenic.Primitives.rect(
+      #   f.size.box,
+      #   fill: :grey,
+      #   translate: f.pin.point
+      # )
+      # |> Scenic.Primitives.rrect(
+      #   {f.size.width - 20, f.size.height - 20, 20},
+      #   stroke: {2, :grey},
+      #   fill: :transparent,
+      #   translate: {f.pin.x + 10, f.pin.y + 10}
+      # )
+      # # Fill the box with color
+      # |> Scenic.Primitives.rrect(
+      #   {f.size.width - 20, f.size.height - 20, 10},
+      #   fill: :black,
+      #   translate: {f.pin.x + 10, f.pin.y + 10}
+      # )
+      # # Draw the centered header text
+      # |> Scenic.Primitives.text(header_text,
+      #   font: :ibm_plex_mono,
+      #   font_size: header_font_size,
+      #   fill: :white,
+      #   translate: {center_x, f.pin.y + 50},
+      #   text_align: :center
+      # )
+      # # Add the bullet-pointed action list
+      # |> draw_bullet_points(f, t.history)
     end
+  end
+
+  def draw_basic_card(graph, %Widgex.Frame{} = f, %{header: h_text, bullets: bullets}) do
+    # header_text = "History"
+    header_font_size = 32
+
+    box_width = f.size.width
+    center_x = f.pin.x + box_width / 2
+
+    # hack because sometimes history can be nil, even though it isn't supposed to be it should always be an empty list, but some old memexes have it...
+    bullets = bullets || []
+
+    graph
+    |> Scenic.Primitives.rect(
+      f.size.box,
+      fill: :grey,
+      translate: f.pin.point
+    )
+    |> Scenic.Primitives.rrect(
+      {f.size.width - 20, f.size.height - 20, 20},
+      stroke: {2, :grey},
+      fill: :transparent,
+      translate: {f.pin.x + 10, f.pin.y + 10}
+    )
+    # Fill the box with color
+    |> Scenic.Primitives.rrect(
+      {f.size.width - 20, f.size.height - 20, 10},
+      fill: :black,
+      translate: {f.pin.x + 10, f.pin.y + 10}
+    )
+    # Draw the centered header text
+    |> Scenic.Primitives.text(h_text,
+      font: :ibm_plex_mono,
+      font_size: header_font_size,
+      fill: :white,
+      translate: {center_x, f.pin.y + 50},
+      text_align: :center
+    )
+    # Add the bullet-pointed action list
+    |> draw_bullet_points(f, bullets)
   end
 
   def draw_action_list_fn do
@@ -266,14 +305,14 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     end
   end
 
-  defp draw_bullet_points(graph, frame, actions) do
+  defp draw_bullet_points(graph, frame, lines) when is_list(lines) do
     # Starting y-position below the header
     start_y = frame.pin.y + 90
     # Adjust space between bullet points
     bullet_spacing = 40
 
-    Enum.reduce(actions, graph, fn action, g ->
-      bullet_y = start_y + bullet_spacing * Enum.find_index(actions, fn x -> x == action end)
+    Enum.reduce(lines, graph, fn ln, g ->
+      bullet_y = start_y + bullet_spacing * Enum.find_index(lines, fn x -> x == ln end)
 
       g
       # small circle for bullet point
@@ -282,7 +321,7 @@ defmodule Flamelex.GUI.Component.TODOdetails do
         # Position for the bullet point
         translate: {frame.pin.x + 20, bullet_y - 9}
       )
-      |> Scenic.Primitives.text(action,
+      |> Scenic.Primitives.text(ln,
         font: :ibm_plex_mono,
         font_size: 24,
         fill: :white,
@@ -290,6 +329,13 @@ defmodule Flamelex.GUI.Component.TODOdetails do
         translate: {frame.pin.x + 35, bullet_y}
       )
     end)
+  end
+
+  defp draw_bullet_points(a, b, c) do
+    IO.inspect(a, label: "AAA")
+    IO.inspect(b, label: "BBB")
+    IO.inspect(c, label: "CCC")
+    raise "draw_bullet_points/3 not implemented"
   end
 
   def old_render(graph, %{
