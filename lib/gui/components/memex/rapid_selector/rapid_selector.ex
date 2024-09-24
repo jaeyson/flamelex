@@ -1,4 +1,4 @@
-defmodule Memelex.GUI.Components.RapidSelector do
+defmodule Flamelex.GUI.Component.RapidSelector do
   @moduledoc """
   ## Rapid Selector: An interface inspired by Vannevar Bush's Vision
 
@@ -22,7 +22,7 @@ defmodule Memelex.GUI.Components.RapidSelector do
 
   """
   use Scenic.Component
-  alias Memelex.GUI.Components.RapidSelector
+  alias Flamelex.GUI.Component.RapidSelector
   require Logger
 
   def validate(

@@ -1,4 +1,4 @@
-defmodule Memelex.GUI.Components.RapidSelector.State do
+defmodule Flamelex.GUI.Component.RapidSelector.State do
   @moduledoc """
   This module defines and manages the state for the Rapid Selector component.
   The state holds information about the current story river, sidebar, and history.

@@ -191,7 +191,7 @@ end
 # defmodule Flamelex.Keymaps.Memex do
 #    alias Flamelex.Fluxus.Structs.RadixState
 #    use ScenicWidgets.ScenicEventsDefinitions
-#    alias Memelex.GUI.Components.RapidSelector.Reducer, as: MemexReducer
+#    alias Flamelex.GUI.Component.RapidSelector.Reducer, as: MemexReducer
 #    require Logger
 
 #    def handle(%{root: %{active_app: :memex}, memex: memex} = radix_state, @tab_key) do

@@ -4,7 +4,7 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   """
   alias Flamelex.GUI.Component.TODOlist
   alias Flamelex.GUI.Component.TODOdetails
-  alias Memelex.GUI.Components.RapidSelector
+  alias Flamelex.GUI.Component.RapidSelector
   require Logger
 
   def handle(rdx, {:loaded_memex, %Memelex.Environment{} = env}) do

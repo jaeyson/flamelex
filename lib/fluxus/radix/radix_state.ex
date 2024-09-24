@@ -1,8 +1,7 @@
 defmodule Flamelex.Fluxus.RadixState do
   use StructAccess
   alias Flamelex.GUI.Layers.Layer01
-  alias Flamelex.GUI.Component.TODOlist
-  alias Memelex.GUI.Components.RapidSelector
+  alias Flamelex.GUI.Component.{TODOlist, TODOdetails, RapidSelector}
 
   # the argument for using radix struct is that I can pattern match on exactly a radix state
   # the argument against is that I might want to dynamically add keys to it...
@@ -36,11 +35,11 @@ defmodule Flamelex.Fluxus.RadixState do
         }
       },
       layers: %{
-        one: %Layer01.State{}
+        one: Layer01.State.new()
       },
       apps: %{
         todo_list: TODOlist.State.new(),
-        todo_details: nil,
+        todo_details: TODOdetails.State.new(),
         rapid_selector: RapidSelector.State.new(),
         editor: %{
           buffers: []

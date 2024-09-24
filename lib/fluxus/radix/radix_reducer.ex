@@ -67,74 +67,12 @@ defmodule Flamelex.Fluxus.RadixReducer do
   #   {:ok, new_radix_state}
   # end
 
-  # def process(
-  #       %{
-  #         layers: %{
-  #           one: %{
-  #             layout: :full_screen,
-  #             active_apps: {Flamelex.GUI.Component.TODOlist, todo_app_state}
-  #           }
-  #         }
-  #       } = rdx_state,
-  #       {[app: Flamelex.GUI.Component.TODOlist], {:open_todo, t}}
-  #       {Flamelex.Fluxus.TODOlistReducer, {:open_todo, t}}
-  #     ) do
-  #   IO.puts("DEPRECATE USING TUPLE FOR ACTIVE APP WHEN ONLY ONE APPPPP")
-
-  #   rdx_state
-  #   |> put_in([:layers, :one, :layout], :split_screen)
-  #   |> put_in([:layers, :one, :active_apps], [
-  #     {Flamelex.GUI.Component.TODOlist, todo_app_state},
-  #     {Flamelex.GUI.Component.TODOdetails, t}
-  #   ])
-  # end
-
-  # def process(
-  #       %{
-  #         layers: %{
-  #           one: %{
-  #             layout: :full_screen,
-  #             # active_apps: [{Flamelex.GUI.Component.TODOlist, todo_app_state}]
-  #             active_apps: [Flamelex.GUI.Component.TODOlist]
-  #           }
-  #         }
-  #       } = rdx_state,
-  #       {[app: Flamelex.GUI.Component.TODOlist], {:open_todo, t}}
-  #     ) do
-  #   rdx_state
-  #   |> put_in([:layers, :one, :layout], :split_screen)
-  #   |> put_in([:layers, :one, :active_apps], [
-  #     {Flamelex.GUI.Component.TODOlist, todo_app_state},
-  #     {Flamelex.GUI.Component.TODOdetails, t}
-  #   ])
-  # end
-
   def process(rdx, {:load_memex, %Memelex.Environment{} = env}) do
     rdx
     # TODO when I eventually go multi-env, this may be a problem...
     |> put_in([:memex, :active?], true)
     |> put_in([:memex, :env], env)
   end
-
-  # def process(
-  #       %{
-  #         layers: %{
-  #           one: %{
-  #             active_apps: [
-  #               {Flamelex.GUI.Component.TODOlist, todo_app_state},
-  #               {Flamelex.GUI.Component.TODOdetails, t}
-  #             ]
-  #           }
-  #         }
-  #       } = rdx_state,
-  #       {[app: Flamelex.GUI.Component.TODOlist], {:open_todo, new_todo}}
-  #     ) do
-  #   rdx_state
-  #   |> put_in([:layers, :one, :active_apps], [
-  #     {Flamelex.GUI.Component.TODOlist, todo_app_state},
-  #     {Flamelex.GUI.Component.TODOdetails, new_todo}
-  #   ])
-  # end
 
   def process(rdx, {Flamelex.GUI.Component.TODOlist, action}) do
     Flamelex.GUI.Component.TODOlist.Reducer.process(rdx, action)
@@ -154,46 +92,6 @@ defmodule Flamelex.Fluxus.RadixReducer do
   #         end
   #       end)
   #   end
-  # end
-
-  # def process(
-  #       %{
-  #         layers: %{
-  #           one: %{
-  #             active_app: [
-  #               {Flamelex.GUI.Component.TODOlist, todo_app_state},
-  #               {Flamelex.GUI.Component.TODOdetails, t}
-  #             ]
-  #           }
-  #         }
-  #       } = rdx_state,
-  #       {[app: Flamelex.GUI.Component.TODOlist], {:open_todo, new_todo}}
-  #     ) do
-  #   rdx_state
-  #   |> put_in([:layers, :one, :active_apps], [
-  #     {Flamelex.GUI.Component.TODOlist, todo_app_state},
-  #     {Flamelex.GUI.Component.TODOdetails, new_todo}
-  #   ])
-  # end
-
-  # def process(
-  #       %{
-  #         layers: %{
-  #           one: %{
-  #             active_app: [
-  #               {Flamelex.GUI.Component.TODOlist, todo_app_state},
-  #               {Flamelex.GUI.Component.TODOdetails, _t}
-  #             ]
-  #           }
-  #         }
-  #       } = rdx_state,
-  #       {[app: Flamelex.GUI.Component.TODOdetails], :close_todo}
-  #     ) do
-  #   rdx_state
-  #   |> put_in([:layers, :one, :layout], :full_screen)
-  #   |> put_in([:layers, :one, :active_apps], [
-  #     {Flamelex.GUI.Component.TODOlist, todo_app_state}
-  #   ])
   # end
 
   # def update_app_state(rdx_state, [:layers, :one, :active_apps], app, merge: new_state) do

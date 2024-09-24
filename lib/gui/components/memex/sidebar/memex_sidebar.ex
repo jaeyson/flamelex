@@ -5,8 +5,8 @@ defmodule Memelex.GUI.Component.Memex.SideBar do
   require Logger
   # alias ScenicWidgets.Core.Structs.Frame
   # alias Flamelex.GUI.Component.Memex
-  # alias Memelex.GUI.Components.RapidSelector.Reducer, as: RootReducer
-  alias Memelex.GUI.Components.RapidSelector
+  # alias Flamelex.GUI.Component.RapidSelector.Reducer, as: RootReducer
+  alias Flamelex.GUI.Component.RapidSelector
 
   # this is where we split the sidebar into upper & lower pane
   @split 0.618

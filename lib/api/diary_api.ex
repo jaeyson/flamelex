@@ -38,7 +38,7 @@ defmodule Flamelex.API.Diary do
   @doc ~s(Open the Memelex-GUI-pane inside Flamelex.)
   def open do
     # Logger.debug "#{__MODULE__} opening the Memex..."
-    Flamelex.Fluxus.action({Memelex.GUI.Components.RapidSelector.Reducer, :open_memex})
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.RapidSelector.Reducer, :open_memex})
   end
 
   # def open(%Memelex.TidBit{uuid: uuid} = t) when is_bitstring(uuid) do
@@ -51,6 +51,6 @@ defmodule Flamelex.API.Diary do
 
   def close do
     # Logger.debug "#{__MODULE__} closing the Memex..."
-    Flamelex.Fluxus.action({Memelex.GUI.Components.RapidSelector.Reducer, :close_memex})
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.RapidSelector.Reducer, :close_memex})
   end
 end

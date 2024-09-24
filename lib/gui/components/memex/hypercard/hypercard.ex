@@ -2,7 +2,7 @@ defmodule Memelex.GUI.Components.HyperCard do
   use Scenic.Component
   # alias Memelex.Fluxus.Reducers.RadixReducer
   # alias Memelex.Fluxus.Reducers.TidbitReducer
-  alias Memelex.GUI.Components.RapidSelector.Reducer
+  alias Flamelex.GUI.Component.RapidSelector.Reducer
 
   # TODO document this point
   # TODO good idea: render each sub-component as a seperate graph,

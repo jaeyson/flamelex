@@ -3,4 +3,8 @@ defmodule Flamelex.GUI.Layers.Layer01.State do
 
   defstruct layout: :full_screen,
             active_apps: []
+
+  def new do
+    %__MODULE__{}
+  end
 end

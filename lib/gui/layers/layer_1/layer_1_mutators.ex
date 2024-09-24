@@ -2,7 +2,7 @@ defmodule Flamelex.Fluxus.Layer01Mutators do
   @moduledoc """
   A collection of functions that mutate the radix state.
   """
-  alias Memelex.GUI.Components.RapidSelector
+  alias Flamelex.GUI.Component.RapidSelector
 
   @valid_layouts [:split_screen, :full_screen]
   def set_layout(rdx_state, layout) when layout in @valid_layouts do

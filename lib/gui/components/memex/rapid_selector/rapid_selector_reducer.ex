@@ -1,8 +1,8 @@
-defmodule Memelex.GUI.Components.RapidSelector.Reducer do
+defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
   @moduledoc false
   # alias Memelex.Reducers.MemexReducer
   alias Flamelex.Fluxus.Layer01Mutators
-  alias Memelex.GUI.Components.RapidSelector
+  alias Flamelex.GUI.Component.RapidSelector
 
   def process(
         %{
