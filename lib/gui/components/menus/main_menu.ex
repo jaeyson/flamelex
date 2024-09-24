@@ -176,6 +176,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
       {"close", &Flamelex.API.Diary.close/0},
       {"my_modz", fn -> raise "man we should have this!" end},
       {"my TODOs", &Memelex.My.TODOs.show/0},
+      {"my Agents", &Memelex.My.Agents.show/0},
       # {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end},
       # {"journal", fn -> Memelex.My.Journal.today() end}
       {:sub_menu, "Journal",

@@ -42,8 +42,8 @@ defmodule Flamelex.GUI.Component.TODOdetails do
   end
 
   def handle_cast({:click, {:edit, tidbit_uuid}}, scene) do
-    # Flamelex.Fluxus.action({[app: __MODULE__], :edit_todo, tidbit_uuid})
-    IO.puts("Edit button clicked for tidbit #{tidbit_uuid}")
+    Flamelex.Fluxus.action({__MODULE__, {:edit_todo, tidbit_uuid}})
+    # IO.puts("Edit button clicked for tidbit #{tidbit_uuid}")
     {:noreply, scene}
   end
 

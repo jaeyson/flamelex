@@ -285,6 +285,17 @@ defmodule Flamelex.Fluxus.RadixReducer do
   #   # ])
   # end
 
+  # for now hard code this redirect because we know it's going to be applied at the component level
+  def process(rdx, {Flamelex.GUI.Component.TODOdetails, action}) do
+    Flamelex.GUI.Component.TODOdetails.Reducer.process(rdx, action)
+  end
+
+  def process(rdx, {component, action}) when is_module(component) do
+    # Flamelex.GUI.Component.TODOdetails.Reducer.process(rdx, action)
+    raise "somehow you hit this experimental clause... but I like it - uncomment this raise and lets see what happens"
+    Module.concat(component, Reducer).process(rdx, action)
+  end
+
   # todo use_module would be better but the compiler hates it
   # This clause is here to make it easier to route actions straight to the appropriate reducer,
   # for the situations when we know (when we fire the action) which reducer should handle it
