@@ -3,7 +3,7 @@ defmodule Flamelex.GUI.Component.TODOdetails.Mutator do
   A collection of functions that mutate the radix state.
   """
   alias Flamelex.Fluxus.RadixState
-  alias Flamelex.GUI.Component.TODOdetails
+  alias Flamelex.GUI.Component.{TODOlist, TODOdetails}
 
   def open_details(%RadixState{} = rdx, %Memelex.TidBit{} = t) do
     rdx |> put_in([:apps, :todo_details], TODOdetails.State.new(%{tidbit: t}))

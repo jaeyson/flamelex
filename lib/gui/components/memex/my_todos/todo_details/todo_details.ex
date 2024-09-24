@@ -82,7 +82,6 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     |> render(frame, state)
   end
 
-  # def render(graph, %Widgex.Frame{} = f, %{state: %Memelex.TidBit{} = t}) do
   def render(graph, %Widgex.Frame{} = f, %State{tidbit: %Memelex.TidBit{} = t} = state) do
     Wormhole.capture(fn ->
       # todo_widgets =

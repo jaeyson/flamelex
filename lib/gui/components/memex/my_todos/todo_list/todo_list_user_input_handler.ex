@@ -1,7 +1,7 @@
 defmodule Flamelex.GUI.Component.TODOlist.UserInputHandler do
   require Logger
   use ScenicWidgets.ScenicEventsDefinitions
-  alias Flamelex.GUI.Component.TODOlist
+  alias Flamelex.GUI.Component.{TODOlist, TODOdetails}
 
   @ignored_keys [
     @left_alt_dn,
@@ -20,7 +20,7 @@ defmodule Flamelex.GUI.Component.TODOlist.UserInputHandler do
     [{TODOlist.Reducer, {:set_turbo, false}}]
   end
 
-  def handle(rdx, @escape) do
+  def handle(rdx, @escape_key) do
     [{TODOdetails.Reducer, :close_todo_details}]
   end
 end
