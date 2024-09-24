@@ -1,6 +1,6 @@
 defmodule Flamelex.GUI.Components.Template do
   use Scenic.Component
-  alias ScenicWidgets.Core.Structs.Frame
+  alias Widgex.Frame
   require Logger
 
   def validate(%{frame: %Frame{} = _f, state: _state} = data) do
