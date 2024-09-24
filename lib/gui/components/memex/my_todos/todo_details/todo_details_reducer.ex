@@ -1,10 +1,11 @@
 defmodule Flamelex.GUI.Component.TODOdetails.Reducer do
   alias Flamelex.Fluxus.RadixState
-  alias Flamelex.GUI.Component.TODOdetails.Mutator
+  alias Flamelex.GUI.Component.TODOdetails
 
   def process(%RadixState{} = rdx, {:refresh_tidbit, t}) do
     rdx
-    |> Flamelex.Fluxus.TODOsMutators.open_details(t)
+    # |> Flamelex.Fluxus.TODOsMutators.open_details(t)
+    |> TODOdetails.Mutator.open_details(:edit)
   end
 
   # note the use of same variable name to so an exact bind in the pattern match
@@ -12,7 +13,8 @@ defmodule Flamelex.GUI.Component.TODOdetails.Reducer do
         %RadixState{apps: %{todo_details: %{tidbit: %{uuid: tidbit_uuid}}}} = rdx,
         {:edit_todo, tidbit_uuid}
       ) do
-    rdx |> Mutator.set_mode(:edit)
+    rdx
+    |> TODOdetails.Mutator.set_mode(:edit)
   end
 
   def process(

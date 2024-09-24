@@ -7,4 +7,8 @@ defmodule Flamelex.GUI.Component.TODOdetails.Mutator do
   def open_details(%RadixState{} = rdx, %Memelex.TidBit{} = t) do
     rdx |> put_in([:apps, :todo_details], t)
   end
+
+  # def open_details(%RadixState{} = rdx, %Memelex.TidBit{} = t) do
+  #   rdx |> put_in([:apps, :todo_details], t)
+  # end
 end
