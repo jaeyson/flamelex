@@ -1,5 +1,7 @@
 defmodule Flamelex.GUI.Component.TODOdetails do
   use Scenic.Component
+  alias Flamelex.Fluxus.RadixStore
+  alias Flamelex.GUI.Component.TODOdetails.State
 
   def validate(
         %{
@@ -11,8 +13,7 @@ defmodule Flamelex.GUI.Component.TODOdetails do
   end
 
   def init(scene, %{frame: %Widgex.Frame{} = f}, opts) do
-    todo = Flamelex.Fluxus.RadixStore.get().apps.todo_details
-    state = %{todo: todo, scroll: {0, 0}}
+    state = RadixStore.get().apps.todo_details
 
     {:ok, graph} = render(f, state)
 
@@ -43,39 +44,37 @@ defmodule Flamelex.GUI.Component.TODOdetails do
 
   def handle_cast({:click, {:edit, tidbit_uuid}}, scene) do
     Flamelex.Fluxus.action({__MODULE__, {:edit_todo, tidbit_uuid}})
-    # IO.puts("Edit button clicked for tidbit #{tidbit_uuid}")
     {:noreply, scene}
   end
 
-  def handle_info(
-        {:radix_state_change, %{apps: %{todo_details: %Memelex.TidBit{} = t}}},
-        %{assigns: %{frame: f, state: %{todo: t}}} = scene
-      ) do
-    # state variables in pattern match are the same, therefore no state change occured
-    {:noreply, scene}
-  end
+  # def handle_info(
+  #       {:radix_state_change, %{apps: %{todo_details: %State{} = state}}},
+  #       %{assigns: %{frame: f, state: state}} = scene
+  #     ) do
+  #   # state variables in pattern match are the same, therefore no state change occured
+  #   {:noreply, scene}
+  # end
 
   def handle_info(
-        {:radix_state_change, %{apps: %{todo_details: %Memelex.TidBit{} = new_t}}},
+        {:radix_state_change, %{apps: %{todo_details: %State{} = new_state}}},
         %{assigns: %{frame: f, state: old_state}} = scene
       ) do
-    # # TODO we shouldn't _always_ need to re-render.. should evaluate the changes first
-    # new_state = put_in(old_state, [:todo], new_t)
-    new_state = %{
-      todo: new_t,
+    if new_state.tidbit == old_state.tidbit do
+      # tidbit didbn't change, do nothing...
+      {:noreply, scene}
+    else
       # reset the scroll if we change the TidBit
-      scroll: {0, 0}
-    }
+      new_state = %{new_state | scroll: {0, 0}}
+      {:ok, new_graph} = render(f, new_state)
 
-    {:ok, new_graph} = render(f, new_state)
+      new_scene =
+        scene
+        |> assign(graph: new_graph)
+        |> assign(state: new_state)
+        |> push_graph(new_graph)
 
-    new_scene =
-      scene
-      |> assign(graph: new_graph)
-      |> assign(state: new_state)
-      |> push_graph(new_graph)
-
-    {:noreply, new_scene}
+      {:noreply, new_scene}
+    end
   end
 
   def render(frame, state) do
@@ -84,7 +83,7 @@ defmodule Flamelex.GUI.Component.TODOdetails do
   end
 
   # def render(graph, %Widgex.Frame{} = f, %{state: %Memelex.TidBit{} = t}) do
-  def render(graph, %Widgex.Frame{} = f, %{todo: %Memelex.TidBit{} = t} = state) do
+  def render(graph, %Widgex.Frame{} = f, %State{tidbit: %Memelex.TidBit{} = t} = state) do
     Wormhole.capture(fn ->
       # todo_widgets =
       #   args.state.list

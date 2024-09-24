@@ -12,6 +12,8 @@ defmodule Flamelex.Fluxus.UserInputHandler do
   require Logger
   alias Flamelex.GUI.Component.TODOlist
 
+  # TODO one day might need a more sophisticated way of handling this... maybe send to both components?
+  # maybe match on cases where one vs both is actually up?
   def handle(
         %{layers: %{one: %{active_apps: [TODOlist | _rest]}}} = rdx,
         input

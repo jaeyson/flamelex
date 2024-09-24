@@ -8,6 +8,11 @@ defmodule Flamelex.GUI.Component.TODOdetails.Reducer do
     |> TODOdetails.Mutator.open_details(:edit)
   end
 
+  def process(%RadixState{} = rdx, :close_todo_details) do
+    rdx
+    |> TODOdetails.Mutator.close_details()
+  end
+
   # note the use of same variable name to so an exact bind in the pattern match
   def process(
         %RadixState{apps: %{todo_details: %{tidbit: %{uuid: tidbit_uuid}}}} = rdx,
@@ -15,16 +20,5 @@ defmodule Flamelex.GUI.Component.TODOdetails.Reducer do
       ) do
     rdx
     |> TODOdetails.Mutator.set_mode(:edit)
-  end
-
-  def process(
-        # %RadixState{apps: %{todo_details: %{tidbit: %{uuid: tidbit_uuid}}}} = rdx,
-        rdx,
-        {:edit_todo, tidbit_uuid}
-      ) do
-    # rdx |> Mutator.set_mode(:edit)
-    IO.puts("WTF IS THIS GUY GOING ON ABOUT")
-    IO.inspect(rdx.apps.todo_details)
-    rdx
   end
 end
