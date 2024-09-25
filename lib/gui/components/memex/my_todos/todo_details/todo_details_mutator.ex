@@ -18,12 +18,15 @@ defmodule Flamelex.GUI.Component.TODOdetails.Mutator do
     |> put_in([:apps, :todo_details], TODOdetails.State.new())
   end
 
-  def set_mode(%RadixState{} = rdx, :edit) do
-    # new_state =
-    #   rdx.apps.todo_details
-    #   |> TODOdetails.State.cast(%{edit_description?: true})
+  # TODO clean this up, edit_description?!?!?? **&?
+  def set_mode(%RadixState{} = rdx, :view) do
+    rdx
+    |> put_in([:apps, :todo_details, :edit_description?], false)
+  end
 
-    rdx |> put_in([:apps, :todo_details, :edit_description?], true)
+  def set_mode(%RadixState{} = rdx, :edit) do
+    rdx
+    |> put_in([:apps, :todo_details, :edit_description?], true)
   end
 
   # def open_details(%RadixState{} = rdx, %Memelex.TidBit{} = t) do

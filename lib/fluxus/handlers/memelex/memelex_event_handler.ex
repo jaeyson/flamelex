@@ -30,6 +30,7 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
 
     [
       # {TODOlist.Reducer, {:refresh_tidbit, t}},
+      {TODOdetails.Reducer, {:set_mode, :view}},
       {TODOdetails.Reducer, {:refresh_tidbit, t}}
       # {RapidSelector.Reducer, {:refresh_tidbit, t}}
     ]

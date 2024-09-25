@@ -47,6 +47,25 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     {:noreply, scene}
   end
 
+  def handle_cast({:click, {:save, tidbit_uuid}}, scene) do
+    IO.puts("SAVINGGG #{inspect(Map.keys(scene.assigns))}")
+    # TODO here, we have a new description in the scene.assigns, we need to save it to the tidbit
+    # do it as an action ()traceable, nice) or just do it here?? For now just do it!
+    Memelex.My.Wiki.get!(%{uuid: tidbit_uuid})
+    |> Memelex.My.Wiki.update(%{data: scene.assigns.description_edit})
+
+    {:noreply, scene}
+
+    # I think the ultimate API for rendering the scene would be one where you define the scene like a LiveView, where you just define render/1 which takes in assigns, and then returns the graph. This is how I naturally end up doing it in my applications anyway, usually with a specific struct to be the "state" and I only end up using assigns, to assign a state, which I think is a departure from the original vision a little bit.
+    # The thing that would make this super hard though is that, even now as I sort of code this way, I end up calling render for basically all changes to a scene, which can cause a lot of computational overhead as processes spin up / get destroyed - really what I want is to push changes down to those components & not re-render them, but there isn't an easy way to do that inside my other design choice which is to have a render function which is pure & has no side effects
+    # I believe there was a ton of work put into React so that it worked this way, where it calculates the smallest changes it can make to the DOM based on your state changes and only updating those, rather than re-drawing all the time, to make it performant. I wonder how feasible it would be to have Scenic work the same way :thinking_face:
+    # image.png
+
+    # Flamelex.Fluxus.action({__MODULE__, {:edit_todo, tidbit_uuid}})
+    # {:noreply, scene |> assign(edit_description?: false)}
+    # ^^ in my imagination this code would automatically cause an efficient update to my scene, without "re-rendering" in the sense of creating a new Scenic component process
+  end
+
   # def handle_info(
   #       {:radix_state_change, %{apps: %{todo_details: %State{} = state}}},
   #       %{assigns: %{frame: f, state: state}} = scene
@@ -59,22 +78,23 @@ defmodule Flamelex.GUI.Component.TODOdetails do
         {:radix_state_change, %{apps: %{todo_details: %State{} = new_state}}},
         %{assigns: %{frame: f, state: old_state}} = scene
       ) do
-    if new_state.tidbit == old_state.tidbit do
-      # tidbit didbn't change, do nothing...
-      {:noreply, scene}
-    else
-      # reset the scroll if we change the TidBit
-      new_state = %{new_state | scroll: {0, 0}}
-      {:ok, new_graph} = render(f, new_state)
+    # if new_state.tidbit == old_state.tidbit do
+    #   # tidbit didbn't change, do nothing...
+    #   IO.puts("GOT MSG BUT SAME OLD TIDBIT!")
+    #   {:noreply, scene}
+    # else
+    # reset the scroll if we change the TidBit
+    new_state = %{new_state | scroll: {0, 0}}
+    {:ok, new_graph} = render(f, new_state)
 
-      new_scene =
-        scene
-        |> assign(graph: new_graph)
-        |> assign(state: new_state)
-        |> push_graph(new_graph)
+    new_scene =
+      scene
+      |> assign(graph: new_graph)
+      |> assign(state: new_state)
+      |> push_graph(new_graph)
 
-      {:noreply, new_scene}
-    end
+    {:noreply, new_scene}
+    # end
   end
 
   def render(frame, state) do
@@ -139,7 +159,8 @@ defmodule Flamelex.GUI.Component.TODOdetails do
 
       blocks = [
         {ScenicWidgets.Markup.Header1, %{frame: header_f, text: t.title}},
-        {draw_data_fn(), %{frame: first_f, tidbit: t}},
+        # {draw_data_fn(), %{frame: first_f, tidbit: t}},
+        {draw_data_fn(), %{frame: first_f, state: state}},
         {draw_action_list_fn(), %{frame: second_f, actions: tidbit_actions}},
         {draw_hist_fn(), %{frame: third_f, tidbit: t}},
         {draw_raw_tidbit, %{frame: fourth_f_big}},
@@ -163,42 +184,75 @@ defmodule Flamelex.GUI.Component.TODOdetails do
   end
 
   def draw_data_fn do
-    fn graph, %{frame: f, tidbit: t} = args ->
-      graph
-      |> draw_neo_card_background(f)
-      |> Memelex.GUI.Components.IconButton.add_to_graph(
-        %{
-          frame: Widgex.Frame.new(pin: {10, 10}, size: {50, 50}),
-          icon: "ionicons/black_32/edit.png"
-        },
-        id: {:edit, t.uuid},
-        # need to move it back twice the width because we're right aligning now
-        translate: {f.size.width - 20 - 50 - 50, f.pin.y + 5}
-      )
-      # |> Scenic.Primitives.text(t.data,
-      #   font: :ibm_plex_mono,
-      #   font_size: 24,
-      #   fill: :white,
-      #   translate: {f.pin.x + 20, f.pin.y + 20 + 20 + 60}
-      # )
+    fn
+      graph, %{frame: f, state: %{tidbit: t, edit_description?: false}} = args ->
+        # IO.puts("ARE WE ALWAYS HERE???")
 
-      |> ScenicWidgets.TextPad.add_to_graph(
-        %{
-          frame:
-            Widgex.Frame.new(
-              pin: {10, 10 + 60},
-              size: {f.size.width - 20, f.size.height - 20 - 60}
-            ),
-          state:
-            ScenicWidgets.TextPad.new(%{
-              mode: :read_only,
-              text: t.data,
-              font: body_font()
-            })
-        },
-        id: {:data, t.uuid},
-        translate: {f.pin.x, f.pin.y}
-      )
+        graph
+        |> draw_neo_card_background(f)
+        |> Memelex.GUI.Components.IconButton.add_to_graph(
+          %{
+            frame: Widgex.Frame.new(pin: {10, 10}, size: {50, 50}),
+            icon: "ionicons/black_32/edit.png"
+          },
+          id: {:edit, t.uuid},
+          # need to move it back twice the width because we're right aligning now
+          translate: {f.size.width - 20 - 50 - 50, f.pin.y + 5}
+        )
+        |> Scenic.Primitives.text(t.data,
+          font: :ibm_plex_mono,
+          font_size: 24,
+          fill: :white,
+          translate: {f.pin.x + 20, f.pin.y + 20 + 20 + 60}
+        )
+
+      graph, %{frame: f, state: %{tidbit: t, edit_description?: true}} = args ->
+        IO.puts("EDITING THE DESC")
+
+        graph
+        |> draw_neo_card_background(f)
+        |> Memelex.GUI.Components.IconButton.add_to_graph(
+          %{
+            frame: Widgex.Frame.new(pin: {10, 10}, size: {50, 50}),
+            icon: "ionicons/black_32/save.png"
+          },
+          id: {:save, t.uuid},
+          # need to move it back twice the width because we're right aligning now
+          translate: {f.size.width - 20 - 50 - 50, f.pin.y + 5}
+        )
+        # |> Scenic.Primitives.text(t.data,
+        #   font: :ibm_plex_mono,
+        #   font_size: 24,
+        #   fill: :white,
+        #   translate: {f.pin.x + 20, f.pin.y + 20 + 20 + 60}
+        # )
+
+        |> Scenic.Component.Input.TextField.add_to_graph(
+          "Some test text",
+          id: {:data, t.uuid},
+          # translate: f.pin.point
+          translate: {f.pin.x + 20, f.pin.y + 20 + 60}
+        )
+
+        # |> ScenicWidgets.TextPad.add_to_graph(
+        #   %{
+        #     frame:
+        #       Widgex.Frame.new(
+        #         pin: {10, 10 + 60},
+        #         size: {f.size.width - 20, f.size.height - 20 - 60}
+        #       ),
+        #     state:
+        #       ScenicWidgets.TextPad.new(%{
+        #         # mode: :read_only,
+        #         mode: :edit,
+        #         text: t.data,
+        #         font: body_font()
+        #       })
+        #   },
+        #   id: {:data, t.uuid},
+        #   # translate: {f.pin.x, f.pin.y}
+        #   translate: f.pin.point
+        # )
     end
   end
 
@@ -520,6 +574,17 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     IO.puts("Sample button was clicked in HANDLE EVENT! #{inspect(btn)}")
     {:noreply, scene}
   end
+
+  def handle_event({:value_changed, {:data, _tidbit_uuid}, new_text}, _from, scene) do
+    # Flamelex.Fluxus.action({__MODULE__, {:edit_todo, tidbit_uuid, new_text}})
+    IO.puts("VAL CHANGED")
+    {:noreply, scene |> assign(description_edit: new_text)}
+  end
+
+  # def handle_event(e, from, scene) do
+  #   IO.puts("Unhandled event: #{inspect(e)}")
+  #   {:noreply, scene}
+  # end
 
   def prettify_map(map) when is_map(map) do
     map
