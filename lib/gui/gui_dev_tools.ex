@@ -2,7 +2,7 @@ defmodule Flamelex.GUI.DevTools do
   @moduledoc """
   `Flamelex.GUI.DevTools` provides a set of developer tools for use within the Flamelex GUI system.
 
-  These tools are designed to assist in the development and debugging of GUI elements,
+    These tools are designed to assist in the development and debugging of GUI elements,
   enabling features such as visual debugging, component inspection, and layout management.
 
   ## Features
@@ -11,6 +11,8 @@ defmodule Flamelex.GUI.DevTools do
   - **Layout Manager**: Provides tools for dynamically adjusting and visualizing the layout of GUI components.
   - **Event Logger**: Logs GUI events for debugging purposes.
   - **Performance Monitor**: Monitors the rendering and processing performance of the GUI.
+
+  Includes tools for generating new GUI components following the Flux pattern.
   """
 
   @doc """
@@ -63,130 +65,219 @@ defmodule Flamelex.GUI.DevTools do
     raise "not implemented"
   end
 
+  @doc """
+  Creates a new GUI component by generating the necessary files.
+
+  ## Parameters
+
+    - `component_name`: The name of the new component as an atom or string.
+
+  ## Example
+
+      Flamelex.GUI.DevTools.build_new_component(:todo_list)
+  """
   def build_new_component(component_name)
-      when is_atom(component_name) or is_binary(component_name) do
+      when is_binary(component_name) do
+    # when is_atom(component_name) or is_binary(component_name) do
     # Convert the component name to a string and format it
     component_name_str =
       component_name
-      |> to_string()
+      # |> to_string()
+      |> String.replace(" ", "")
       |> Macro.camelize()
 
+    # Prepare module and file names
+    module_base = "Flamelex.GUI.Component.#{component_name_str}"
+    file_base = Macro.underscore(component_name_str)
+
     # Define base paths
-    base_path = "lib/gui/components/#{Macro.underscore(component_name_str)}"
-    test_path = "test/gui/components/#{Macro.underscore(component_name_str)}"
+    base_path = "lib/gui/components/#{file_base}"
+    File.mkdir_p!(base_path)
 
     # List of files to create with their content generators
     files = [
-      {Path.join(base_path, "#{Macro.underscore(component_name_str)}.ex"),
-       component_module_content(component_name_str)},
-      {Path.join(base_path, "#{Macro.underscore(component_name_str)}_state.ex"),
-       component_state_content(component_name_str)},
-      {Path.join(base_path, "#{Macro.underscore(component_name_str)}_logic.ex"),
-       component_logic_content(component_name_str)},
-      {Path.join(base_path, "#{Macro.underscore(component_name_str)}_view.ex"),
-       component_view_content(component_name_str)},
-      {Path.join(test_path, "#{Macro.underscore(component_name_str)}_test.exs"),
-       component_test_content(component_name_str)}
+      {Path.join(base_path, "#{file_base}.ex"), component_module_content(module_base)},
+      {Path.join(base_path, "#{file_base}_state.ex"), state_module_content(module_base)},
+      {Path.join(base_path, "#{file_base}_reducer.ex"), reducer_module_content(module_base)},
+      {Path.join(base_path, "#{file_base}_mutator.ex"), mutator_module_content(module_base)},
+      {Path.join(base_path, "#{file_base}_user_input_handler.ex"),
+       user_input_handler_content(module_base)}
     ]
-
-    # Create directories if they don't exist
-    File.mkdir_p!(base_path)
-    File.mkdir_p!(test_path)
 
     # Create each file with its content
     Enum.each(files, fn {file_path, content} ->
-      File.write!(file_path, content)
+      if File.exists?(file_path) do
+        IO.puts("File already exists: #{file_path}")
+      else
+        File.write!(file_path, content)
+        IO.puts("Created file: #{file_path}")
+      end
     end)
+
+    # TODO
+    # now what would be amazingly ninja would be to add it to the radix state programatically...
 
     :ok
   end
 
   # Helper functions to generate file contents
-  defp component_module_content(component_name_str) do
-    """
-    defmodule Flamelex.GUI.Components.#{component_name_str} do
-      @moduledoc \"\"\"
-      GUI Component: #{component_name_str}
 
-      This module defines the #{component_name_str} component.
+  defp component_module_content(module_base) do
+    """
+    defmodule #{module_base} do
+      @moduledoc \"\"\"
+      A GUI component for #{humanize_module_name(module_base)}.
       \"\"\"
 
-      use GenServer
+      use Scenic.Component
+      require Logger
+      alias Widgex.Frame
+      alias Scenic.Graph
+      alias Flamelex.Fluxus.RadixState
+      alias #{module_base}
+      alias #{module_base}.State
 
-      alias Flamelex.GUI.Components.#{component_name_str}State
-      alias Flamelex.GUI.Components.#{component_name_str}Logic
-      alias Flamelex.GUI.Components.#{component_name_str}View
-
-      # GenServer callbacks and public API
-
-      def start_link(args) do
-        GenServer.start_link(__MODULE__, args, name: __MODULE__)
+      # Validate function for Scenic component
+      def validate(%{frame: %Frame{}} = data) do
+        {:ok, data}
       end
 
-      def init(_args) do
-        state = %#{component_name_str}State{}
-        {:ok, state}
+      def init(scene, %{frame: %Frame{} = frame}, _opts) do
+        state = Flamelex.Fluxus.RadixStore.get().apps.#{Macro.underscore(module_base)}
+
+        graph = render(frame, state)
+
+        init_scene =
+          scene
+          |> assign(frame: frame)
+          |> assign(graph: graph)
+          |> assign(state: state)
+          |> push_graph(graph)
+
+        Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
+
+        {:ok, init_scene}
       end
 
-      # Additional callbacks and functions
+      # Handle state changes where the state hasn't changed
+      def handle_info(
+            {:radix_state_change, %{apps: %{#{Macro.underscore(module_base)}: state}}},
+            %{assigns: %{frame: frame, state: state}} = scene
+          ) do
+        # State variables in pattern match are the same; no state change occurred
+        {:noreply, scene}
+      end
+
+      # Handle state changes where the state has changed
+      def handle_info(
+            {:radix_state_change, %{apps: %{#{Macro.underscore(module_base)}: new_state}}},
+            %{assigns: %{frame: frame, state: old_state}} = scene
+          ) do
+        # State has changed; raise an error as handling is app-specific
+        raise "State change handling not implemented in template"
+        {:noreply, scene}
+      end
+
+      # Default render function
+      def render(%Frame{} = frame, %#{module_base}.State{} = state) do
+        # TODO: Implement rendering logic here
+        # Returning an empty graph to prevent crashes by default
+        Graph.build()
+      end
     end
     """
   end
 
-  defp component_state_content(component_name_str) do
+  defp state_module_content(module_base) do
     """
-    defmodule Flamelex.GUI.Components.#{component_name_str}State do
+    defmodule #{module_base}.State do
       @moduledoc \"\"\"
-      State management for the #{component_name_str} component.
+      State management for the #{humanize_module_name(module_base)} component.
       \"\"\"
+
+      use StructAccess
 
       defstruct [
         # Define state fields here
       ]
-    end
-    """
-  end
 
-  defp component_logic_content(component_name_str) do
-    """
-    defmodule Flamelex.GUI.Components.#{component_name_str}Logic do
-      @moduledoc \"\"\"
-      Business logic for the #{component_name_str} component.
-      \"\"\"
-
-      # Define logic functions here
-    end
-    """
-  end
-
-  defp component_view_content(component_name_str) do
-    """
-    defmodule Flamelex.GUI.Components.#{component_name_str}View do
-      @moduledoc \"\"\"
-      Rendering logic for the #{component_name_str} component.
-      \"\"\"
-
-      # Define rendering functions here
-    end
-    """
-  end
-
-  defp component_test_content(component_name_str) do
-    """
-    defmodule Flamelex.GUI.Components.#{component_name_str}Test do
-      use ExUnit.Case, async: true
-      alias Flamelex.GUI.Components.#{component_name_str}
-
-      @moduletag :#{Macro.underscore(component_name_str)}
-
-      describe "#{component_name_str} component" do
-        test "initializes correctly" do
-          assert {:ok, _pid} = #{component_name_str}.start_link([])
-        end
-
-        # Additional tests
+      def new do
+        %__MODULE__{}
       end
     end
     """
+  end
+
+  defp reducer_module_content(module_base) do
+    """
+    defmodule #{module_base}.Reducer do
+      @moduledoc \"\"\"
+      Processes actions and updates the Radix state for the #{humanize_module_name(module_base)} component.
+      \"\"\"
+
+      alias Flamelex.Fluxus.RadixState
+      alias #{module_base}
+      alias #{module_base}.Mutator
+
+      def process(%RadixState{} = rdx, action) do
+        case action do
+          # Match on specific actions and call mutators
+          _ ->
+            rdx
+        end
+      end
+    end
+    """
+  end
+
+  defp mutator_module_content(module_base) do
+    """
+    defmodule #{module_base}.Mutator do
+      @moduledoc \"\"\"
+      Functions to mutate the Radix state for the #{humanize_module_name(module_base)} component.
+      \"\"\"
+
+      alias Flamelex.Fluxus.RadixState
+
+      def some_mutation(%RadixState{} = rdx, params) do
+        # Perform state mutation
+        raise "not implemented"
+      end
+    end
+    """
+  end
+
+  defp user_input_handler_content(module_base) do
+    """
+    defmodule #{module_base}.UserInputHandler do
+      @moduledoc \"\"\"
+      Handles user input for the #{humanize_module_name(module_base)} component.
+      \"\"\"
+
+      require Logger
+      use ScenicWidgets.ScenicEventsDefinitions
+      alias #{module_base}
+      alias #{module_base}.Reducer
+
+      def handle(rdx, input) do
+        case input do
+          # Match on specific inputs and return actions
+          _ ->
+            Logger.warn("\#{__MODULE__} received unhandled input: \#{inspect(input)}")
+            :ignore
+        end
+      end
+    end
+    """
+  end
+
+  # Helper function to humanize module names
+  defp humanize_module_name(module_name) do
+    module_name
+    |> String.split(".")
+    |> List.last()
+    |> Macro.underscore()
+    |> String.replace("_", " ")
+    |> String.capitalize()
   end
 end
