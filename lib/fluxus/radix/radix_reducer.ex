@@ -190,7 +190,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
 
   def process(rdx, :show_agents) do
     IO.puts("This is where we're going to actually show the agent, now we need to build it!")
-    :ignore
+    Flamelex.GUI.Component.HighCouncil.Reducer.process(rdx, :show_agents)
   end
 
   # def process(rdx, {component, action}) when is_module(component) do

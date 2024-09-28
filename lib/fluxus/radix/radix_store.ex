@@ -60,7 +60,7 @@ defmodule Flamelex.Fluxus.RadixStore do
 
   def handle_cast({:event, e, e_shadow}, radix_state) do
     # this can make a lot of noise, but sometimes I need to see it
-    crush_report? = false
+    crush_report? = true
 
     case Wormhole.capture(handle_event_fn(radix_state, e), crush_report: crush_report?) do
       {:ok, :ignore} ->
@@ -115,34 +115,6 @@ defmodule Flamelex.Fluxus.RadixStore do
     fn -> Flamelex.Fluxus.RadixState.new(args) end
   end
 
-  # defp handle_event_fn(radix_state, %{topic: topic, data: event}, e_shadow) do
-  #   # have to return a zero arity function for Task.async
-  #   fn ->
-  #     # Logger.debug("#{__MODULE__} handling event: #{inspect(event)}, topic: #{inspect(topic)}...")
-
-  #     handler =
-  #       case topic do
-  #         :flx_actions -> Flamelex.Fluxus.RadixReducer
-  #         :flx_user_input -> Flamelex.Fluxus.UserInputHandler
-  #         :memelex -> Flamelex.Fluxus.MemelexEventHandler
-  #       end
-
-  #     case handler.process(radix_state, event) do
-  #       :ignore ->
-  #         EventBus.mark_as_completed({__MODULE__, e_shadow})
-  #         :ignore
-
-  #       ^radix_state ->
-  #         EventBus.mark_as_completed({__MODULE__, e_shadow})
-  #         :ignore
-
-  #       new_radix_state ->
-  #         EventBus.mark_as_completed({__MODULE__, e_shadow})
-  #         new_radix_state
-  #     end
-  #   end
-  # end
-
   defp handle_event_fn(radix_state, %{topic: :flx_actions, data: action}) do
     # have to return a zero arity function for Task.async
     fn ->
@@ -189,22 +161,65 @@ defmodule Flamelex.Fluxus.RadixStore do
             |> Enum.reduce(rdx, fn action, rdx_acc ->
               case Flamelex.Fluxus.RadixReducer.process(rdx_acc, action) do
                 :ignore ->
-                  rdx_acc
+                  :ignore
 
                 new_rdx ->
                   new_rdx
               end
+
+              # process_action_fn = fn ->
+              #   res = Flamelex.Fluxus.RadixReducer.process(rdx_acc, action)
+
+              #   if res == :ignore do
+              #     :ignore
+              #   else
+              #     res
+              #   end
+
+              #   # case Flamelex.Fluxus.RadixReducer.process(rdx_acc, action) do
+              #   #   :ignore ->
+              #   #     :ignore
+
+              #   #   new_rdx ->
+              #   #     new_rdx
+              #   # end
+              # end
+
+              # handle inner crashes here, even inside the outer wormhole!!
+              # Wormhole.capture process_action_fn do
+              #   {:ok, :ignore} ->
+              #     IO.puts("Ignoring the action #{inspect(action)} on purpose.")
+              #     # rdx_acc
+              #     :ignore
+
+              #   {:ok, new_rdx} ->
+              #     IO.puts("Applied action #{inspect(action)} and got a new rdx state")
+              #     new_rdx
+
+              #   {:error, reason} ->
+              #     IO.puts(
+              #       "Failed to apply action #{inspect(action)} to rdx state. Reason: #{inspect(reason)}"
+              #     )
+
+              #     # rdx_acc
+              #     :ignore
+              # end
             end)
 
-          if new_rdx == rdx do
-            :ignore
-          else
-            new_rdx
-          end
+        # if new_rdx == rdx do
+        #   :ignore
+        # else
+        #   new_rdx
+        # end
 
         other ->
-          Logger.error("Unrecognised handler return value: #{inspect(other)}")
-          :ignore
+          if not is_list(other) do
+            Logger.error("Handlers need to return a list. Got: #{inspect(other)}")
+            :ignore
+          else
+            Logger.error("Unrecognised handler return value: #{inspect(other)}")
+            :ignore
+          end
       end
     end
   end

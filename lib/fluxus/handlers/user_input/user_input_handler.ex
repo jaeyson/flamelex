@@ -29,6 +29,11 @@ defmodule Flamelex.Fluxus.UserInputHandler do
     IO.puts("WARNING - App: #{inspect(app)} did not have a specific handler in #{__MODULE__}...")
     Module.concat(app, UserInputHandler).handle(rdx, input)
   end
+
+  def handle(_rdx, {:key, {:key_leftalt, _up_or_down, _weird_list}}) do
+    Logger.debug("Ignoring key_leftalt...")
+    :ignore
+  end
 end
 
 # def process(rdx, input) do

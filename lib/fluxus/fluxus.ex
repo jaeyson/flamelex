@@ -52,57 +52,49 @@ defmodule Flamelex.Fluxus do
   Listeners are the things that listen for events in the system. Note that these events are actually different from "actions" - actions are things that happen in the system, whereas events are things that the system can listen for. This is a subtle distinction but it's important. Events are things that the system can listen for, and then do something in response to. Actions are things that the system can do, and then the system can listen for events that are triggered by those actions.
   The implementation of both systems is essentialyl the same, but semantically, this difference is important (actually, is it??)
 
+  #   # called to register user-input with the Fluxus system - Scenic MUST
+  #   # forward input to Fluxus if it wants to be processed that way (input
+  #   # might be captured & processed "locally" by a component, which could
+  #   # then trigger an action... however if Scenic passes input through to
+  #   # Fluxus, then it opens up the possibility of having things like Vim
+  #   # keymaps that exist at a higher level than just a Scenic component)
+
+
   """
 
   defdelegate user_input(ii), to: Flamelex.Fluxus.Utils
   defdelegate action(a), to: Flamelex.Fluxus.Utils
+
+  #   # declaring means we get the results back - this function also
+  #   # filters those results to just the ones from ActionListener
+
+  #   # having to include this is starting to feel like a bad thing... not really though, the lib computes the result & throws it away !
+  def declare(a) do
+    with {:ok, results} <- do_declare(a) do
+      IO.inspect(results)
+      # NOTE - we replace this atom (the initial accumulator) in the successful case,
+      # so we have confidence when it matches (an atom can't match onto a list) the final result that this function worked
+      [final_radix_state] =
+        Enum.reduce(results, :accumulator, fn
+          # add the results from ActionListener to the accumulator, discard ones from UserInputListener
+          {Flamelex.Fluxus.ActionListener, {:ok, new_radix_state}}, acc ->
+            [new_radix_state]
+
+          {Flamelex.Fluxus.UserInputListener, _res}, acc ->
+            acc
+        end)
+
+      {:ok, final_radix_state}
+    end
+  end
+
+  @actions :flx_actions
+  defp do_declare(a) do
+    {:ok,
+     EventBus.declare(%EventBus.Model.Event{
+       id: UUID.uuid4(),
+       topic: @actions,
+       data: a
+     })}
+  end
 end
-
-# defmodule Flamelex.Fluxus do
-
-#   @actions :flx_actions
-#   @user_input :flx_user_input
-
-#   def radix(z) do
-#     GenServer.call(Flamelex.Fluxus.RadixStore, {:redux, z})
-#   end
-
-#   # declaring means we get the results back - this function also
-#   # filters those results to just the ones from ActionListener
-
-#   # having to include this is starting to feel like a bad thing...
-#   def declare(a) do
-#     with {:ok, results} <- do_declare(a) do
-#       # NOTE - we replace this atom (the initial accumulator) in the successful case,
-#       # so we have confidence when it matches (an atom can't match onto a list) the final result that this function worked
-#       [final_radix_state] =
-#         Enum.reduce(results, :accumulator, fn
-#           # add the results from ActionListener to the accumulator, discard ones from UserInputListener
-#           {Flamelex.Fluxus.ActionListener, {:ok, new_radix_state}}, acc ->
-#             [new_radix_state]
-
-#           {Flamelex.Fluxus.UserInputListener, _res}, acc ->
-#             acc
-#         end)
-
-#       {:ok, final_radix_state}
-#     end
-#   end
-
-#   defp do_declare(a) do
-#     {:ok,
-#      EventBus.declare(%EventBus.Model.Event{
-#        id: UUID.uuid4(),
-#        topic: @actions,
-#        data: {:action, a}
-#      })}
-#   end
-
-#   # called to register user-input with the Fluxus system - Scenic MUST
-#   # forward input to Fluxus if it wants to be processed that way (input
-#   # might be captured & processed "locally" by a component, which could
-#   # then trigger an action... however if Scenic passes input through to
-#   # Fluxus, then it opens up the possibility of having things like Vim
-#   # keymaps that exist at a higher level than just a Scenic component)
-
-# end

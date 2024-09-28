@@ -93,8 +93,8 @@ end
 #   # OR alternatively, why not refresh it?? Plus we need to initialize it _somewhere_ !
 #   # If we don't do it here then there's a chance we will switch back and the data will be stale
 #   rdx
-#   |> Flamelex.Fluxus.Layer01Mutators.set_layout(:full_screen)
-#   |> Flamelex.Fluxus.Layer01Mutators.set_active_apps([TODOlist])
+#   |> Flamelex.GUI.Layers.Layer01.Mutator.set_layout(:full_screen)
+#   |> Flamelex.GUI.Layers.Layer01.Mutator.set_active_apps([TODOlist])
 #   |> Flamelex.Fluxus.TODOsMutators.refresh_todo_list()
 # end
 
