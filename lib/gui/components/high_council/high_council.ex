@@ -10,6 +10,7 @@ defmodule Flamelex.GUI.Component.HighCouncil do
   alias Flamelex.Fluxus.RadixState
   alias Flamelex.GUI.Component.HighCouncil
   alias Flamelex.GUI.Component.HighCouncil.State
+  alias Widgex.Frame.Grid
 
   # Validate function for Scenic component
   def validate(%{frame: %Frame{}} = data) do
@@ -55,82 +56,53 @@ defmodule Flamelex.GUI.Component.HighCouncil do
 
   # Default render function
   def render(%Frame{} = frame, %State{} = state) do
-    # TODO: Implement rendering logic here
-    # Returning an empty graph to prevent crashes by default
-
-    # [l, mid, r] = Frame.col_split(frame, 3)
-
-    # grid =
-    #   Widgex.Frame.Grid.new(frame)
-    #   # Proportions for header, content, footer
-    #   |> Widgex.Frame.Grid.rows([0.1, 0.8, 0.1])
-    #   # Fixed width sidebars and auto content
-    #   |> Widgex.Frame.Grid.columns([200, :auto, 200])
-    #   |> Widgex.Frame.Grid.row_gap(10)
-    #   |> Widgex.Frame.Grid.column_gap(10)
-    #   |> Widgex.Frame.Grid.define_areas(%{
-    #     # Spans first row across all columns
-    #     header: {0, 0, 1, 3},
-    #     footer: {2, 0, 1, 3},
-    #     sidebar_left: {1, 0, 1, 1},
-    #     content: {1, 1, 1, 1},
-    #     sidebar_right: {1, 2, 1, 1}
-    #   })
-
-    #     banner_row_proportion = 0.10
-    # content_row_proportion = 0.90 / 15  # 0.06
-    # rows_proportions = [banner_row_proportion] ++ List.duplicate(content_row_proportion, 15)
-
-    # columns_proportions = [1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0]
-
-    # grid =
-    #   Widgex.Frame.Grid.new(frame)
-    #   |> Widgex.Frame.Grid.rows(rows_proportions)
-    #   |> Widgex.Frame.Grid.columns(columns_proportions)
-    #   |> Widgex.Frame.Grid.row_gap(0)
-    #   |> Widgex.Frame.Grid.column_gap(0)
-    #   |> Widgex.Frame.Grid.define_areas(%{
-    #     banner: {0, 0, 1, 3}  # Spans the first row across all 3 columns
-    #   })
-
-    #     cell_frames = Widgex.Frame.Grid.calculate(grid)
-
-    #     # content_frame = Widgex.Frame.Grid.area_frame(grid, cell_frames, :content)
-    #     banner_frame = Widgex.Frame.Grid.area_frame(grid, cell_frames, :banner)
-
-    # Define grid proportions for 46 frames total
-    banner_row_proportion = 0.10
-    # 0.06
-    content_row_proportion = 0.90 / 15
-    rows_proportions = [banner_row_proportion] ++ List.duplicate(content_row_proportion, 15)
-    columns_proportions = [1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0]
-
     grid =
-      Widgex.Frame.Grid.new(frame)
-      |> Widgex.Frame.Grid.rows(rows_proportions)
-      |> Widgex.Frame.Grid.columns(columns_proportions)
-      |> Widgex.Frame.Grid.row_gap(0)
-      |> Widgex.Frame.Grid.column_gap(0)
-      |> Widgex.Frame.Grid.define_areas(%{
-        banner: {0, 0, 1, 3}
+      Grid.new(frame)
+      |> Grid.rows([0.10, 0.35, 0.35, 0.20])
+      |> Grid.columns([1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0])
+      |> Grid.row_gap(0)
+      |> Grid.column_gap(0)
+      |> Grid.define_areas(%{
+        banner: {0, 0, 1, 3},
+        footer: {3, 0, 1, 3},
+        tile1: {1, 0, 1, 1},
+        tile2: {1, 1, 1, 1},
+        tile3: {1, 2, 1, 1},
+        tile4: {2, 0, 1, 1},
+        tile5: {2, 1, 1, 1},
+        tile6: {2, 2, 1, 1}
       })
 
-    cell_frames = Widgex.Frame.Grid.calculate(grid)
-    banner_frame = Widgex.Frame.Grid.area_frame(grid, cell_frames, :banner)
+    # Calculate the frames
+    cell_frames = Grid.calculate(grid)
 
-    c1 = Widgex.Frame.Grid.cell_frame(cell_frames, 2, 2)
-    c2 = Widgex.Frame.Grid.cell_frame(cell_frames, 2, 7)
-    c3 = Widgex.Frame.Grid.cell_frame(cell_frames, 1, 3)
-    c4 = Widgex.Frame.Grid.cell_frame(cell_frames, 3, 3)
+    # Retrieve frames for banner and footer
+    banner_frame = Grid.area_frame(grid, cell_frames, :banner)
+    footer_frame = Grid.area_frame(grid, cell_frames, :footer)
+    t2 = Grid.area_frame(grid, cell_frames, :tile2)
+
+    # Retrieve frames for tiles
+    # tile_frames =
+    #   for tile <- [:tile1, :tile2, :tile3, :tile4, :tile5, :tile6], into: %{} do
+    #     {tile, Grid.area_frame(grid, cell_frames, tile)}
+    #   end
 
     Graph.build()
     |> Scenic.Primitives.rectangle(frame.size.box, fill: :orange, t: frame.pin.point)
     |> Scenic.Primitives.rectangle(banner_frame.size.box,
       fill: :green,
-      t: header_frame(frame).pin.point
+      t: banner_frame.pin.point
     )
     |> ScenicWidgets.Markup.Header1.draw(%{frame: banner_frame, text: "High Council"})
-    |> Scenic.Primitives.rectangle(c1.size.box, fill: :blue, t: c1.pin.point)
+    # |> Scenic.Primitives.rectangle(c1.size.box, fill: :blue, t: c1.pin.point)
+    |> Scenic.Primitives.rectangle(footer_frame.size.box,
+      fill: :silver,
+      t: footer_frame.pin.point
+    )
+    |> Scenic.Primitives.rectangle(t2.size.box,
+      fill: :gold,
+      t: t2.pin.point
+    )
 
     # |> Scenic.Primitives.rectangle(c2.size.box, fill: :grey, t: c2.pin.point)
     # |> Scenic.Primitives.rectangle(c3.size.box, fill: :pink, t: c3.pin.point)

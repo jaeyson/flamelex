@@ -144,7 +144,8 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
     {:noreply, scene}
   end
 
-  def handle_cast(:reset_animation, %{assigns: %{state: %State{} = state}} = scene) do
+  # def handle_cast(:reset_animation, %{assigns: %{state: %State{} = state}} = scene) do
+  def handle_cast(:reset_animation, %{assigns: %{state: state}} = scene) do
     Logger.debug("#{__MODULE__} received msg: :reset_animation...")
 
     new_state =
