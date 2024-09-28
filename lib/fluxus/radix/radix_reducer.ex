@@ -188,6 +188,11 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.GUI.Component.TODOdetails.Reducer.process(rdx, action)
   end
 
+  def process(rdx, :show_agents) do
+    IO.puts("This is where we're going to actually show the agent, now we need to build it!")
+    :ignore
+  end
+
   # def process(rdx, {component, action}) when is_module(component) do
   #   # Flamelex.GUI.Component.TODOdetails.Reducer.process(rdx, action)
   #   raise "somehow you hit this experimental clause... but I like it - uncomment this raise and lets see what happens"
@@ -215,8 +220,14 @@ defmodule Flamelex.Fluxus.RadixReducer do
   end
 
   # theoretically we dont need to handle things we dont know how to handle but it does make a lot of noise...
-  # def process(rdx_state, action) do
-  #   # Logger.error("#{__MODULE__} unable to process action. #{inspect(action)}")
-  #   :ignore
-  # end
+  def process(rdx_state, action) do
+    # Logger.error("#{__MODULE__} unable to process action. #{inspect(action)}")
+    # IO.puts("#{__MODULE__} unable to process action. #{inspect(action)}")
+
+    IO.puts(
+      "\e[33m#{__MODULE__} === === ===\n\nunable to process action: #{inspect(action)}\e[0m\n"
+    )
+
+    :ignore
+  end
 end

@@ -5,27 +5,23 @@ defmodule Flamelex.API.Renseijin do
 
   — Friedrich Nietzsche
   """
+  alias Flamelex.GUI.Component.RenseijinComponent, as: Renseijin
 
   def reset_animation do
-    Flamelex.GUI.Component.RenseijinComponent
-    |> GenServer.cast(:reset_animation)
+    GenServer.cast(Renseijin, :reset_animation)
   end
 
   def start_animation do
     # NOTE - this is one of the few components which we go around the
     # Fluxus system, and just send it messages directly, because it is
     # unaffected by any other state in the application.
-    Flamelex.GUI.Component.RenseijinComponent
-    |> GenServer.cast(:start_animation)
-
     IO.puts("~~ Double, double toil and trouble; Fire burn and cauldron bubble ~~")
 
-    :ok
+    GenServer.cast(Renseijin, :start_animation)
   end
 
   def stop_animation do
-    Flamelex.GUI.Component.RenseijinComponent
-    |> GenServer.cast(:stop_animation)
+    GenServer.cast(Renseijin, :stop_animation)
   end
 
   # def kaomoji do

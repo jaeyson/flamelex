@@ -19,6 +19,15 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
     [{RapidSelector.Reducer, {:open_tidbit, t}}]
   end
 
+  def handle(rdx, :show_agents) do
+    IO.puts("show the agent for realsies, from flamelex")
+    # rdx
+    # :ignore
+    # []
+    [:show_agents]
+    # [{TODOlist.Reducer, :show_agents}]
+  end
+
   def handle(rdx, {:tidbit_saved, t}) do
     # IO.inspect(t)
     # this is the situation where splitting the state up makes sense...
