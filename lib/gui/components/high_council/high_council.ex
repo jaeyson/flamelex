@@ -35,24 +35,24 @@ defmodule Flamelex.GUI.Component.HighCouncil do
     {:ok, init_scene}
   end
 
-  # # Handle state changes where the state hasn't changed
-  # def handle_info(
-  #       {:radix_state_change, %{apps: %{flamelex/gui/component/high_council: state}}},
-  #       %{assigns: %{frame: frame, state: state}} = scene
-  #     ) do
-  #   # State variables in pattern match are the same; no state change occurred
-  #   {:noreply, scene}
-  # end
+  # Handle state changes where the state hasn't changed
+  def handle_info(
+        {:radix_state_change, %{apps: %{high_council: state}}},
+        %{assigns: %{frame: frame, state: state}} = scene
+      ) do
+    # State variables in pattern match are the same; no state change occurred
+    {:noreply, scene}
+  end
 
-  # # Handle state changes where the state has changed
-  # def handle_info(
-  #       {:radix_state_change, %{apps: %{flamelex/gui/component/high_council: new_state}}},
-  #       %{assigns: %{frame: frame, state: old_state}} = scene
-  #     ) do
-  #   # State has changed; raise an error as handling is app-specific
-  #   raise "State change handling not implemented in template"
-  #   {:noreply, scene}
-  # end
+  # Handle state changes where the state has changed
+  def handle_info(
+        {:radix_state_change, %{apps: %{high_council: new_state}}},
+        %{assigns: %{frame: frame, state: old_state}} = scene
+      ) do
+    # State has changed; raise an error as handling is app-specific
+    raise "State change handling not implemented in template"
+    {:noreply, scene}
+  end
 
   # Default render function
   def render(%Frame{} = frame, %State{} = state) do
@@ -80,6 +80,7 @@ defmodule Flamelex.GUI.Component.HighCouncil do
     banner_frame = Grid.area_frame(grid, cell_frames, :banner)
     footer_frame = Grid.area_frame(grid, cell_frames, :footer)
     t2 = Grid.area_frame(grid, cell_frames, :tile2)
+    t3 = Grid.area_frame(grid, cell_frames, :tile3)
 
     # Retrieve frames for tiles
     # tile_frames =
@@ -93,24 +94,46 @@ defmodule Flamelex.GUI.Component.HighCouncil do
       fill: :green,
       t: banner_frame.pin.point
     )
-    |> ScenicWidgets.Markup.Header1.draw(%{frame: banner_frame, text: "High Council"})
+    |> ScenicWidgets.Markup.Header1.draw(%{
+      frame: banner_frame,
+      text: "High Council",
+      debug?: true
+    })
     # |> Scenic.Primitives.rectangle(c1.size.box, fill: :blue, t: c1.pin.point)
-    |> Scenic.Primitives.rectangle(footer_frame.size.box,
-      fill: :silver,
-      t: footer_frame.pin.point
-    )
-    |> Scenic.Primitives.rectangle(t2.size.box,
-      fill: :gold,
-      t: t2.pin.point
-    )
+    # |> Scenic.Primitives.rectangle(footer_frame.size.box,
+    #   fill: :silver,
+    #   t: footer_frame.pin.point
+    # )
+    # |> Scenic.Primitives.rectangle(t2.size.box,
+    #   fill: :gold,
+    #   t: t2.pin.point
+    # )
+    |> render_agent_card(t3, %{})
 
     # |> Scenic.Primitives.rectangle(c2.size.box, fill: :grey, t: c2.pin.point)
     # |> Scenic.Primitives.rectangle(c3.size.box, fill: :pink, t: c3.pin.point)
     # |> Scenic.Primitives.rectangle(c4.size.box, fill: :purple, t: c4.pin.point)
   end
 
-  def header_frame(frame) do
-    frame
-    |> Frame.shrink(0.1, :top)
+  def render_agent_card(graph, %Widgex.Frame{} = f, args) do
+    graph
+    |> Scenic.Primitives.rectangle(f.size.box, fill: :blue, t: f.pin.point)
+    |> ScenicWidgets.Markup.Header1.draw(%{
+      frame: f,
+      text: "Agent: Maxwell",
+      color: :white,
+      debug?: true
+    })
+
+    # |> Scenic.Primitives.text("Agent Card",
+    #   font_size: 20,
+    #   translate: {f.pin.x + 10, f.pin.y + 10},
+    #   fill: :black
+    # )
   end
+
+  # def header_frame(frame) do
+  #   frame
+  #   |> Frame.shrink(0.1, :top)
+  # end
 end
