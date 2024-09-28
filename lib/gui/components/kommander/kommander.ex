@@ -1,6 +1,7 @@
 defmodule Flamelex.GUI.Component.Kommander do
   use Scenic.Component
-  alias ScenicWidgets.Core.Structs.Frame
+  # alias ScenicWidgets.Core.Structs.Frame
+  alias Widgex.Frame
   require Logger
 
   @prompt %{
@@ -90,8 +91,8 @@ defmodule Flamelex.GUI.Component.Kommander do
 
   def draw_command_prompt(graph, %Frame{
         # NOTE: These are the coords/dimens for the whole CommandBuffer Frame
-        coords: %{x: _top_left_x, y: top_left_y},
-        dimens: %{height: height, width: _width}
+        pin: %{x: _top_left_x, y: top_left_y},
+        size: %{height: height, width: _width}
       }) do
     # NOTE: The y_offset
     #      ------------
@@ -148,8 +149,8 @@ defmodule Flamelex.GUI.Component.Kommander do
   # figure out the size of the text box
   # these are the coords/dimens for the whole CommandBuffer Frame
   def calc_textbox_frame(%Frame{
-        coords: %{x: cmd_buf_top_left_x, y: cmd_buf_top_left_y},
-        dimens: %{height: cmd_buf_height, width: cmd_buf_width}
+        pin: %{x: cmd_buf_top_left_x, y: cmd_buf_top_left_y},
+        size: %{height: cmd_buf_height, width: cmd_buf_width}
       }) do
     total_prompt_width = prompt_width(@prompt.size) + 2 * @prompt.margin
 

@@ -1,6 +1,7 @@
 defmodule Flamelex.GUI.Component.FileExplorer do
   use Scenic.Component
-  alias ScenicWidgets.Core.Structs.Frame
+  # alias ScenicWidgets.Core.Structs.Frame
+  alias Widgex.Frame
   require Logger
 
   # dont show these in the FileExplorer because they're too big & mostly useless
