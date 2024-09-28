@@ -89,16 +89,22 @@ defmodule Flamelex.GUI.Component.HighCouncil do
     #   end
 
     Graph.build()
-    |> Scenic.Primitives.rectangle(frame.size.box, fill: :orange, t: frame.pin.point)
-    |> Scenic.Primitives.rectangle(banner_frame.size.box,
-      fill: :green,
-      t: banner_frame.pin.point
-    )
-    |> ScenicWidgets.Markup.Header1.draw(%{
-      frame: banner_frame,
-      text: "High Council",
-      debug?: true
-    })
+    |> Scenic.Primitives.group(fn graph ->
+      graph
+      # |> Scenic.Primitives.rectangle(frame.size.box, fill: :orange, t: frame.pin.point)
+      |> Flamelex.GUI.Utils.Draw.background(frame, %{fill: :orange})
+      |> Scenic.Primitives.rectangle(banner_frame.size.box,
+        fill: :green,
+        t: banner_frame.pin.point
+      )
+      |> ScenicWidgets.Markup.Header1.draw(%{
+        frame: banner_frame,
+        text: "High Council",
+        debug?: true
+      })
+      |> render_agent_card(t3, %{})
+    end)
+
     # |> Scenic.Primitives.rectangle(c1.size.box, fill: :blue, t: c1.pin.point)
     # |> Scenic.Primitives.rectangle(footer_frame.size.box,
     #   fill: :silver,
@@ -108,11 +114,21 @@ defmodule Flamelex.GUI.Component.HighCouncil do
     #   fill: :gold,
     #   t: t2.pin.point
     # )
-    |> render_agent_card(t3, %{})
 
     # |> Scenic.Primitives.rectangle(c2.size.box, fill: :grey, t: c2.pin.point)
     # |> Scenic.Primitives.rectangle(c3.size.box, fill: :pink, t: c3.pin.point)
     # |> Scenic.Primitives.rectangle(c4.size.box, fill: :purple, t: c4.pin.point)
+  end
+
+  def render_title(graph, %Widgex.Frame{} = f, args) do
+    graph
+    |> Scenic.Primitives.rectangle(f.size.box, fill: :blue, t: f.pin.point)
+    |> ScenicWidgets.Markup.Header1.draw(%{
+      frame: f,
+      text: "High Council",
+      color: :white
+      # debug?: true
+    })
   end
 
   def render_agent_card(graph, %Widgex.Frame{} = f, args) do
@@ -121,8 +137,7 @@ defmodule Flamelex.GUI.Component.HighCouncil do
     |> ScenicWidgets.Markup.Header1.draw(%{
       frame: f,
       text: "Agent: Maxwell",
-      color: :white,
-      debug?: true
+      color: :white
     })
 
     # |> Scenic.Primitives.text("Agent Card",

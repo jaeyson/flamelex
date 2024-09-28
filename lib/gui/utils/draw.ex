@@ -3,7 +3,7 @@ defmodule Flamelex.GUI.Utils.Draw do
   use ScenicWidgets.Core.Utils.CustomGuards
   alias Flamelex.GUI.Component.MenuBar
   require Logger
-  alias Widgex.Frame
+  # alias Widgex.Frame
 
   # @ibm_plex_mono Flamelex.GUI.Fonts.metrics_hash(:ibm_plex_mono) #NOTE: we use the metrics-hash here, not the font-hash
   # @default_text_size Flamelex.GUI.Fonts.size()
@@ -117,19 +117,19 @@ defmodule Flamelex.GUI.Utils.Draw do
   end
 
   def background(
-        %Scenic.Scene{assigns: %{frame: %Frame{} = frame, graph: %Scenic.Graph{} = graph}} =
+        %Scenic.Scene{assigns: %{frame: %Widgex.Frame{} = frame, graph: %Scenic.Graph{} = graph}} =
           scene,
         color
       ) do
     # TODO need width +1 here for some quirky reason of Scenic library
-    width = frame.dimensions.width + 1
-    height = frame.dimensions.height
+    width = frame.size.width + 1
+    height = frame.size.height
 
     new_graph =
       graph
       |> Scenic.Primitives.rect({width, height},
         fill: color,
-        translate: {frame.top_left.x, frame.top_left.y}
+        translate: {frame.pin.x, frame.pin.y}
       )
 
     scene |> put_graph(new_graph)
@@ -139,17 +139,20 @@ defmodule Flamelex.GUI.Utils.Draw do
 
   # end
 
-  def background(%Scenic.Graph{} = graph, %Frame{} = frame, color) do
-    Logger.warn("Deprecate me.... 22 #{inspect(frame)}")
+  def background(%Scenic.Graph{} = graph, %Widgex.Frame{} = f, color) when is_atom(color) do
     # TODO need width +1 here for some quirky reason of Scenic library
-    width = frame.dimensions.width + 1
-    height = frame.dimensions.height
+    width = f.size.width + 1
+    height = f.size.height
 
     graph
     |> Scenic.Primitives.rect({width, height},
       fill: color,
-      translate: {frame.top_left.x, frame.top_left.y}
+      translate: f.pin.point
     )
+  end
+
+  def background(graph, frame, %{fill: color}) do
+    background(graph, frame, color)
   end
 
   # def triangle(graph, centroid, size) do
@@ -206,12 +209,12 @@ defmodule Flamelex.GUI.Utils.Draw do
     |> Scenic.Primitives.rect({width, height}, stroke: stroke, translate: {x_coord, y_coord})
   end
 
-  def border_box(%Scenic.Graph{} = graph, %Frame{} = frame) do
+  def border_box(%Scenic.Graph{} = graph, %Widgex.Frame{} = frame) do
     stroke = {2, :dark_grey}
     border_box(graph, frame, stroke)
   end
 
-  def border_box(%Scenic.Graph{} = graph, %Frame{} = frame, {size, color} = stroke)
+  def border_box(%Scenic.Graph{} = graph, %Widgex.Frame{} = frame, {size, color} = stroke)
       when is_positive_integer(size) and is_atom(color) do
     x_coord = frame.top_left.x + size / 2
     y_coord = frame.top_left.y + size / 2
