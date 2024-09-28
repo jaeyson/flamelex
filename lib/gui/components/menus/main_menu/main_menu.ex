@@ -56,7 +56,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
           {"open wdg-wkb", fn -> raise "no" end}
         ]},
        devtools(),
-       open_agents(),
+       #  open_agents(),
        widget_workbench(),
        re_source_shell(),
        quit()
@@ -418,12 +418,12 @@ defmodule Flamelex.GUI.Menus.MainMenu do
      ]}
   end
 
-  def open_agents do
-    {"open agents",
-     fn ->
-       Flamelex.Fluxus.action({Flamelex.Fluxus.RadixReducer, :show_agents})
-     end}
-  end
+  # def open_agents do
+  #   {"open agents",
+  #    fn ->
+  #      Flamelex.Fluxus.action({Flamelex.Fluxus.RadixReducer, :show_agents})
+  #    end}
+  # end
 
   def widget_workbench do
     {"widget wkb", &Flamelex.DevTools.widget_workbench/0}
@@ -841,13 +841,6 @@ end
 #           |> Flamelex.Fluxus.RadixStore.update()
 #         end}
 #      ]}
-#   end
-
-#   def open_agents do
-#     {"open agents",
-#      fn ->
-#        Flamelex.Fluxus.action({Flamelex.Fluxus.RadixReducer, :show_agents})
-#      end}
 #   end
 
 #   def widget_workbench do

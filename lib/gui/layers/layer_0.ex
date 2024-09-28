@@ -12,7 +12,7 @@ defmodule Flamelex.GUI.Layers.Layer0 do
   def init(
         %Scenic.Scene{} = scene,
         %{frame: %Widgex.Frame{} = frame},
-        opts \\ []
+        _opts
       ) do
     {:ok, graph} = render(frame, %{})
 
@@ -21,8 +21,6 @@ defmodule Flamelex.GUI.Layers.Layer0 do
       |> assign(frame: frame)
       |> assign(graph: graph)
       |> push_graph(graph)
-
-    # Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
 
     {:ok, new_scene}
   end

@@ -12,9 +12,9 @@ defmodule Flamelex.GUI.Component.TODOdetails.Mutator do
   def close_details(%RadixState{} = rdx) do
     rdx
     # |> Flamelex.Fluxus.TODOsMutators.open_details(t)
-    |> Flamelex.Fluxus.Layer01Mutators.set_layout(:full_screen)
+    |> Flamelex.GUI.Layers.Layer01.Mutator.set_layout(:full_screen)
     # TODO this would be better to remove TODOdetails rather than "put in" a new list of just TODOlist
-    |> Flamelex.Fluxus.Layer01Mutators.set_active_apps([TODOlist])
+    |> Flamelex.GUI.Layers.Layer01.Mutator.set_active_apps([TODOlist])
     |> put_in([:apps, :todo_details], TODOdetails.State.new())
   end
 

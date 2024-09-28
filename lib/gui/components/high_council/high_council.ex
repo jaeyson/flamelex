@@ -54,7 +54,7 @@ defmodule Flamelex.GUI.Component.HighCouncil do
   # end
 
   # Default render function
-  def render(%Frame{} = frame, %Flamelex.GUI.Component.HighCouncil.State{} = state) do
+  def render(%Frame{} = frame, %State{} = state) do
     # TODO: Implement rendering logic here
     # Returning an empty graph to prevent crashes by default
     Graph.build()

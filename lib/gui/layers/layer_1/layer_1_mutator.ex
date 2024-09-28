@@ -1,4 +1,4 @@
-defmodule Flamelex.Fluxus.Layer01Mutators do
+defmodule Flamelex.GUI.Layers.Layer01.Mutator do
   @moduledoc """
   A collection of functions that mutate the radix state.
   """

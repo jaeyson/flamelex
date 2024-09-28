@@ -160,6 +160,7 @@ defmodule Flamelex.GUI.Component.TODOdetails do
       blocks = [
         {ScenicWidgets.Markup.Header1, %{frame: header_f, text: t.title}},
         # {draw_data_fn(), %{frame: first_f, tidbit: t}},
+        # priority, due/planned date, status, tags, labels, notes, history
         {draw_data_fn(), %{frame: first_f, state: state}},
         {draw_action_list_fn(), %{frame: second_f, actions: tidbit_actions}},
         {draw_hist_fn(), %{frame: third_f, tidbit: t}},

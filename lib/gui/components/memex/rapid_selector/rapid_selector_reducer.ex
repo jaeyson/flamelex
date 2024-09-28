@@ -1,7 +1,6 @@
 defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
   @moduledoc false
-  # alias Memelex.Reducers.MemexReducer
-  alias Flamelex.Fluxus.Layer01Mutators
+  alias Flamelex.GUI.Layers.Layer01.Mutator
   alias Flamelex.GUI.Component.RapidSelector
 
   def process(
@@ -18,13 +17,13 @@ defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
     |> Layer01Mutators.set_layout(:full_screen)
   end
 
-  def process(
-        rdx_state,
-        :open_memex
-      ) do
-    IO.puts("NOT OPENING MEMEX")
-    rdx_state
-  end
+  # def process(
+  #       rdx_state,
+  #       :open_memex
+  #     ) do
+  #   IO.puts("NOT OPENING MEMEX")
+  #   rdx_state
+  # end
 
   def process(
         %{

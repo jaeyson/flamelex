@@ -1,7 +1,7 @@
 defmodule Flamelex.Fluxus.RapidSelectorUserInputHandler do
   require Logger
   use ScenicWidgets.ScenicEventsDefinitions
-  alias Flamelex.Fluxus.Layer01Mutators
+  alias Flamelex.GUI.Layers.Layer01.Mutator
 
   def process(rdx_state, @left_shift) do
     IO.puts("GOT LEFT SHIFTTT")

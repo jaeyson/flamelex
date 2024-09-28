@@ -4,8 +4,8 @@ defmodule Flamelex.GUI.Component.TODOlist.Reducer do
 
   def process(rdx, :show_todos) do
     rdx
-    |> Flamelex.Fluxus.Layer01Mutators.set_layout(:full_screen)
-    |> Flamelex.Fluxus.Layer01Mutators.set_active_apps([TODOlist])
+    |> Flamelex.GUI.Layers.Layer01.Mutator.set_layout(:full_screen)
+    |> Flamelex.GUI.Layers.Layer01.Mutator.set_active_apps([TODOlist])
     |> TODOlist.Mutator.refresh_todo_list()
   end
 
@@ -16,8 +16,8 @@ defmodule Flamelex.GUI.Component.TODOlist.Reducer do
 
   def process(rdx, {:open_todo, %Memelex.TidBit{} = t}) do
     rdx
-    |> Flamelex.Fluxus.Layer01Mutators.set_layout(:split_screen)
-    |> Flamelex.Fluxus.Layer01Mutators.set_active_apps([TODOlist, TODOdetails])
+    |> Flamelex.GUI.Layers.Layer01.Mutator.set_layout(:split_screen)
+    |> Flamelex.GUI.Layers.Layer01.Mutator.set_active_apps([TODOlist, TODOdetails])
     |> TODOdetails.Mutator.open_details(t)
   end
 
@@ -33,6 +33,6 @@ end
 #         {app, {:set_scroll, scroll}}
 #       ) do
 #     rdx_state
-#     |> Flamelex.Fluxus.Layer01Mutators.set_scroll(app, scroll)
+#     |> Flamelex.GUI.Layers.Layer01.Mutator.set_scroll(app, scroll)
 #   end
 # end
