@@ -91,38 +91,16 @@ defmodule Flamelex.GUI.Component.HighCouncil do
     Graph.build()
     |> Scenic.Primitives.group(fn graph ->
       graph
-      # |> Scenic.Primitives.rectangle(frame.size.box, fill: :orange, t: frame.pin.point)
-      |> Flamelex.GUI.Utils.Draw.background(frame, %{fill: :orange})
-      |> Scenic.Primitives.rectangle(banner_frame.size.box,
-        fill: :green,
-        t: banner_frame.pin.point
-      )
-      |> ScenicWidgets.Markup.Header1.draw(%{
-        frame: banner_frame,
-        text: "High Council",
-        debug?: true
-      })
+      |> Flamelex.GUI.Utils.Draw.background(frame, :orange)
+      |> render_title(banner_frame, %{})
       |> render_agent_card(t3, %{})
+      |> render_tools(footer_frame)
     end)
-
-    # |> Scenic.Primitives.rectangle(c1.size.box, fill: :blue, t: c1.pin.point)
-    # |> Scenic.Primitives.rectangle(footer_frame.size.box,
-    #   fill: :silver,
-    #   t: footer_frame.pin.point
-    # )
-    # |> Scenic.Primitives.rectangle(t2.size.box,
-    #   fill: :gold,
-    #   t: t2.pin.point
-    # )
-
-    # |> Scenic.Primitives.rectangle(c2.size.box, fill: :grey, t: c2.pin.point)
-    # |> Scenic.Primitives.rectangle(c3.size.box, fill: :pink, t: c3.pin.point)
-    # |> Scenic.Primitives.rectangle(c4.size.box, fill: :purple, t: c4.pin.point)
   end
 
-  def render_title(graph, %Widgex.Frame{} = f, args) do
+  def render_title(graph, %Widgex.Frame{} = f, _args) do
     graph
-    |> Scenic.Primitives.rectangle(f.size.box, fill: :blue, t: f.pin.point)
+    |> Scenic.Primitives.rectangle(f.size.box, fill: :green, t: f.pin.point)
     |> ScenicWidgets.Markup.Header1.draw(%{
       frame: f,
       text: "High Council",
@@ -147,8 +125,27 @@ defmodule Flamelex.GUI.Component.HighCouncil do
     # )
   end
 
-  # def header_frame(frame) do
-  #   frame
-  #   |> Frame.shrink(0.1, :top)
-  # end
+  def render_tools(graph, %Widgex.Frame{} = f) do
+    graph
+    |> Flamelex.GUI.Utils.Draw.background(f, :grey)
+    # |> Flamelex.GUI.Utils.Draw.button(%{
+    #   frame: f,
+    #   text: "New Agent",
+    #   color: :white,
+    #   background_color: :blue,
+    #   on_click: &handle_new_agent_click/0
+    # })
+    |> Scenic.Components.button("New agent",
+      id: :new_agent,
+      translate: Widgex.Frame.center(f).point
+    )
+  end
+
+  def handle_event({:click, :new_agent}, _from, scene) do
+    IO.puts("Making a new agent")
+    # scene.assigns.state
+    # |> Memelex.My.Wiki.update(%{priority: :higher})
+
+    {:noreply, scene}
+  end
 end
