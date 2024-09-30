@@ -5,7 +5,8 @@ defmodule Flamelex.GUI.Component.HighCouncil.State do
   use StructAccess
   alias Memelex.Lib.Structs.MemexConcepts.V01.Agent
 
-  defstruct agents: []
+  defstruct agents: [],
+            new_agent_mode?: true
 
   def new(query_memex?: true) do
     # somewhere, we have to just call the damn Memex,

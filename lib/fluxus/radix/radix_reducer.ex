@@ -66,6 +66,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
 
   #   {:ok, new_radix_state}
   # end
+  alias Flamelex.Fluxus.RadixState
 
   def process(rdx, {:load_memex, %Memelex.Environment{} = env}) do
     rdx
@@ -186,6 +187,13 @@ defmodule Flamelex.Fluxus.RadixReducer do
   # for now hard code this redirect because we know it's going to be applied at the component level
   def process(rdx, {Flamelex.GUI.Component.TODOdetails, action}) do
     Flamelex.GUI.Component.TODOdetails.Reducer.process(rdx, action)
+  end
+
+  def process(
+        %RadixState{layers: %{one: %{active_apps: [HighCouncil]}}} = rdx,
+        {Flamelex.GUI.Component.HighCouncil, action}
+      ) do
+    Flamelex.GUI.Component.HighCouncil.Reducer.process(rdx, action)
   end
 
   def process(rdx, :show_agents) do

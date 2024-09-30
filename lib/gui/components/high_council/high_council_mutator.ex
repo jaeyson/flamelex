@@ -7,4 +7,8 @@ defmodule Flamelex.GUI.Component.HighCouncil.Mutator do
   def set_agents(%RadixState{} = rdx, agents) do
     put_in(rdx, [:apps, :high_council, :agents], agents)
   end
+
+  def new_agent(%RadixState{} = rdx) do
+    put_in(rdx, [:apps, :high_council, :new_agent_mode?], true)
+  end
 end

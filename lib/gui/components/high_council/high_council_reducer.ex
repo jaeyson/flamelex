@@ -24,4 +24,15 @@ defmodule Flamelex.GUI.Component.HighCouncil.Reducer do
     |> Layer1.set_layout(:full_screen)
     |> Mutator.set_agents(agents)
   end
+
+  def process(%RadixState{layers: %{one: %{active_apps: [HighCouncil]}}} = rdx, :new_agent) do
+    # agents = Memelex.My.Agents.all()
+
+    # rdx
+    # |> Layer1.set_active_apps([HighCouncil])
+    # |> Layer1.set_layout(:full_screen)
+    # |> Mutator.set_agents(agents)
+    rdx
+    |> Mutator.set_new_agent()
+  end
 end
