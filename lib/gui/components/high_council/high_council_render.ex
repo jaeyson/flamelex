@@ -105,8 +105,9 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
       graph
       # Draw a semi-transparent overlay to grey out the background
       |> Scenic.Primitives.rectangle(frame.size.box,
-        # fill: {:color, :grey, 128},
-        fill: :grey,
+        # Semi-transparent grey to see background
+        # fill: {:color, :black, 128},
+        fill: {:color_rgba, {0, 0, 0, 128}},
         t: frame.pin.point
       )
 
@@ -131,5 +132,39 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
     )
 
     # Add more input fields (NeoTextField or other components) here
+    # |> render_input_fields(f)
   end
+
+  # Example of adding input fields or buttons inside the modal
+  # defp render_input_fields(graph, modal_frame) do
+  #   graph
+  #   |> Scenic.Primitives.text("Name:",
+  #     font_size: 18,
+  #     translate: {modal_frame.pin.x + 20, modal_frame.pin.y + 80}
+  #   )
+  #   |> Scenic.Components.input_text("Enter name",
+  #     id: :agent_name,
+  #     translate: {modal_frame.pin.x + 20, modal_frame.pin.y + 100}
+  #   )
+  #   |> Scenic.Primitives.text("Role:",
+  #     font_size: 18,
+  #     translate: {modal_frame.pin.x + 20, modal_frame.pin.y + 140}
+  #   )
+  #   |> Scenic.Components.input_text("Enter role",
+  #     id: :agent_role,
+  #     translate: {modal_frame.pin.x + 20, modal_frame.pin.y + 160}
+  #   )
+
+  #   # Add Submit button
+  #   |> Scenic.Components.button("Submit",
+  #     id: :submit_agent,
+  #     translate: {modal_frame.pin.x + 20, modal_frame.pin.y + 220}
+  #   )
+
+  #   # Add Cancel button
+  #   |> Scenic.Components.button("Cancel",
+  #     id: :cancel_modal,
+  #     translate: {modal_frame.pin.x + 100, modal_frame.pin.y + 220}
+  #   )
+  # end
 end
