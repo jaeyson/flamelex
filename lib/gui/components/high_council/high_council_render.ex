@@ -146,11 +146,16 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
     )
 
     # Title section
-    |> Scenic.Primitives.text("Enter new agent details:",
-      font_size: 20,
-      fill: :black,
-      translate: {title_frame.pin.x + 20, title_frame.pin.y + 20}
-    )
+    # |> Scenic.Primitives.text("Enter new agent details:",
+    #   font_size: 20,
+    #   fill: :black,
+    #   translate: {title_frame.pin.x + 20, title_frame.pin.y + 20}
+    # )
+    |> ScenicWidgets.Markup.Header1.draw(%{
+      frame: title_frame,
+      text: "Enter new agent details",
+      color: :black
+    })
 
     # Body section (this is where input fields can be added later)
     |> Scenic.Primitives.text("Agent details go here:",
