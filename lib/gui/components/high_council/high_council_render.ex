@@ -86,10 +86,12 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
     # Create a new grid for the modal, which will be the middle third and 80% height
     modal_grid =
       Grid.new(frame)
-      # 80% height in the middle
-      |> Grid.rows([0.10, 0.80, 0.10])
-      # Modal in the middle third
-      |> Grid.columns([1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0])
+      # 85% height in the middle
+      # Adjust to make the modal slightly larger (85% height)
+      |> Grid.rows([0.075, 0.85, 0.075])
+      # Modal in the middle third, slightly wider (e.g., 66% of the width)
+      # Adjust to make the modal wider
+      |> Grid.columns([0.17, 0.66, 0.17])
       |> Grid.define_areas(%{
         # Centered modal
         modal: {1, 1, 1, 1}
@@ -107,7 +109,7 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
       |> Scenic.Primitives.rectangle(frame.size.box,
         # Semi-transparent grey to see background
         # fill: {:color, :black, 128},
-        fill: {:color_rgba, {0, 0, 0, 128}},
+        fill: {:color_rgba, {0, 0, 0, 172}},
         t: frame.pin.point
       )
 
@@ -117,22 +119,56 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
   end
 
   defp render_modal_box(graph, %Widgex.Frame{} = f, _state) do
-    # modal_frame = %{
-    #   # Modal position based on the calculated grid area
-    #   pin: {f.pin.x, f.pin.y},
-    #   # Modal size calculated based on 80% height and middle third width
-    #   size: f.size
-    # }
+    # Define a new grid to split the modal into a title, body, and buttons at the bottom
+    modal_grid =
+      Grid.new(f)
+      # Title (20%), Body (60%), Buttons (20%)
+      |> Grid.rows([0.2, 0.6, 0.2])
+      # Single column
+      |> Grid.columns([1.0])
+      |> Grid.define_areas(%{
+        title: {0, 0, 1, 1},
+        body: {1, 0, 1, 1},
+        buttons: {2, 0, 1, 1}
+      })
 
+    # Calculate the frames based on the grid layout
+    modal_frames = Grid.calculate(modal_grid)
+    title_frame = Grid.area_frame(modal_grid, modal_frames, :title)
+    body_frame = Grid.area_frame(modal_grid, modal_frames, :body)
+    buttons_frame = Grid.area_frame(modal_grid, modal_frames, :buttons)
+
+    # Use rrect to create a rounded rectangle for the modal
     graph
-    |> Scenic.Primitives.rectangle(f.size.box, fill: :white, t: f.pin.point)
-    |> Scenic.Primitives.text("Enter new agent details:",
-      font_size: 20,
-      translate: {f.pin.x + 20, f.pin.y + 40}
+    |> Scenic.Primitives.rrect({f.size.width, f.size.height, 20},
+      fill: :white,
+      t: {f.pin.x, f.pin.y - 15}
     )
 
-    # Add more input fields (NeoTextField or other components) here
-    # |> render_input_fields(f)
+    # Title section
+    |> Scenic.Primitives.text("Enter new agent details:",
+      font_size: 20,
+      fill: :black,
+      translate: {title_frame.pin.x + 20, title_frame.pin.y + 20}
+    )
+
+    # Body section (this is where input fields can be added later)
+    |> Scenic.Primitives.text("Agent details go here:",
+      font_size: 18,
+      fill: :grey,
+      translate: {body_frame.pin.x + 20, body_frame.pin.y + 20}
+    )
+
+    # Buttons section (with two buttons)
+    |> Scenic.Components.button("Cancel",
+      id: :cancel_modal,
+      translate: {buttons_frame.pin.x + 20, buttons_frame.pin.y + 20}
+    )
+    |> Scenic.Components.button("Save",
+      id: :save_agent,
+      # Offset the second button
+      translate: {buttons_frame.pin.x + 120, buttons_frame.pin.y + 20}
+    )
   end
 
   # Example of adding input fields or buttons inside the modal

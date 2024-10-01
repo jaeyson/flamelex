@@ -36,6 +36,14 @@ defmodule Flamelex.GUI.Component.HighCouncil.Reducer do
     |> Mutator.set_new_agent_mode(true)
   end
 
+  def process(
+        %RadixState{layers: %{one: %{active_apps: [HighCouncil]}}} = rdx,
+        :cancel_new_agent_creation
+      ) do
+    rdx
+    |> Mutator.set_new_agent_mode(false)
+  end
+
   # def process(state, action) do
   #   Logger.error("Unable to process action. #{inspect(action)}")
   #   IO.inspect(state)

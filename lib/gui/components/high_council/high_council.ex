@@ -72,4 +72,19 @@ defmodule Flamelex.GUI.Component.HighCouncil do
 
     {:noreply, scene}
   end
+
+  def handle_event({:click, :cancel_modal}, _from, scene) do
+    Flamelex.Fluxus.action({__MODULE__, :cancel_new_agent_creation})
+    {:noreply, scene}
+  end
+
+  def handle_event({:click, :save_agent}, _from, scene) do
+    # IO.puts("Making a new agent")
+    # scene.assigns.state
+    # |> Memelex.My.Wiki.update(%{priority: :higher})
+    # Flamelex.Fluxus.action({__MODULE__, :new_agent})
+    IO.puts("HERE we will save the agent")
+
+    {:noreply, scene}
+  end
 end
