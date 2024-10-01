@@ -46,11 +46,22 @@ defmodule Flamelex.GUI.Component.HighCouncil do
   # Handle state changes where the state has changed
   def handle_info(
         {:radix_state_change, %{apps: %{high_council: new_state}}},
-        %{assigns: %{frame: frame, state: old_state}} = scene
+        %{assigns: %{frame: frame}} = scene
       ) do
     # State has changed; raise an error as handling is app-specific
-    raise "State change handling not implemented in template"
-    {:noreply, scene}
+    # TODO this had a really weird but interesting failure...
+    # by causing a crash here, we effectively re-render the component, and it "just works"
+    # raise "State change handling not implemented in template"
+
+    new_graph = Render.go(frame, new_state)
+
+    new_scene =
+      scene
+      |> assign(graph: new_graph)
+      |> assign(state: new_state)
+      |> push_graph(new_graph)
+
+    {:noreply, new_scene}
   end
 
   def handle_event({:click, :new_agent}, _from, scene) do

@@ -190,7 +190,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
   end
 
   def process(
-        %RadixState{layers: %{one: %{active_apps: [HighCouncil]}}} = rdx,
+        %RadixState{layers: %{one: %{active_apps: [Flamelex.GUI.Component.HighCouncil]}}} = rdx,
         {Flamelex.GUI.Component.HighCouncil, action}
       ) do
     Flamelex.GUI.Component.HighCouncil.Reducer.process(rdx, action)
@@ -210,22 +210,22 @@ defmodule Flamelex.Fluxus.RadixReducer do
   # todo use_module would be better but the compiler hates it
   # This clause is here to make it easier to route actions straight to the appropriate reducer,
   # for the situations when we know (when we fire the action) which reducer should handle it
-  def process(radix_state, {reducer, action}) when is_atom(reducer) do
-    # Instead of try catch, look in the module, see if there's a function called that.
+  # def process(radix_state, {reducer, action}) when is_atom(reducer) do
+  #   # Instead of try catch, look in the module, see if there's a function called that.
 
-    # That could be cool, if we make all actions an actual function in the processor?? (in the end, this is cool but ultimately just pointless complication...
-    # but the idea _is_ cool, we would call MFA.apply(reducer, action, args) or something like that, and it would look up the function in the module and call it
+  #   # That could be cool, if we make all actions an actual function in the processor?? (in the end, this is cool but ultimately just pointless complication...
+  #   # but the idea _is_ cool, we would call MFA.apply(reducer, action, args) or something like that, and it would look up the function in the module and call it
 
-    # If that fails/doesn't work, we want to look up custom keymaps in the my_modz.ex (???)
+  #   # If that fails/doesn't work, we want to look up custom keymaps in the my_modz.ex (???)
 
-    # try do
-    # rescue
-    #   e in FunctionClauseError ->
-    #     {:error,
-    #      "#{__MODULE__} -- Reducer `#{inspect(reducer)}` could not match action: #{inspect(action)}"}
-    # end
-    reducer.process(radix_state, action)
-  end
+  #   # try do
+  #   # rescue
+  #   #   e in FunctionClauseError ->
+  #   #     {:error,
+  #   #      "#{__MODULE__} -- Reducer `#{inspect(reducer)}` could not match action: #{inspect(action)}"}
+  #   # end
+  #   reducer.process(radix_state, action)
+  # end
 
   # theoretically we dont need to handle things we dont know how to handle but it does make a lot of noise...
   def process(rdx_state, action) do
@@ -235,6 +235,8 @@ defmodule Flamelex.Fluxus.RadixReducer do
     IO.puts(
       "\e[33m#{__MODULE__} === === ===\n\nunable to process action: #{inspect(action)}\e[0m\n"
     )
+
+    IO.inspect(rdx_state.layers.one.active_apps, label: "Active Apps")
 
     :ignore
   end

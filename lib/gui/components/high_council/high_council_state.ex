@@ -6,7 +6,7 @@ defmodule Flamelex.GUI.Component.HighCouncil.State do
   alias Memelex.Lib.Structs.MemexConcepts.V01.Agent
 
   defstruct agents: [],
-            new_agent_mode?: true
+            new_agent_mode?: false
 
   def new(query_memex?: true) do
     # somewhere, we have to just call the damn Memex,

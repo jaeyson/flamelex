@@ -33,6 +33,12 @@ defmodule Flamelex.GUI.Component.HighCouncil.Reducer do
     # |> Layer1.set_layout(:full_screen)
     # |> Mutator.set_agents(agents)
     rdx
-    |> Mutator.set_new_agent()
+    |> Mutator.set_new_agent_mode(true)
   end
+
+  # def process(state, action) do
+  #   Logger.error("Unable to process action. #{inspect(action)}")
+  #   IO.inspect(state)
+  #   :ignore
+  # end
 end
