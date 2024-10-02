@@ -2,7 +2,7 @@ defmodule Flamelex.GUI.Layers.Layer0 do
   use Scenic.Component
   alias Flamelex.GUI.Layers.Layer01
   alias Flamelex.GUI.Component.Renseijin
-  alias Flamelex.GUI.Component.RenseijinComponent
+  alias Flamelex.GUI.Component.Renseijin
   require Logger
 
   def validate(%{frame: %Widgex.Frame{}} = data) do
@@ -36,7 +36,7 @@ defmodule Flamelex.GUI.Layers.Layer0 do
         r_state = Flamelex.GUI.Component.Renseijin.State.new()
 
         graph
-        |> RenseijinComponent.add_to_graph(%{
+        |> Renseijin.add_to_graph(%{
           frame: frame,
           state: r_state
         })

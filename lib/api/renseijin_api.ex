@@ -5,7 +5,7 @@ defmodule Flamelex.API.Renseijin do
 
   — Friedrich Nietzsche
   """
-  alias Flamelex.GUI.Component.RenseijinComponent, as: Renseijin
+  alias Flamelex.GUI.Component.Renseijin
 
   def reset_animation do
     GenServer.cast(Renseijin, :reset_animation)

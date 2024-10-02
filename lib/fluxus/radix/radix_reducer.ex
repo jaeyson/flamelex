@@ -196,6 +196,10 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.GUI.Component.HighCouncil.Reducer.process(rdx, action)
   end
 
+  def process(rdx, {Flamelex.GUI.Component.TODOlist.Reducer, action}) do
+    Flamelex.GUI.Component.TODOlist.Reducer.process(rdx, action)
+  end
+
   def process(rdx, :show_agents) do
     IO.puts("This is where we're going to actually show the agent, now we need to build it!")
     Flamelex.GUI.Component.HighCouncil.Reducer.process(rdx, :show_agents)
@@ -236,7 +240,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
       "\e[33m#{__MODULE__} === === ===\n\nunable to process action: #{inspect(action)}\e[0m\n"
     )
 
-    IO.inspect(rdx_state.layers.one.active_apps, label: "Active Apps")
+    # IO.inspect(rdx_state.layers.one.active_apps, label: "Active Apps")
 
     :ignore
   end

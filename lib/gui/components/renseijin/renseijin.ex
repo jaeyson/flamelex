@@ -1,4 +1,4 @@
-defmodule Flamelex.GUI.Component.RenseijinComponent do
+defmodule Flamelex.GUI.Component.Renseijin do
   @moduledoc """
   In order to begin an alchemical transmutation, a symbol called a
   Transmutation Circle (錬成陣, Renseijin) is necessary. A Transmutation
@@ -38,6 +38,8 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
   # alias Widgex.Structs.{Dimensions}
   alias Widgex.Frame
   require Logger
+
+  @starting_rotation Flamelex.GUI.Component.Renseijin.State.starting_rotation()
 
   def validate(
         %{
@@ -150,7 +152,7 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
 
     new_state =
       State.cast(state, %{
-        rotation: 0
+        rotation: @starting_rotation
       })
 
     handle_render(scene, new_state)
@@ -166,7 +168,7 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
 
     new_state =
       State.cast(state, %{
-        rotation: 0
+        rotation: @starting_rotation
       })
 
     handle_render(scene, new_state)
@@ -178,6 +180,7 @@ defmodule Flamelex.GUI.Component.RenseijinComponent do
 
     new_state = State.cast(state, :tick)
 
+    # TODO don't re-render the whole scene here :( this is tragic!!
     handle_render(scene, new_state)
   end
 

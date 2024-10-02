@@ -269,12 +269,23 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
   # Draw Background
   # ===========================================================================
 
+  @background_images [
+    # "images/jupiter.jpg",
+    # "images/milky_way.jpg",
+    "images/ngc_4535.jpg",
+    # "images/pexels_sunrise.jpg",
+    # "images/uluru_sunrise.jpg"
+    # "images/uluru-northern-territory-australia-139.jpg"
+    "images/burning_man_2016_temple_friday_sunrise.jpeg"
+  ]
+
   def draw_background(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
     graph
     |> Scenic.Primitives.rect(frame.size.box,
       # translate: Coordinates.point(frame.pin),
       translate: frame.pin.point,
-      fill: {:image, "images/ngc_4535.jpg"}
+      # fill: {:image, "images/burning_man_2016_temple_friday_sunrise.jpeg"}
+      fill: {:image, Enum.random(@background_images)}
     )
     |> draw_mask(frame, state)
   end

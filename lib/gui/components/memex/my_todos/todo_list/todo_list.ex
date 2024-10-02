@@ -43,10 +43,10 @@ defmodule Flamelex.GUI.Component.TODOlist do
   end
 
   def handle_info(
+        # state variables in pattern match are the same, therefore no state change occured
         {:radix_state_change, %{apps: %{todo_list: state}}},
         %{assigns: %{frame: f, state: state}} = scene
       ) do
-    # state variables in pattern match are the same, therefore no state change occured
     {:noreply, scene}
   end
 
@@ -228,6 +228,23 @@ defmodule Flamelex.GUI.Component.TODOlist do
     )
   end
 
+  # no TODOs to render...
+  def render_todo_list(graph, frame, %{list: []}) do
+    graph
+    |> Scenic.Primitives.group(
+      fn graph ->
+        graph
+        |> Scenic.Primitives.text("No TODOs for this filter",
+          font_size: 50,
+          fill: :white,
+          # translate: {frame.size.width / 2, frame.size.height / 2}
+          translate: {72, 172}
+        )
+      end,
+      translate: frame.pin.point
+    )
+  end
+
   @todo_height 60
   def render_todo_list(graph, frame, state) do
     todo_widgets =
@@ -267,7 +284,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
   # if we get 2 clicks in certain number of milliseconds, then we can assume it's a double click
   # this might solve the issue where clicking a menubar item which is hovering over something below it triggers both
   def handle_cast({:click, %Memelex.TidBit{} = t}, %{assigns: %{dropdown_mode: true}} = scene) do
-    IO.puts("IGNOREING THE CLICK CSUE WE'RE IN DROPDOWN MODE")
+    # IO.puts("IGNOREING THE CLICK CSUE WE'RE IN DROPDOWN MODE")
     {:noreply, scene |> assign(dropdown_mode: false)}
   end
 

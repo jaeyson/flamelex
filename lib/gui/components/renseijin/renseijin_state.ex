@@ -55,6 +55,11 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
           animate?: boolean()
         }
 
+  # don't start at 0, the ying/yang looks vertical, it's cooler to
+  # make it same as the hexagon (verticies meet)
+  # @starting_rotation 15
+  @starting_rotation 30
+
   defstruct inner_radius: %{
               scale: 0.97,
               offset_size: 17
@@ -66,7 +71,7 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
             taijitu: %{
               stroke: {2, :yellow}
             },
-            rotation: 0,
+            rotation: @starting_rotation,
             animate?: false,
             timer: nil,
             primary_stroke: 2,
@@ -89,6 +94,8 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
       animate?: true
     }
   end
+
+  def starting_rotation, do: @starting_rotation
 
   def cast(
         %__MODULE__{

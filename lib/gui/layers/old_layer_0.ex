@@ -1,6 +1,6 @@
 # defmodule Flamelex.GUI.Layers.LayerZero do
 #   # @behaviour Flamelex.GUI.Layer.Behaviour
-#   alias Flamelex.GUI.Component.{Renseijin, RenseijinComponent}
+#   alias Flamelex.GUI.Component.{Renseijin, Renseijin}
 #   alias Widgex.Structs.LayerCake
 
 #   # @impl Flamelex.GUI.Layer.Behaviour
@@ -71,11 +71,11 @@
 #           state: %Renseijin.State{visible?: true} = state
 #         }
 #       ) do
-#     case Process.whereis(RenseijinComponent) do
+#     case Process.whereis(Renseijin) do
 #       nil ->
 #         new_graph =
 #           Scenic.Graph.build()
-#           |> RenseijinComponent.add_to_graph({frame, state})
+#           |> Renseijin.add_to_graph({frame, state})
 
 #         {:ok, new_graph}
 
