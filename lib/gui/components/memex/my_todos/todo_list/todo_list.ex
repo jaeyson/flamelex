@@ -6,6 +6,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
   alias Widgex.Frame
   alias Flamelex.GUI.Components.NeoHyperCard
   alias Flamelex.GUI.Component.TODOlist
+  alias Flamelex.GUI.Component.TODOlist.State
 
   # TODO accept `selected` as an argument & change background opr whjatever when it's selected
   # def validate(%{frame: %Frame{} = _f, state: %{items: _i}} = data) do
@@ -61,6 +62,8 @@ defmodule Flamelex.GUI.Component.TODOlist do
 
     # if old_state.list == new_state.list
 
+    IO.puts("GOT NERW TODO LIST STATE #{inspect(new_state.filter)}")
+
     # keep the old scroll
     new_state = put_in(new_state, [:scroll], old_state.scroll)
 
@@ -83,19 +86,8 @@ defmodule Flamelex.GUI.Component.TODOlist do
     |> render_title(title_frame, "My TODOs")
     |> render_todo_list(list_frame, state)
     # render tools last because it needs to be drawn on top of the app layer due to dropdown menus
-    |> render_tools(tools_frame, "tools")
+    |> render_tools(tools_frame, state)
   end
-
-  # def init_render(args) do
-  #   [title_frame, tools_frame, list_frame] = calc_layout_frames(args.frame)
-
-  #   Scenic.Graph.build()
-  #   # |> Frame.draw_guidewires(args.frame, color: :blue)
-  #   |> render_title(title_frame, "My TODOs")
-  #   |> render_todo_list(list_frame, args)
-  #   # render tools last because it needs to be drawn on top of the app layer due to dropdown menus
-  #   |> render_tools(tools_frame, "tools")
-  # end
 
   def handle_cast({:radix_state_change, new_rdx}, scene) do
     # new_state = Map.merge(scene.assigns.state, %{scroll: new_scroll})
@@ -180,7 +172,20 @@ defmodule Flamelex.GUI.Component.TODOlist do
     )
   end
 
-  def render_tools(graph, frame, _t) do
+  # %Flamelex.GUI.Component.TODOlist.State{list: []}
+  def render_tools(graph, frame, %State{} = s) do
+    # TODO default needs to come from some kind of scene state otherwise whenevr we change scenes it doesn't
+    # remember the last selected filter, it defaults to the default
+    IO.inspect(s, label: "TODOlist state")
+
+    IO.inspect(s.filter, label: "TODOlist state filter")
+
+    default = s.filter || :all
+
+    # TODO this should not "re-render" every single time that I chnge the dropdown !!
+    # the component ought to be steady, but we don't re-render, we simply push an update
+    # (either that, or, the component is the one that pushes the state change up)
+
     graph
     |> Scenic.Primitives.group(
       fn graph ->
@@ -206,7 +211,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
              {"Done", :done},
              {"Cancelled", :cancelled},
              {"All", :all}
-           ], :all},
+           ], default},
           id: :filter_select,
           translate: {20, 20}
         )
@@ -379,9 +384,21 @@ defmodule Flamelex.GUI.Component.TODOlist do
     {:noreply, scene |> assign(dropdown_mode: true)}
   end
 
+  @valid_filters [:all, :this_week]
   def handle_event({:value_changed, :filter_select, filter_by}, _context, scene) do
-    Flamelex.Fluxus.action({__MODULE__, {:filter_todos, filter_by}})
-    {:noreply, scene}
+    if filter_by in @valid_filters do
+      Flamelex.Fluxus.action({TODOlist.Reducer, {:filter_todos, filter_by}})
+      {:noreply, scene}
+    else
+      IO.puts("Invalid filter: #{filter_by}")
+      # raise "no reason not to crash here, sorry"
+      IO.puts("the List of valid filters reject shit sbut we just need to add it!")
+      {:noreply, scene}
+    end
+
+    # # start here, this is where it "actually happens" - the event which fired as a result of user interaction, actually hyappened
+    # Flamelex.Fluxus.action({__MODULE__, {:filter_todos, filter_by}})
+    # {:noreply, scene}
   end
 
   # def handle_event(e, scene) do

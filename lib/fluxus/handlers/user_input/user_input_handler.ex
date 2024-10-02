@@ -12,6 +12,11 @@ defmodule Flamelex.Fluxus.UserInputHandler do
   require Logger
   alias Flamelex.GUI.Component.TODOlist
 
+  def handle(_rdx, {:key, {:key_leftalt, _up_or_down, _weird_list}}) do
+    Logger.debug("Ignoring key_leftalt...")
+    :ignore
+  end
+
   # TODO one day might need a more sophisticated way of handling this... maybe send to both components?
   # maybe match on cases where one vs both is actually up?
   def handle(
@@ -21,6 +26,8 @@ defmodule Flamelex.Fluxus.UserInputHandler do
     TODOlist.UserInputHandler.handle(rdx, input)
   end
 
+  # {:key, {:key_leftalt, 0, []}}
+
   # if we only have one app open then we can just pass the input to that app
   def handle(
         %{layers: %{one: %{active_apps: [app]}}} = rdx,
@@ -28,11 +35,6 @@ defmodule Flamelex.Fluxus.UserInputHandler do
       ) do
     IO.puts("WARNING - App: #{inspect(app)} did not have a specific handler in #{__MODULE__}...")
     Module.concat(app, UserInputHandler).handle(rdx, input)
-  end
-
-  def handle(_rdx, {:key, {:key_leftalt, _up_or_down, _weird_list}}) do
-    Logger.debug("Ignoring key_leftalt...")
-    :ignore
   end
 end
 

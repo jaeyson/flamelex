@@ -17,4 +17,16 @@ defmodule Flamelex.GUI.Component.TODOlist.Mutator do
   def set_turbo(%RadixState{} = rdx, turbo?) when is_boolean(turbo?) do
     put_in(rdx, [:apps, :todo_list, :turbo_scroll?], turbo?)
   end
+
+  @valid_filters [:all, :this_week]
+  def set_filter(%RadixState{} = rdx, filter: f) when f in @valid_filters do
+    put_in(rdx, [:apps, :todo_list, :filter], f)
+  end
+
+  def set_filter(%RadixState{} = rdx, filter: f) do
+    # put_in(rdx, [:apps, :todo_list, :filter], f)
+    IO.puts("Invalid filter: #{f}")
+    raise "no reason not to crash here, sorry"
+    # rdx
+  end
 end

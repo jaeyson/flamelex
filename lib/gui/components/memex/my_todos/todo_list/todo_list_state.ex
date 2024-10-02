@@ -5,7 +5,8 @@ defmodule Flamelex.GUI.Component.TODOlist.State do
   defstruct list: [],
             selected: nil,
             scroll: {0, 0},
-            turbo_scroll?: false
+            turbo_scroll?: false,
+            filter: nil
 
   def new do
     %__MODULE__{}

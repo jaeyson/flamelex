@@ -21,8 +21,15 @@ defmodule Flamelex.GUI.Component.TODOlist.Reducer do
     |> TODOdetails.Mutator.open_details(t)
   end
 
-  def process(rdx, {:filter_todos, filter_by}) do
+  @valid_filters [:all, :this_week]
+  def process(rdx, {:filter_todos, filter_by}) when filter_by in @valid_filters do
+    filter = rdx.apps.todo_list.filter
+    IO.inspect("new todo list reducer filter is #{filter_by}")
+
     rdx
+    # TODO here, we should update something about the TODOlist state, so that the dropdown renders the correct filter
+    |> TODOlist.Mutator.set_filter(filter: filter_by)
+    # |> IO.inspect(label: "Reducer.process/2 did we even do it?")
     |> TODOlist.Mutator.refresh_todo_list(filter: filter_by)
   end
 end

@@ -41,6 +41,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
   what we want to do instead is, the reducer broadcasts the message to
   the "actions" channel - all the managers are able to react to this event.
   """
+  alias Flamelex.Fluxus.RadixState
 
   # If we try to open a TidBit and we're already in editor mode, don't switch to Memex mode
   # def process(%{root: %{active_app: active_app}} = radix_state, {
@@ -58,15 +59,6 @@ defmodule Flamelex.Fluxus.RadixReducer do
   # def process(radix_state, {:widget_workbench, :open}) do
   #   {:ok, radix_state |> open_widget_workbench()}
   # end
-
-  # def process(radix_state, :show_agents) do
-  #   new_radix_state =
-  #     radix_state
-  #     |> put_in([:root, :active_apps], :high_council)
-
-  #   {:ok, new_radix_state}
-  # end
-  alias Flamelex.Fluxus.RadixState
 
   def process(rdx, {:load_memex, %Memelex.Environment{} = env}) do
     rdx
@@ -93,79 +85,6 @@ defmodule Flamelex.Fluxus.RadixReducer do
   #         end
   #       end)
   #   end
-  # end
-
-  # def update_app_state(rdx_state, [:layers, :one, :active_apps], app, merge: new_state) do
-  #   # |> put_in([:layers, :one, :active_apps], [
-  #   #   {Flamelex.GUI.Component.TODOlist, Map.merge(todo_app_state, merge)}
-  #   # ])
-  #   # TODO use the incoming path somehow instead of hard coding this
-  #   # IO.inspect(rdx_state[:layers][:one][:active_apps])
-
-  #   new_active_apps =
-  #     case rdx_state[:layers][:one][:active_apps] do
-  #       {mod, args} ->
-  #         if mod == app do
-  #           # note swap to using list here
-  #           [{mod, Map.merge(args, new_state)}]
-  #         else
-  #           [{mod, args}]
-  #         end
-
-  #       app_list when is_list(app_list) ->
-  #         Enum.map(app_list, fn {a, old_state} ->
-  #           if a == app do
-  #             {a, Map.merge(old_state, new_state)}
-  #           else
-  #             {a, old_state}
-  #           end
-  #         end)
-  #     end
-
-  #   # Enum.map(rdx_state[:layers][:one][:active_apps], fn {a, old_state}, acc ->
-  #   #   if a == app do
-  #   #     {a, Map.merge(old_state, new_state)}
-  #   #   else
-  #   #     a
-  #   #   end
-  #   # end)
-
-  #   rdx_state
-  #   |> put_in([:layers, :one, :active_apps], new_active_apps)
-  # end
-
-  # def process(rdx_state, {[app: app], {:filter_todos, filter_by}}) do
-  #   if rdx_state |> app_is_active?(app) do
-  #     new_todos = Memelex.My.TODOs.all(filter: filter_by)
-  #     # hack hack this to work for only havinbg one active app
-  #     # [{todo_list_module, app_state}] = rdx_state[:layers][:one][:active_apps]
-  #     # new_rdx_state =
-  #     rdx_state
-  #     |> update_app_state([:layers, :one, :active_apps], app, merge: %{list: new_todos})
-
-  #     # new_app_state = app_state |> Map.put(:list, new_todos)
-  #     # # update_active_app(rdx_state, app, merge: %{todo_list: new_todos})
-  #     # # {:ok, new_rdx_state}= update_app_status(rdx_state, app, merge: %{todo_list: new_todos})
-  #     # # case update_app_status(rdx_state, app, merge: %{todo_list: new_todos}) do
-  #     # #   {:ok, new_rdx_state} ->
-  #     # #     new_rdx_state+
-
-  #     # #   :error ->
-  #     # #     rdx_state
-  #     # # end
-
-  #     # rdx_state
-  #     # |> put_in([:layers, :one, :active_apps], [{todo_list_module, new_app_state}])
-
-  #     #   {Flamelex.GUI.Component.TODOlist, filter_todos(rdx_state, filter_by)}
-  #     # ])
-  #   else
-  #     rdx_state
-  #   end
-
-  #   # Logger.error("Unable to process action. #{inspect(action)}")
-  #   # IO.inspect(rdx_state)
-  #   # :ignore
   # end
 
   # def update_active_app(rdx_state, app, merge: new_state) do
@@ -198,6 +117,10 @@ defmodule Flamelex.Fluxus.RadixReducer do
 
   def process(rdx, {Flamelex.GUI.Component.TODOlist.Reducer, action}) do
     Flamelex.GUI.Component.TODOlist.Reducer.process(rdx, action)
+  end
+
+  def process(rdx, {Flamelex.GUI.Component.RapidSelector.Reducer, action}) do
+    Flamelex.GUI.Component.RapidSelector.Reducer.process(rdx, action)
   end
 
   def process(rdx, :show_agents) do
