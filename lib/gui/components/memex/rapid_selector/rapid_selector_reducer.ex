@@ -1,6 +1,6 @@
 defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
   @moduledoc false
-  alias Flamelex.GUI.Layers.Layer01.Mutator
+  alias Flamelex.GUI.Layers.Layer01.Mutator, as: Layer01
   alias Flamelex.GUI.Component.RapidSelector
 
   def process(
@@ -13,8 +13,8 @@ defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
         :open_memex
       ) do
     rdx_state
-    |> Layer01Mutators.set_active_apps([RapidSelector])
-    |> Layer01Mutators.set_layout(:full_screen)
+    |> Layer01.set_active_apps([RapidSelector])
+    |> Layer01.set_layout(:full_screen)
   end
 
   # def process(
@@ -53,7 +53,7 @@ defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
     case GenServer.call(Memelex.WikiServer, {:get, t}) do
       {:ok, tidbit} ->
         radix_state
-        |> Layer01Mutators.open_tidbit(
+        |> Layer01.open_tidbit(
           Map.merge(tidbit, %{
             gui: %{
               mode: :normal,
@@ -74,6 +74,25 @@ defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
     end
   end
 
+  @memex_apps [
+    RapidSelector,
+    TODOlist
+  ]
+  def process(
+        %{
+          layers: %{
+            one: %{active_apps: [app]}
+          }
+        } = radix_state,
+        :close_memex
+      )
+      when app in @memex_apps do
+    # TODO maybe look in history for previously open app?
+    # TODO maybe  |> put_in([:root, :active_apps], :desktop) ??
+    radix_state
+    |> Layer01.set_active_apps([])
+  end
+
   def process(
         %{
           layers: %{
@@ -82,18 +101,9 @@ defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
         } = radix_state,
         {:close_tidbit, t}
       ) do
-    radix_state |> Layer01Mutators.close_tidbit(t)
+    radix_state |> Layer01.close_tidbit(t)
   end
 end
-
-# def process(radix_state, :close_memex) do
-#   # TODO maybe look in history for previously open app?
-#   new_radix_state =
-#     radix_state
-#     |> put_in([:root, :active_apps], :desktop)
-
-#   {:ok, new_radix_state}
-# end
 
 # def process(_radix_state, ) do
 #    new_buf_list = buf_list |> Enum.reject(&(&1.id == buf_to_close))

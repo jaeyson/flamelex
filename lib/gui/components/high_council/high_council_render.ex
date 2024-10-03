@@ -6,25 +6,41 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
   alias Widgex.Frame
   alias Widgex.Frame.Grid
   alias Flamelex.GUI.Component.HighCouncil.State
+  alias Memelex.Lib.Structs.MemexConcepts.V01.Agent
 
   def go(%Frame{} = frame, %State{new_agent_mode?: new_agent_mode?} = state)
       when is_boolean(new_agent_mode?) do
+    # Define a grid with a banner, a large middle frame, and a footer
     grid =
       Grid.new(frame)
-      |> Grid.rows([0.10, 0.35, 0.35, 0.20])
-      |> Grid.columns([1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0])
-      |> Grid.row_gap(0)
-      |> Grid.column_gap(0)
+      # 10% for banner, 80% for middle, 10% for footer
+      |> Grid.rows([0.10, 0.80, 0.10])
+      # One column taking 100% of the width
+      |> Grid.columns([1.0])
       |> Grid.define_areas(%{
-        banner: {0, 0, 1, 3},
-        footer: {3, 0, 1, 3},
-        tile1: {1, 0, 1, 1},
-        tile2: {1, 1, 1, 1},
-        tile3: {1, 2, 1, 1},
-        tile4: {2, 0, 1, 1},
-        tile5: {2, 1, 1, 1},
-        tile6: {2, 2, 1, 1}
+        # Banner area spanning the first row
+        banner: {0, 0, 1, 1},
+        # Large middle area spanning the second row
+        mid_section: {1, 0, 1, 1},
+        # Footer area spanning the third row
+        footer: {2, 0, 1, 1}
       })
+
+    # Grid.new(frame)
+    # |> Grid.rows([0.10, 0.35, 0.35, 0.20])
+    # |> Grid.columns([1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0])
+    # |> Grid.row_gap(0)
+    # |> Grid.column_gap(0)
+    # |> Grid.define_areas(%{
+    #   banner: {0, 0, 1, 3},
+    #   footer: {3, 0, 1, 3},
+    #   tile1: {1, 0, 1, 1},
+    #   tile2: {1, 1, 1, 1},
+    #   tile3: {1, 2, 1, 1},
+    #   tile4: {2, 0, 1, 1},
+    #   tile5: {2, 1, 1, 1},
+    #   tile6: {2, 2, 1, 1}
+    # })
 
     # Calculate the frames
     cell_frames = Grid.calculate(grid)
@@ -32,7 +48,8 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
     # Retrieve frames for banner and footer
     banner_frame = Grid.area_frame(grid, cell_frames, :banner)
     footer_frame = Grid.area_frame(grid, cell_frames, :footer)
-    t3 = Grid.area_frame(grid, cell_frames, :tile3)
+    middle_frame = Grid.area_frame(grid, cell_frames, :mid_section)
+    # t3 = Grid.area_frame(grid, cell_frames, :tile3)
 
     # Build the graph
     graph =
@@ -41,7 +58,8 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
         graph
         |> Flamelex.GUI.Utils.Draw.background(frame, :orange)
         |> render_title(banner_frame, %{})
-        |> render_agent_card(t3, %{})
+        # |> render_agent_card(t3, hd(state.agents))
+        |> render_agents(middle_frame, state)
         |> render_tools(footer_frame)
       end)
 
@@ -63,12 +81,55 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
     })
   end
 
-  def render_agent_card(graph, %Widgex.Frame{} = f, _args) do
+  def render_agents(graph, %Widgex.Frame{} = f, %State{} = state) do
+    agents = state.agents
+
+    # Calculate the number of columns based on the number of agents
+    num_columns = if length(agents) > 3, do: 3, else: length(agents)
+
+    # Define a grid with the number of columns based on the number of agents
+    grid =
+      Grid.new(f)
+      # |> Grid.rows([0.35, 0.35, 0.35])
+      |> Grid.rows([0.5, 0.5])
+      |> Grid.columns(Enum.map(1..num_columns, fn _ -> 1.0 / num_columns end))
+      |> Grid.define_areas(%{
+        agent1: {0, 0, 1, 1},
+        agent2: {0, 1, 1, 1},
+        agent3: {0, 2, 1, 1}
+      })
+
+    # Calculate the frames based on the grid layout
+    agent_frames = Grid.calculate(grid)
+    agent1_frame = Grid.area_frame(grid, agent_frames, :agent1)
+    agent2_frame = Grid.area_frame(grid, agent_frames, :agent2)
+    agent3_frame = Grid.area_frame(grid, agent_frames, :agent3)
+
+    # Render the agent cards
+    graph
+    |> render_agent_card(agent1_frame, hd(agents))
+    |> render_agent_card(agent2_frame, hd(tl(agents)))
+    |> render_agent_card(agent3_frame, hd(tl(tl(agents))))
+  end
+
+  # def render_agent_card(graph, %Widgex.Frame{} = f, %Agent{} = agent) do
+  def render_agent_card(
+        graph,
+        %Widgex.Frame{} = f,
+        %Memelex.TidBit{
+          data: %Agent{config: %{"mfa" => {agent_module, :start_link, [_args]}}} = agent
+        }
+      ) do
+    # agent_state = GenServer.call(agent_module, {:get_state, agent.log_tidbit_uuid})
+    # agent_state = Module.concat([Elixir, agent_module]).get_state()
+    agent_state = agent_module.get_state()
+    IO.inspect(agent_state)
+
     graph
     |> Scenic.Primitives.rectangle(f.size.box, fill: :blue, t: f.pin.point)
     |> ScenicWidgets.Markup.Header1.draw(%{
       frame: f,
-      text: "Agent: Maxwell",
+      text: agent.name,
       color: :white
     })
   end
@@ -146,33 +207,33 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
     )
 
     # Title section
-    # |> Scenic.Primitives.text("Enter new agent details:",
-    #   font_size: 20,
-    #   fill: :black,
-    #   translate: {title_frame.pin.x + 20, title_frame.pin.y + 20}
-    # )
     |> ScenicWidgets.Markup.Header1.draw(%{
       frame: title_frame,
       text: "Enter new agent details",
       color: :black
     })
 
-    # Body section (this is where input fields can be added later)
-    |> Scenic.Primitives.text("Agent details go here:",
+    # Body section (add label and text input field for "Name")
+    |> Scenic.Primitives.text("Name:",
       font_size: 18,
-      fill: :grey,
+      fill: :black,
       translate: {body_frame.pin.x + 20, body_frame.pin.y + 20}
     )
+    |> Scenic.Components.text_field("",
+      id: :agent_name,
+      translate: {body_frame.pin.x + 100, body_frame.pin.y + 16},
+      # Adjust the width of the text field
+      width: 300
+    )
 
-    # Buttons section (with two buttons)
+    # Buttons section (with two centered buttons)
     |> Scenic.Components.button("Cancel",
       id: :cancel_modal,
-      translate: {buttons_frame.pin.x + 20, buttons_frame.pin.y + 20}
+      translate: {buttons_frame.pin.x + f.size.width / 2 - 90, buttons_frame.pin.y + 20}
     )
     |> Scenic.Components.button("Save",
       id: :save_agent,
-      # Offset the second button
-      translate: {buttons_frame.pin.x + 120, buttons_frame.pin.y + 20}
+      translate: {buttons_frame.pin.x + f.size.width / 2 + 10, buttons_frame.pin.y + 20}
     )
   end
 

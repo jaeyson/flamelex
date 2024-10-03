@@ -79,12 +79,14 @@ defmodule Flamelex.GUI.Component.HighCouncil do
   end
 
   def handle_event({:click, :save_agent}, _from, scene) do
-    # IO.puts("Making a new agent")
-    # scene.assigns.state
-    # |> Memelex.My.Wiki.update(%{priority: :higher})
-    # Flamelex.Fluxus.action({__MODULE__, :new_agent})
-    IO.puts("HERE we will save the agent")
+    # TODO handle crashes, bad results here
+    Memelex.My.Agents.new(scene.assigns.new_agent_name)
+    Flamelex.Fluxus.action({__MODULE__, :cancel_new_agent_creation})
 
-    {:noreply, scene}
+    {:noreply, scene |> assign(new_agent_name: "")}
+  end
+
+  def handle_event({:value_changed, :agent_name, name}, _from, scene) do
+    {:noreply, scene |> assign(new_agent_name: name)}
   end
 end
