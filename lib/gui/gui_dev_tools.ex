@@ -253,14 +253,14 @@ defmodule Flamelex.GUI.DevTools do
       alias Flamelex.Fluxus.RadixState
       alias Flamelex.GUI.Utils.Draw
 
-      def go(%Widgex.Frame{} = f, %State{} = state) do
+      def go(%Widgex.Frame{} = f, %State{} = _state) do
         Scenic.Graph.build()
         |> Scenic.Primitives.group(
           fn graph ->
             graph
             |> Draw.background(f, :medium_slate_blue)
             |> Widgex.Frame.draw_guidewires(f)
-            |> Scenic.Primitives.text(#{module_base},
+            |> Scenic.Primitives.text("#{module_base}",
               font_size: 24,
               translate: {f.size.width / 2, f.size.height / 2}
             )
