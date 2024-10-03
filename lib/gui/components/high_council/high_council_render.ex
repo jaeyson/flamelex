@@ -83,36 +83,70 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
 
   def render_agents(graph, %Widgex.Frame{} = f, %State{} = state) do
     agents = state.agents
+    total_agents = length(agents)
 
-    # Calculate the number of columns based on the number of agents
-    num_columns = if length(agents) > 3, do: 3, else: length(agents)
-
-    # Define a grid with the number of columns based on the number of agents
+    # Define a grid with 6 rows and 4 columns
     grid =
       Grid.new(f)
-      # |> Grid.rows([0.35, 0.35, 0.35])
-      |> Grid.rows([0.5, 0.5])
-      |> Grid.columns(Enum.map(1..num_columns, fn _ -> 1.0 / num_columns end))
-      |> Grid.define_areas(%{
-        agent1: {0, 0, 1, 1},
-        agent2: {0, 1, 1, 1},
-        agent3: {0, 2, 1, 1}
-      })
+      # 6 equal rows
+      |> Grid.rows(List.duplicate(1.0 / 6, 6))
+      # 4 equal columns
+      |> Grid.columns(List.duplicate(1.0 / 4, 4))
+      # Add row gap for spacing
+      |> Grid.row_gap(2)
+      # Add column gap for spacing
+      |> Grid.column_gap(2)
+      |> Grid.define_areas(
+        Enum.reduce(1..total_agents, %{}, fn idx, acc ->
+          # Dynamically define the grid areas for agents
+          Map.put(acc, :"agent#{idx}", {div(idx - 1, 4), rem(idx - 1, 4), 1, 1})
+        end)
+      )
 
-    # Calculate the frames based on the grid layout
+    # Calculate the frames for the grid layout
     agent_frames = Grid.calculate(grid)
-    agent1_frame = Grid.area_frame(grid, agent_frames, :agent1)
-    agent2_frame = Grid.area_frame(grid, agent_frames, :agent2)
-    agent3_frame = Grid.area_frame(grid, agent_frames, :agent3)
 
-    # Render the agent cards
-    graph
-    |> render_agent_card(agent1_frame, hd(agents))
-    |> render_agent_card(agent2_frame, hd(tl(agents)))
-    |> render_agent_card(agent3_frame, hd(tl(tl(agents))))
+    # Dynamically render each agent card
+    Enum.reduce(1..total_agents, graph, fn idx, graph_acc ->
+      area_name = :"agent#{idx}"
+      frame = Grid.area_frame(grid, agent_frames, area_name)
+      agent = Enum.at(agents, idx - 1)
+
+      render_agent_card(graph_acc, frame, agent)
+    end)
   end
 
-  # def render_agent_card(graph, %Widgex.Frame{} = f, %Agent{} = agent) do
+  # def render_agents(graph, %Widgex.Frame{} = f, %State{} = state) do
+  #   agents = state.agents
+
+  #   # Calculate the number of columns based on the number of agents
+  #   num_columns = if length(agents) > 3, do: 3, else: length(agents)
+
+  #   # Define a grid with the number of columns based on the number of agents
+  #   grid =
+  #     Grid.new(f)
+  #     # |> Grid.rows([0.35, 0.35, 0.35])
+  #     |> Grid.rows([0.5, 0.5])
+  #     |> Grid.columns(Enum.map(1..num_columns, fn _ -> 1.0 / num_columns end))
+  #     |> Grid.define_areas(%{
+  #       agent1: {0, 0, 1, 1},
+  #       agent2: {0, 1, 1, 1},
+  #       agent3: {0, 2, 1, 1}
+  #     })
+
+  #   # Calculate the frames based on the grid layout
+  #   agent_frames = Grid.calculate(grid)
+  #   agent1_frame = Grid.area_frame(grid, agent_frames, :agent1)
+  #   agent2_frame = Grid.area_frame(grid, agent_frames, :agent2)
+  #   agent3_frame = Grid.area_frame(grid, agent_frames, :agent3)
+
+  #   # Render the agent cards
+  #   graph
+  #   |> render_agent_card(agent1_frame, hd(agents))
+  #   |> render_agent_card(agent2_frame, hd(tl(agents)))
+  #   |> render_agent_card(agent3_frame, hd(tl(tl(agents))))
+  # end
+
   def render_agent_card(
         graph,
         %Widgex.Frame{} = f,
@@ -120,18 +154,49 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
           data: %Agent{config: %{"mfa" => {agent_module, :start_link, [_args]}}} = agent
         }
       ) do
-    # agent_state = GenServer.call(agent_module, {:get_state, agent.log_tidbit_uuid})
-    # agent_state = Module.concat([Elixir, agent_module]).get_state()
+    # Fetch the agent state
     agent_state = agent_module.get_state()
     IO.inspect(agent_state)
 
+    # Define the grid structure for title and status
+    grid =
+      Grid.new(f)
+      # 20% for title, 30% spacing, 50% for status
+      |> Grid.rows([0.2, 0.3, 0.5])
+      # Single column layout
+      |> Grid.columns([1.0])
+      |> Grid.define_areas(%{
+        # Title takes the top 20%
+        title: {0, 0, 1, 1},
+        # Status takes the bottom 50%
+        status: {2, 0, 1, 1}
+      })
+
+    # Calculate the frames
+    frames = Grid.calculate(grid)
+    title_frame = Grid.area_frame(grid, frames, :title)
+    status_frame = Grid.area_frame(grid, frames, :status)
+
+    # Render the card with the title and status
     graph
+    # Background rectangle
     |> Scenic.Primitives.rectangle(f.size.box, fill: :blue, t: f.pin.point)
+    # Title section (agent's name)
     |> ScenicWidgets.Markup.Header1.draw(%{
-      frame: f,
+      frame: title_frame,
       text: agent.name,
       color: :white
     })
+    # Status section (agent's state)
+    # |> ScenicWidgets.Markup.Header1.draw(%{
+    #   frame: status_frame,
+    #   text: "Status: #{inspect(agent_state)}",
+    #   color: :yellow
+    # })
+    |> Scenic.Primitives.text("Status: #{inspect(agent_state)}",
+      font_size: 14,
+      translate: {f.pin.x + 10, f.pin.y + 10}
+    )
   end
 
   def render_tools(graph, %Widgex.Frame{} = f) do
