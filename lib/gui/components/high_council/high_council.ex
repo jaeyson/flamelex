@@ -89,4 +89,25 @@ defmodule Flamelex.GUI.Component.HighCouncil do
   def handle_event({:value_changed, :agent_name, name}, _from, scene) do
     {:noreply, scene |> assign(new_agent_name: name)}
   end
+
+  # this one is the downpress
+  def handle_input(
+        {:cursor_button, {:btn_left, 1, _, _}},
+        {:agent_card, tidbit_uuid},
+        scene
+      ) do
+    Flamelex.Fluxus.action({__MODULE__, {:select_agent, tidbit_uuid}})
+
+    {:noreply, scene}
+  end
+
+  def handle_input(
+        {:cursor_button, {:btn_left, 0, _, _}},
+        {:agent_card, _agent_name},
+        # %Scene{assigns: %{graph: graph, theme: theme}} = scene
+        scene
+      ) do
+    # ignore unclick / up-press
+    {:noreply, scene}
+  end
 end

@@ -152,11 +152,10 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
         %Widgex.Frame{} = f,
         %Memelex.TidBit{
           data: %Agent{config: %{"mfa" => {agent_module, :start_link, [_args]}}} = agent
-        }
+        } = tidbit
       ) do
     # Fetch the agent state
     agent_state = agent_module.get_state()
-    IO.inspect(agent_state)
 
     # Define the grid structure for title and status
     grid =
@@ -166,9 +165,9 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
       # Single column layout
       |> Grid.columns([1.0])
       |> Grid.define_areas(%{
-        # Title takes the top 20%
+        # Title section
         title: {0, 0, 1, 1},
-        # Status takes the bottom 50%
+        # Status section
         status: {2, 0, 1, 1}
       })
 
@@ -177,26 +176,31 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
     title_frame = Grid.area_frame(grid, frames, :title)
     status_frame = Grid.area_frame(grid, frames, :status)
 
-    # Render the card with the title and status
+    # Render the card with click interaction
     graph
-    # Background rectangle
-    |> Scenic.Primitives.rectangle(f.size.box, fill: :blue, t: f.pin.point)
-    # Title section (agent's name)
-    |> ScenicWidgets.Markup.Header1.draw(%{
-      frame: title_frame,
-      text: agent.name,
-      color: :white
-    })
-    # Status section (agent's state)
-    # |> ScenicWidgets.Markup.Header1.draw(%{
-    #   frame: status_frame,
-    #   text: "Status: #{inspect(agent_state)}",
-    #   color: :yellow
-    # })
-    |> Scenic.Primitives.text("Status: #{inspect(agent_state)}",
-      font_size: 14,
-      translate: {f.pin.x + 10, f.pin.y + 10}
-    )
+    |> Scenic.Primitives.group(fn graph ->
+      # Background rectangle, now clickable with :input
+      graph
+      |> Scenic.Primitives.rectangle(f.size.box,
+        fill: :blue,
+        t: f.pin.point,
+        id: {:agent_card, tidbit.uuid},
+        input: :cursor_button
+      )
+
+      # Title section (agent's name)
+      |> ScenicWidgets.Markup.Header1.draw(%{
+        frame: title_frame,
+        text: agent.name,
+        color: :white
+      })
+
+      # Status section (agent's state)
+      |> Scenic.Primitives.text("Status: #{inspect(agent_state)}",
+        font_size: 14,
+        translate: {f.pin.x + 10, f.pin.y + 10}
+      )
+    end)
   end
 
   def render_tools(graph, %Widgex.Frame{} = f) do

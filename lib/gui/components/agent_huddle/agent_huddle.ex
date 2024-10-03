@@ -2,7 +2,6 @@ defmodule Flamelex.GUI.Component.AgentHuddle do
   @moduledoc """
   A GUI component for Agent huddle.
   """
-
   use Scenic.Component
   require Logger
   alias Widgex.Frame
@@ -52,10 +51,13 @@ defmodule Flamelex.GUI.Component.AgentHuddle do
     {:noreply, scene}
   end
 
-  # Default render function
+  # Default render function implementation
   def render(%Frame{} = frame, %Flamelex.GUI.Component.AgentHuddle.State{} = state) do
     # TODO: Implement rendering logic here
-    # Returning an empty graph to prevent crashes by default
-    Graph.build()
+    Scenic.Graph.build()
+    |> Scenic.Primitives.text("Flamelex.GUI.Component.AgentHuddle",
+      font_size: 24,
+      translate: {frame.size.width / 2 - 50, frame.size.height / 2}
+    )
   end
 end

@@ -6,17 +6,13 @@ defmodule Flamelex.GUI.Component.HighCouncil.Reducer do
   alias Flamelex.Fluxus.RadixState
   alias Flamelex.GUI.Component.HighCouncil
   alias Flamelex.GUI.Component.HighCouncil.Mutator
+  alias Flamelex.GUI.Component.AgentHuddle
   alias Flamelex.GUI.Layers.Layer01.Mutator, as: Layer1
 
-  # def process(%RadixState{} = rdx, action) do
-  #   case action do
-  #     # Match on specific actions and call mutators
-  #     _ ->
-  #       rdx
-  #   end
-  # end
-
-  def process(%RadixState{} = rdx, :show_agents) do
+  def process(
+        %RadixState{} = rdx,
+        :show_agents
+      ) do
     agents = Memelex.My.Agents.all()
 
     rdx
@@ -25,19 +21,26 @@ defmodule Flamelex.GUI.Component.HighCouncil.Reducer do
     |> Mutator.set_agents(agents)
   end
 
-  def process(%RadixState{layers: %{one: %{active_apps: [HighCouncil]}}} = rdx, :new_agent) do
-    # agents = Memelex.My.Agents.all()
-
-    # rdx
-    # |> Layer1.set_active_apps([HighCouncil])
-    # |> Layer1.set_layout(:full_screen)
-    # |> Mutator.set_agents(agents)
+  def process(
+        %RadixState{layers: %{one: %{active_apps: [HighCouncil]}}} = rdx,
+        :new_agent
+      ) do
     rdx
     |> Mutator.set_new_agent_mode(true)
   end
 
   def process(
         %RadixState{layers: %{one: %{active_apps: [HighCouncil]}}} = rdx,
+        {:select_agent, tidbit_uuid}
+      ) do
+    rdx
+    |> Layer1.set_active_apps([AgentHuddle])
+    |> Layer1.set_layout(:full_screen)
+    |> AgentHuddle.Mutator.set_agent(%{uuid: tidbit_uuid})
+  end
+
+  def process(
+        %RadixState{} = rdx,
         :cancel_new_agent_creation
       ) do
     rdx

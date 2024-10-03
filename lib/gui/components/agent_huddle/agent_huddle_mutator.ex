@@ -5,8 +5,10 @@ defmodule Flamelex.GUI.Component.AgentHuddle.Mutator do
 
   alias Flamelex.Fluxus.RadixState
 
-  def some_mutation(%RadixState{} = rdx, params) do
+  def set_agent(%RadixState{} = rdx, %{uuid: tidbit_uuid}) do
     # Perform state mutation
-    raise "not implemented"
+    # raise "not implemented"
+    IO.puts("HERE WE WOULD PUT THE AGENT IN")
+    rdx
   end
 end
