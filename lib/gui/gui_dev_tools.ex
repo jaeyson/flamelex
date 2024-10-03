@@ -147,7 +147,6 @@ defmodule Flamelex.GUI.DevTools do
 
       def init(scene, %{frame: %Frame{} = frame}, _opts) do
         state = Flamelex.Fluxus.RadixStore.get().apps.#{module_base |> Macro.underscore() |> String.split("/") |> List.last()}
-
         graph = Render.go(frame, state)
 
         init_scene =

@@ -9,6 +9,8 @@ defmodule Flamelex.GUI.Component.AgentHuddle do
   alias Flamelex.Fluxus.RadixState
   alias Flamelex.GUI.Component.AgentHuddle
   alias Flamelex.GUI.Component.AgentHuddle.State
+  alias Flamelex.GUI.Component.AgentHuddle.Render
+  alias Flamelex.GUI.Utils.Draw
 
   # Validate function for Scenic component
   def validate(%{frame: %Frame{}} = data) do
@@ -17,8 +19,7 @@ defmodule Flamelex.GUI.Component.AgentHuddle do
 
   def init(scene, %{frame: %Frame{} = frame}, _opts) do
     state = Flamelex.Fluxus.RadixStore.get().apps.agent_huddle
-
-    graph = render(frame, state)
+    graph = Render.go(frame, state)
 
     init_scene =
       scene
@@ -51,13 +52,15 @@ defmodule Flamelex.GUI.Component.AgentHuddle do
     {:noreply, scene}
   end
 
-  # Default render function implementation
-  def render(%Frame{} = frame, %Flamelex.GUI.Component.AgentHuddle.State{} = state) do
-    # TODO: Implement rendering logic here
-    Scenic.Graph.build()
-    |> Scenic.Primitives.text("Flamelex.GUI.Component.AgentHuddle",
-      font_size: 24,
-      translate: {frame.size.width / 2 - 50, frame.size.height / 2}
-    )
-  end
+  # # Default render function implementation
+  # def render(%Frame{} = frame, %Flamelex.GUI.Component.AgentHuddle.State{} = state) do
+  #   # TODO: Implement rendering logic here
+  #   Scenic.Graph.build()
+  #   |> Draw.background(frame, :purple)
+
+  #   # |> Scenic.Primitives.text("Flamelex.GUI.Component.AgentHuddle",
+  #   #   font_size: 24,
+  #   #   translate: {frame.size.width / 2 - 50, frame.size.height / 2}
+  #   # )
+  # end
 end
