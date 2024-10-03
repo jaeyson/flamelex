@@ -5,6 +5,7 @@ defmodule Flamelex.GUI.Component.AgentHuddle.Render do
   alias Widgex.Frame.Grid
   alias Scenic.Graph
   alias Scenic.Primitives
+  alias Flamelex.GUI.Component.CodeBlock
 
   def go(%Frame{} = frame, %State{} = state) do
     # Define a grid that splits the frame into two equal columns
@@ -30,12 +31,12 @@ defmodule Flamelex.GUI.Component.AgentHuddle.Render do
       |> Primitives.group(
         fn graph ->
           graph
-          |> Draw.background(frame, :rebecca_purple)
-          |> Widgex.Frame.draw_guidewires(frame)
+          # |> Draw.background(frame, :rebecca_purple)
+          # |> Widgex.Frame.draw_guidewires(frame)
           |> render_left_half(left_frame, state)
           |> render_right_half(right_frame, state)
-        end,
-        translate: frame.pin.point
+        end
+        # translate: frame.pin.point
       )
 
     graph
@@ -52,8 +53,8 @@ defmodule Flamelex.GUI.Component.AgentHuddle.Render do
     # 3. Define a grid within the inner_frame
     grid =
       Grid.new(frame)
-      |> Grid.rows([0.1, 0.8, 0.1])
-      |> Grid.columns([0.1, 0.8, 0.1])
+      |> Grid.rows([0.04, 0.92, 0.04])
+      |> Grid.columns([0.04, 0.92, 0.04])
       |> Grid.define_areas(%{
         editor_area: {1, 1, 1, 1}
       })
@@ -71,30 +72,28 @@ defmodule Flamelex.GUI.Component.AgentHuddle.Render do
     # 4. Render the editor placeholder in the editor_frame
     graph =
       graph
-      |> Primitives.group(
-        fn graph ->
-          # Optional: Draw background for the editor area
-          graph
-          # |> Draw.background(editor_frame, :white)
-          |> Scenic.Primitives.rect(editor_frame.size.box,
-            fill: :dark_slate_grey
-            # translate: editor_frame.pin.point
-          )
+      # |> Primitives.group(fn graph ->
+      #   # Optional: Draw background for the editor area
+      #   graph
+      #   # |> Draw.background(editor_frame, :white)
+      #   # |> Scenic.Primitives.rect(editor_frame.size.box,
+      #   #   fill: :dark_slate_grey
+      #   #   # translate: editor_frame.pin.point
+      #   # )
+      |> CodeBlock.add_to_graph(%{frame: editor_frame})
 
-          # |> Widgex.Frame.draw_guidewires(editor_frame)
-          # |> Primitives.text("Editor Placeholder",
-          #   font_size: 24,
-          #   fill: :white
-          #   # translate: {
-          #   #   editor_frame.pin.x + editor_frame.size.width / 2,
-          #   #   editor_frame.pin.y + editor_frame.size.height / 2
-          #   # },
-          #   # text_align: :center,
-          #   # text_base: :middle
-          # )
-        end,
-        translate: {frame.size.width * 0.1, frame.size.height * 0.1}
-      )
+    # |> Widgex.Frame.draw_guidewires(editor_frame)
+    # |> Primitives.text("Editor Placeholder",
+    #   font_size: 24,
+    #   fill: :white
+    #   # translate: {
+    #   #   editor_frame.pin.x + editor_frame.size.width / 2,
+    #   #   editor_frame.pin.y + editor_frame.size.height / 2
+    #   # },
+    #   # text_align: :center,
+    #   # text_base: :middle
+    # )
+    # end)
 
     graph
   end
