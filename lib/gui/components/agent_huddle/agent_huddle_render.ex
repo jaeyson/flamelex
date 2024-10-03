@@ -43,25 +43,73 @@ defmodule Flamelex.GUI.Component.AgentHuddle.Render do
 
   # Render content in the left half
   defp render_left_half(graph, %Frame{} = frame, %State{} = _state) do
+    # 1. Draw a background over the left half
+    # graph =
+    #   graph
+    #   |> Draw.background(frame, :dark_blue)
+    #   |> Widgex.Frame.draw_guidewires(frame)
+
+    # 3. Define a grid within the inner_frame
+    grid =
+      Grid.new(frame)
+      |> Grid.rows([0.1, 0.8, 0.1])
+      |> Grid.columns([0.1, 0.8, 0.1])
+      |> Grid.define_areas(%{
+        editor_area: {1, 1, 1, 1}
+      })
+
+    # Calculate the frames for the grid areas
+    cell_frames = Grid.calculate(grid)
+    editor_frame = Grid.area_frame(grid, cell_frames, :editor_area)
+
+    # TODO there's some fuckiness with how frames get placed when
+    # the outer frame is translated, I think we need to not include
+    # the old pin in our Grid frames but it's complex, so hacking it for now
+
+    # IO.inspect(frame, label: "f1")
+    # IO.inspect(editor_frame, label: "f1")
+    # 4. Render the editor placeholder in the editor_frame
+    graph =
+      graph
+      |> Primitives.group(
+        fn graph ->
+          # Optional: Draw background for the editor area
+          graph
+          # |> Draw.background(editor_frame, :white)
+          |> Scenic.Primitives.rect(editor_frame.size.box,
+            fill: :dark_slate_grey
+            # translate: editor_frame.pin.point
+          )
+
+          # |> Widgex.Frame.draw_guidewires(editor_frame)
+          # |> Primitives.text("Editor Placeholder",
+          #   font_size: 24,
+          #   fill: :white
+          #   # translate: {
+          #   #   editor_frame.pin.x + editor_frame.size.width / 2,
+          #   #   editor_frame.pin.y + editor_frame.size.height / 2
+          #   # },
+          #   # text_align: :center,
+          #   # text_base: :middle
+          # )
+        end,
+        translate: {frame.size.width * 0.1, frame.size.height * 0.1}
+      )
+
     graph
-    |> Primitives.text("Left Half",
-      font_size: 24,
-      fill: :white,
-      translate: {frame.pin.x + 10, frame.pin.y + 10}
-      # translate: {frame.size.width / 2, frame.size.height / 2}
-      # translate: frame.pin.point
-    )
   end
 
   # Render content in the right half
   defp render_right_half(graph, %Frame{} = frame, %State{} = _state) do
     graph
+    |> Scenic.Primitives.rect(frame.size.box,
+      fill: :black,
+      translate: frame.pin.point
+    )
     |> Primitives.text("Right Half",
       font_size: 24,
       fill: :white,
       translate: {frame.pin.x + 10, frame.pin.y + 10}
-      # translate: {frame.size.width / 2, frame.size.height / 2}
-      # translate: frame.pin.point
     )
   end
 end
