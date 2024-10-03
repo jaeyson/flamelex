@@ -143,7 +143,7 @@ defmodule Flamelex.GUI.DevTools do
       end
 
       def init(scene, %{frame: %Frame{} = frame}, _opts) do
-        state = Flamelex.Fluxus.RadixStore.get().apps.#{Macro.underscore(module_base)}
+        state = Flamelex.Fluxus.RadixStore.get().apps.#{module_base |> Macro.underscore() |> String.split("/") |> List.last()}
 
         graph = render(frame, state)
 
@@ -161,7 +161,7 @@ defmodule Flamelex.GUI.DevTools do
 
       # Handle state changes where the state hasn't changed
       def handle_info(
-            {:radix_state_change, %{apps: %{#{Macro.underscore(module_base)}: state}}},
+            {:radix_state_change, %{apps: %{#{module_base |> Macro.underscore() |> String.split("/") |> List.last()}: state}}},
             %{assigns: %{frame: frame, state: state}} = scene
           ) do
         # State variables in pattern match are the same; no state change occurred
@@ -170,7 +170,7 @@ defmodule Flamelex.GUI.DevTools do
 
       # Handle state changes where the state has changed
       def handle_info(
-            {:radix_state_change, %{apps: %{#{Macro.underscore(module_base)}: new_state}}},
+            {:radix_state_change, %{apps: %{#{module_base |> Macro.underscore() |> String.split("/") |> List.last()}: new_state}}},
             %{assigns: %{frame: frame, state: old_state}} = scene
           ) do
         # State has changed; raise an error as handling is app-specific
