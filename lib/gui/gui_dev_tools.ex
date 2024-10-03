@@ -180,9 +180,14 @@ defmodule Flamelex.GUI.DevTools do
 
       # Default render function
       def render(%Frame{} = frame, %#{module_base}.State{} = state) do
-        # TODO: Implement rendering logic here
-        # Returning an empty graph to prevent crashes by default
-        Graph.build()
+        module_name = "#{module_base}"
+
+        # Create a centered graph that displays the module name
+        Scenic.Graph.build()
+        |> Scenic.Primitives.text(module_name,
+          font_size: 24,
+          translate: {frame.size.width / 2 - 50, frame.size.height / 2}
+        )
       end
     end
     """
