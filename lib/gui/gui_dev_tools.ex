@@ -100,6 +100,7 @@ defmodule Flamelex.GUI.DevTools do
       {Path.join(base_path, "#{file_base}_state.ex"), state_module_content(module_base)},
       {Path.join(base_path, "#{file_base}_reducer.ex"), reducer_module_content(module_base)},
       {Path.join(base_path, "#{file_base}_mutator.ex"), mutator_module_content(module_base)},
+      {Path.join(base_path, "#{file_base}_render.ex"), render_module_content(module_base)},
       {Path.join(base_path, "#{file_base}_user_input_handler.ex"),
        user_input_handler_content(module_base)}
     ]
@@ -136,6 +137,8 @@ defmodule Flamelex.GUI.DevTools do
       alias Flamelex.Fluxus.RadixState
       alias #{module_base}
       alias #{module_base}.State
+      alias #{module_base}.Render
+      alias Flamelex.GUI.Utils.Draw
 
       # Validate function for Scenic component
       def validate(%{frame: %Frame{}} = data) do
@@ -145,7 +148,7 @@ defmodule Flamelex.GUI.DevTools do
       def init(scene, %{frame: %Frame{} = frame}, _opts) do
         state = Flamelex.Fluxus.RadixStore.get().apps.#{module_base |> Macro.underscore() |> String.split("/") |> List.last()}
 
-        graph = render(frame, state)
+        graph = Render.go(frame, state)
 
         init_scene =
           scene
@@ -176,18 +179,6 @@ defmodule Flamelex.GUI.DevTools do
         # State has changed; raise an error as handling is app-specific
         raise "State change handling not implemented in template"
         {:noreply, scene}
-      end
-
-      # Default render function
-      def render(%Frame{} = frame, %#{module_base}.State{} = state) do
-        module_name = "#{module_base}"
-
-        # Create a centered graph that displays the module name
-        Scenic.Graph.build()
-        |> Scenic.Primitives.text(module_name,
-          font_size: 24,
-          translate: {frame.size.width / 2 - 50, frame.size.height / 2}
-        )
       end
     end
     """
@@ -250,6 +241,41 @@ defmodule Flamelex.GUI.DevTools do
       end
     end
     """
+  end
+
+  defp render_module_content(module_base) do
+    """
+    defmodule #{module_base}.Render do
+      @moduledoc \"\"\"
+      Functions to render the %Scenic.Graph{} for #{humanize_module_name(module_base)} component.
+      \"\"\"
+
+      alias #{module_base}.State
+      alias Flamelex.Fluxus.RadixState
+      alias Flamelex.GUI.Utils.Draw
+
+      def go(%Widgex.Frame{} = f, %State{} = state) do
+        Scenic.Graph.build()
+        |> Scenic.Primitives.group(
+          fn graph ->
+            graph
+            |> Draw.background(f, :medium_slate_blue)
+            |> Widgex.Frame.draw_guidewires(f)
+            |> Scenic.Primitives.text(#{module_base},
+              font_size: 24,
+              translate: {f.size.width / 2, f.size.height / 2}
+            )
+          end,
+          translate: f.pin.point
+        )
+      end
+    end
+    """
+  end
+
+  defmodule Flamelex.GUI.Component.AgentHuddle.Render do
+    alias Flamelex.GUI.Component.AgentHuddle.State
+    alias Flamelex.GUI.Utils.Draw
   end
 
   defp user_input_handler_content(module_base) do
