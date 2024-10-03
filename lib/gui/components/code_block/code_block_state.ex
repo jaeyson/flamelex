@@ -5,11 +5,19 @@ defmodule Flamelex.GUI.Component.CodeBlock.State do
 
   use StructAccess
 
+  @default_title "file name here"
+  @default_text ""
+
   defstruct [
     # Define state fields here
+    title: "file name here",
+    text: ""
   ]
 
-  def new do
-    %__MODULE__{}
+  def new(args) when is_map(args) do
+    %__MODULE__{
+      title: args[:title] || @default_title,
+      text: args[:text] || @default_text
+    }
   end
 end
