@@ -16,7 +16,7 @@ defmodule IExAutoRun do
       IO.puts("Executing the code in `Flamelex.IExAutoRun`, via the `.iex.exs` file...")
 
       # these are the highest level functions, make them available to the CLI user directly
-      import Flamelex
+      # import Flamelex
 
       # require AutoAlias
       # AutoAlias.alias_modules(Flamelex.API)
