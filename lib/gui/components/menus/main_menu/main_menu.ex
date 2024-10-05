@@ -1,70 +1,118 @@
-# TODO TopMenuMap
 defmodule Flamelex.GUI.Menus.MainMenu do
-  # TODO automatically add a .gitignore into each memex directory so it's impossible to accidentally commit the memex - anything except the my_modz.ex file
-  # note that although it can never be committed, we also make a my_secretz.ex file
+  @moduledoc false
 
+  @doc """
+  The top-level definition for the menu map in the Flamelex GUI.
+
+  #TODO rename just to `menu_map` or `main_menu_map`
+  """
   def calc_menu_map(radix_state) do
-    # TODO add "help", "getting started", "about Flamelex" etc
     base_menu_map =
       [
         flamelex_menu(),
         buffer_menu(radix_state),
         memex_menu(radix_state),
-        api_menu()
+        api_menu(),
+        help_menu()
       ]
       |> Enum.reject(&is_nil/1)
-
-    # if radix_state.memex.active? do
-    #   # menu_map =
-
-    #   case calc_memex_menu(radix_state) do
-    #     [] ->
-    #       base_menu_map
-
-    #     memex_menu = {:sub_menu, "Memex", _full_menu} ->
-    #       base_menu_map |> List.insert_at(2, memex_menu)
-
-    #       # menu
-    #       # {:error, reason} ->
-    #       #   Logger.
-    #       #   base_menu_map
-    #   end
-
-    #   # base_menu_map |> List.insert_at(2, menu_map)
-    # else
-    #   base_menu_map
-    # end
   end
 
   def flamelex_menu do
     {:sub_menu, "Flamelex",
      [
-       {:sub_menu, "Editor",
-        [
-          {"toggle line nums", fn -> raise "no" end},
-          {"toggle file tray", fn -> raise "no" end},
-          {"toggle tab bar", fn -> raise "no" end}
-          # font_sub_menu()
-        ]},
-       {:sub_menu, "Kommander",
-        [
-          {"show", &Flamelex.API.Kommander.show/0},
-          {"hide", &Flamelex.API.Kommander.hide/0}
-        ]},
-       {:sub_menu, "Widgex",
-        [
-          {"open wdg-wkb", fn -> raise "no" end}
-        ]},
+       #  {:sub_menu, "Editor",
+       #   [
+       #     {"toggle line nums", fn -> raise "no" end},
+       #     {"toggle file tray", fn -> raise "no" end},
+       #     {"toggle tab bar", fn -> raise "no" end}
+       #     # font_sub_menu()
+       #   ]},
+       #  {:sub_menu, "Kommander",
+       #   [
+       #     {"show", &Flamelex.API.Kommander.show/0},
+       #     {"hide", &Flamelex.API.Kommander.hide/0}
+       #   ]},
+       #  {:sub_menu, "Widgex",
+       #   [
+       #     {"open wdg-wkb", fn -> raise "no" end}
+       #   ]},
        devtools(),
        #  open_agents(),
-       widget_workbench(),
-       re_source_shell(),
+
+       #  re_source_shell(),
        quit()
      ]}
   end
 
   def buffer_menu(radix_state) do
     {:sub_menu, "Buffer", do_buffer_menu(radix_state)}
+  end
+
+  def memex_menu(%{memex: %{active?: false}}), do: nil
+  def memex_menu(%{memex: %{env: nil}}), do: nil
+
+  def memex_menu(
+        %{
+          # if we have an active memex, but no customizations to load
+          memex: %{active?: true, env: %{name: env_name}}
+        } = radix_state
+      )
+      when is_binary(env_name) do
+    # TODO add random memex button
+
+    base_menu = [
+      {"open", &Flamelex.API.Diary.open/0},
+      {"close", &Flamelex.API.Diary.close/0},
+      {"my TODOs", &Memelex.My.TODOs.show/0},
+      {"my Agents", &Memelex.My.Agents.show/0},
+      {:sub_menu, "my Calendar",
+       [
+         {"today",
+          fn -> Memelex.My.Calendar.open(%{"date" => Date.utc_today(), "view" => "day"}) end},
+         {"this week",
+          fn -> Memelex.My.Calendar.open(%{"date" => Date.utc_today(), "view" => "week"}) end},
+         {"this month",
+          fn -> Memelex.My.Calendar.open(%{"date" => Date.utc_today(), "view" => "month"}) end}
+       ]},
+      {:sub_menu, "my Journal",
+       [
+         {"today", fn -> Memelex.My.Journal.today() end},
+         {"yesterday", fn -> Memelex.My.Journal.yesterday() end},
+         {"tomorrow", fn -> Memelex.My.Journal.tomorrow() end}
+       ]}
+    ]
+
+    full_menu =
+      base_menu
+      |> maybe_add_agents_menu(radix_state)
+      |> maybe_add_open_my_modz_button(radix_state)
+      |> maybe_add_custom_menu(radix_state)
+
+    {:sub_menu, "Memex", full_menu}
+  end
+
+  def api_menu do
+    {:sub_menu, "API",
+     ScenicWidgets.MenuBar.modules_and_zero_arity_functions("Elixir.Flamelex.API")}
+  end
+
+  def help_menu do
+    {:sub_menu, "Help",
+     [
+       {:sub_menu, "Getting Started",
+        [
+          {"Installation", fn -> IO.puts("This is the installation guide") end},
+          {"Configuration", fn -> IO.puts("This is the configuration guide") end},
+          {"Usage", fn -> IO.puts("This is the usage guide") end}
+        ]},
+       {:sub_menu, "About Flamelex",
+        [
+          {"Version", fn -> IO.puts("Flamelex version 1.0.0") end},
+          {"Authors", fn -> IO.puts("Flamelex was developed by JediLuke") end},
+          {"License", fn -> IO.puts("Flamelex is licensed under the MIT License") end}
+        ]}
+     ]}
   end
 
   def do_buffer_menu(%{editor: %{buffers: []}} = _radix_state) do
@@ -102,11 +150,6 @@ defmodule Flamelex.GUI.Menus.MainMenu do
     {:sub_menu, "open-buffers", open_bufs_sub_menu}
   end
 
-  def api_menu do
-    {:sub_menu, "API",
-     ScenicWidgets.MenuBar.modules_and_zero_arity_functions("Elixir.Flamelex.API")}
-  end
-
   # def memex_menu(
   #       # when we have an active memex & a custom mod, check for custom menu
   #       %{
@@ -132,9 +175,6 @@ defmodule Flamelex.GUI.Menus.MainMenu do
 
   #   {:sub_menu, "Memex", new_memex_menu}
   # end
-
-  def memex_menu(%{memex: %{active?: false}}), do: nil
-  def memex_menu(%{memex: %{env: nil}}), do: nil
 
   # def memex_menu(
   #       %{
@@ -162,45 +202,6 @@ defmodule Flamelex.GUI.Menus.MainMenu do
   #   end
   # end
 
-  def memex_menu(
-        %{
-          # if we have an active memex, but no customizations to load
-          memex: %{active?: true, env: %{name: env_name}}
-        } = radix_state
-      )
-      when is_binary(env_name) do
-    # TODO add random memex button
-
-    base_menu = [
-      {"open", &Flamelex.API.Diary.open/0},
-      {"close", &Flamelex.API.Diary.close/0},
-      {"my_modz", fn -> raise "man we should have this!" end},
-      {"my TODOs", &Memelex.My.TODOs.show/0},
-      {"my Agents", &Memelex.My.Agents.show/0},
-      # {"my_modz", fn -> Flamelex.API.Buffer.open(Memelex.Environment.my_modz_file()) end},
-      # {"journal", fn -> Memelex.My.Journal.today() end}
-      {:sub_menu, "Journal",
-       [
-         {"today", fn -> Memelex.My.Journal.today() end},
-         {"yesterday", fn -> Memelex.My.Journal.yesterday() end},
-         {"tomorrow", fn -> Memelex.My.Journal.tomorrow() end}
-       ]},
-      {:sub_menu, "Calendar",
-       [
-         {"GOTO today",
-          fn -> Memelex.My.Calendar.open(%{"date" => Date.utc_today(), "view" => "week"}) end}
-       ]}
-    ]
-
-    full_menu =
-      base_menu
-      |> maybe_add_agents_menu(radix_state)
-      |> maybe_add_open_my_modz_button(radix_state)
-      |> maybe_add_custom_menu(radix_state)
-
-    {:sub_menu, "Memex", full_menu}
-  end
-
   # def memex_menu(rdx_state) do
   #   IO.puts("UNKNOWN RDX STATE #{inspect(rdx_state.memex)}")
   #   nil
@@ -227,7 +228,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
 
     if not is_nil(modz_file) and File.exists?(modz_file) do
       memex_sub_menu
-      |> List.insert_at(2, {"my_modz", fn -> Flamelex.API.Buffer.open(modz_file) end})
+      |> List.insert_at(2, {"my Modz", fn -> Flamelex.API.Buffer.open(modz_file) end})
     else
       memex_sub_menu
     end
@@ -326,7 +327,8 @@ defmodule Flamelex.GUI.Menus.MainMenu do
   def devtools do
     {:sub_menu, "DevTools",
      [
-       {"get radix state", fn -> Flamelex.API.DevTools.get_radix_state() end},
+       #  {"get radix state", fn -> Flamelex.API.DevTools.get_radix_state() end},
+       {"reboot ViewPort", fn -> Flamelex.GUI.DevTools.reboot_viewport() end},
        {
          "load Telaranrhiod",
          # put us in the test environment / dream world
@@ -339,7 +341,6 @@ defmodule Flamelex.GUI.Menus.MainMenu do
            })
          end
        },
-       {"temet nosce", &Flamelex.temet_nosce/0},
        {
          "load JediLuke",
          fn ->
@@ -350,7 +351,11 @@ defmodule Flamelex.GUI.Menus.MainMenu do
              memex_directory: "/home/luke/memex/JediLuke"
            })
          end
-       }
+       },
+       widget_workbench(),
+       {"temet nosce", &Flamelex.GUI.DevTools.temet_nosce/0},
+       alias_flx()
+       #  {"temet nosce", &Flamelex.temet_nosce/0}
      ]}
   end
 
@@ -426,15 +431,15 @@ defmodule Flamelex.GUI.Menus.MainMenu do
   # end
 
   def widget_workbench do
-    {"widget wkb", &Flamelex.DevTools.widget_workbench/0}
+    {"widget wkb", &Flamelex.GUI.DevTools.open_widget_wkb/0}
   end
 
-  def re_source_shell do
-    {"re_source_shell", &Flamelex.Lib.Utils.TerminalIO.create_shell_alias/0}
+  def alias_flx do
+    {"alias `flx` in shell", &Flamelex.Lib.Utils.TerminalIO.create_shell_alias/0}
   end
 
   def quit do
-    {"quit", &Flamelex.API.quit/0}
+    {"Quit", &Flamelex.API.quit/0}
   end
 end
 
