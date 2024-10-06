@@ -46,7 +46,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
   end
 
   def buffer_menu(radix_state) do
-    {:sub_menu, "Buffer", do_buffer_menu(radix_state)}
+    {:sub_menu, "Quillex", do_buffer_menu(radix_state)}
   end
 
   def memex_menu(%{memex: %{active?: false}}), do: nil
@@ -100,6 +100,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
   def help_menu do
     {:sub_menu, "Help",
      [
+       {"Open user manual", fn -> raise "you wish lol" end},
        {:sub_menu, "Getting Started",
         [
           {"Installation", fn -> IO.puts("This is the installation guide") end},
@@ -108,20 +109,21 @@ defmodule Flamelex.GUI.Menus.MainMenu do
         ]},
        {:sub_menu, "About Flamelex",
         [
-          {"Version", fn -> IO.puts("Flamelex version 1.0.0") end},
+          # TODO should have popups here, not just print lines
+          {"Version", fn -> IO.puts("Flamelex version ???") end},
           {"Authors", fn -> IO.puts("Flamelex was developed by JediLuke") end},
           {"License", fn -> IO.puts("Flamelex is licensed under the MIT License") end}
         ]}
      ]}
   end
 
-  def do_buffer_menu(%{editor: %{buffers: []}} = _radix_state) do
+  def do_buffer_menu(%{apps: %{editor: %{buffers: []}}} = _radix_state) do
     # what I currently call :sub_menu should be renamed :node,
     # and these ones should have a tag like :leaf or :button
     [
-      {"new", &Flamelex.API.Buffer.new/0},
-      {"save", &Flamelex.API.Buffer.save/0},
-      {"close", &Flamelex.API.Buffer.close/0}
+      {"new clean slate", &Flamelex.API.Buffer.new/0}
+      # {"save", &Flamelex.API.Buffer.save/0},
+      # {"close", &Flamelex.API.Buffer.close/0}
     ]
   end
 
