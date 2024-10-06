@@ -72,6 +72,14 @@ defmodule Flamelex.GUI.RootScene do
   #    {:reply, {:ok, scene.viewport}, scene}
   # end
 
+  # def viewport do
+  #   GenServer.call(__MODULE__, :get_viewport)
+  # end
+
+  # def handle_call(:get_viewport, _from, scene) do
+  #   {:reply, {:ok, scene.viewport}, scene}
+  # end
+
   def handle_input({:viewport, {:enter, _coords}}, context, scene) do
     # Logger.debug "#{__MODULE__} ignoring `:viewport_enter`..."
     {:noreply, scene}

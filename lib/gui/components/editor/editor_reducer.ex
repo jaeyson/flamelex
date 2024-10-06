@@ -8,7 +8,8 @@ defmodule Flamelex.GUI.Component.Editor.Reducer do
   alias Flamelex.GUI.Layers.Layer01.Mutator, as: Layer1
 
   def process(
-        %RadixState{layers: %{one: %{active_apps: []}}} = rdx,
+        # %RadixState{layers: %{one: %{active_apps: []}}} = rdx,
+        rdx,
         :new_buffer
       ) do
     {new_rdx, new_buf} = Editor.Mutator.add_buffer(rdx, %{"name" => "New Buffer"})

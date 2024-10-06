@@ -181,6 +181,9 @@ defmodule Flamelex.GUI.Component.TODOlist do
     # the component ought to be steady, but we don't re-render, we simply push an update
     # (either that, or, the component is the one that pushes the state change up)
 
+    # upcoming should show 3 columns, today, this month, this quarter, and then optionally 6 months 1 year 5 year 10 years
+    #  {"Upcoming", :upcoming},
+
     graph
     |> Scenic.Primitives.group(
       fn graph ->
@@ -188,20 +191,18 @@ defmodule Flamelex.GUI.Component.TODOlist do
         |> ScenicWidgets.SpareParts.LukesDropDown.add_to_graph(
           {[
              {"All", :all},
-             #  {"Top Ten", :top_ten},
-             #  {"Oldest", :oldest},
-             {"Newest", :newest},
              {"This week", :this_week},
              {"This month", :this_month},
              #  {"Next month", :next_month},
              #  {"Most urgent", :most_urgent},
              {"Overdue", :overdue},
-             {"Random 5", :random_5}
+             {"Newest 20", {:newest, 20}},
+             {"Oldest 20", {:oldest, 20}},
+             {"Random 20", {:random, 20}}
              #  {"By Priority", :priority},
+             #  {"Top Ten", :top_ten},
              #  {"Soonest deadline", :soonest},
              #  {"Un-prioritized", :un_prioritized},
-             # upcoming should show 3 columns, today, this month, this quarter, and then optionally 6 months 1 year 5 year 10 years
-             #  {"Upcoming", :upcoming},
              #  {"Done", :done},
            ], default},
           id: :filter_select,

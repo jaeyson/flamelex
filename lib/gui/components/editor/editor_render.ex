@@ -53,16 +53,15 @@ defmodule Flamelex.GUI.Component.Editor.Render do
             translate: {10, ascent + 10}
             # translate: {10, 10}
           )
-
-          # |> CursorCaret.add_to_graph(
-          #   %{
-          #     coords: {10, 10},
-          #     height: font_size,
-          #     mode: :cursor
-          #     # font: font
-          #   },
-          #   id: :cursor
-          # )
+          |> Flamelex.GUI.Component.Editor.CursorCaret.add_to_graph(
+            %{
+              coords: {10, 10},
+              height: font_size,
+              mode: :cursor,
+              font: font
+            },
+            id: :cursor
+          )
         end,
         translate: frame.pin.point
       )
