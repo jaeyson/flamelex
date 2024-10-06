@@ -74,18 +74,18 @@ defmodule Flamelex.GUI.Layers.Layer01 do
     {:ok, graph}
   end
 
-  def render(graph, frame, %{layout: :full_screen, active_apps: [{module, state} | _rest]})
-      when is_atom(module) do
-    # for full screen just let the first app take up the whole frame
-    IO.puts("DEPRECATE MEEEEEE GET COMPONENT TO FETCH ITS STATE DONT PASS IT IN")
+  # def render(graph, frame, %{layout: :full_screen, active_apps: [{module, state} | _rest]})
+  #     when is_atom(module) do
+  #   # for full screen just let the first app take up the whole frame
+  #   IO.puts("DEPRECATE MEEEEEE GET COMPONENT TO FETCH ITS STATE DONT PASS IT IN")
 
-    Wormhole.capture(fn ->
-      IO.puts("Rendering full screen #{inspect(module)}")
+  #   Wormhole.capture(fn ->
+  #     IO.puts("Rendering full screen #{inspect(module)}")
 
-      graph
-      |> module.add_to_graph(%{frame: frame, state: state})
-    end)
-  end
+  #     graph
+  #     |> module.add_to_graph(%{frame: frame, state: state})
+  #   end)
+  # end
 
   def render(graph, frame, %{layout: :full_screen, active_apps: [app | _rest]}) do
     # for full screen just let the first app take up the whole frame
