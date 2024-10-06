@@ -4,10 +4,12 @@ defmodule Flamelex.GUI.Component.Editor.Mutator do
   """
 
   alias Flamelex.Fluxus.RadixState
+  alias Flamelex.GUI.Component.Editor
 
   def add_buffer(rdx, %{"name" => new_buf}) do
     # TODO maybe make Buffer a real struct?
     new_buf = %{
+      uuid: UUID.uuid4(),
       name: new_buf,
       content: ""
     }
@@ -18,6 +20,12 @@ defmodule Flamelex.GUI.Component.Editor.Mutator do
 
     {new_rdx, new_buf}
   end
+
+  # def move_cursor(%Editor.State{}, {direction, x}) do
+  #   # TODO this is a placeholder, we need to actually move the cursor
+  #   # cast_
+  #   :re_routed
+  # end
 
   # TODO for now active buf is just first in the list lol, ssurely this is not performant somehow
   def set_active_buf(rdx, new_buf) do
@@ -36,4 +44,11 @@ defmodule Flamelex.GUI.Component.Editor.Mutator do
         )
     end
   end
+
+  # this is a bad function it assumes we only ever have one buffer open...
+  # def move_cursor(rdx, {direction, x}) do
+  #   # TODO this is a placeholder, we need to actually move the cursor
+  #   IO.puts("RLY MOVE THE CURSOR")
+  #   rdx
+  # end
 end

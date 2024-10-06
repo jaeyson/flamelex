@@ -26,22 +26,6 @@ defmodule Flamelex.Fluxus.RadixState do
       TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
 
     %__MODULE__{
-      theme: theme(),
-      #   # TODO move menubar to some other place in the radix state structure
-      menubar: %{
-        font: :ibm_plex_mono,
-        height: 60
-      },
-      memex: %{
-        active?: false,
-        env: nil
-      },
-      # TODO move fonts to somewhere else too
-      fonts: %{
-        ibm_plex_mono: %{
-          metrics: ibm_plex_mono_font_metrics
-        }
-      },
       layers: %{
         one: Layer01.State.new()
       },
@@ -49,9 +33,26 @@ defmodule Flamelex.Fluxus.RadixState do
         todo_list: TODOlist.State.new(),
         todo_details: TODOdetails.State.new(),
         rapid_selector: RapidSelector.State.new(),
+        # TODO rename editor to quillex
         editor: Editor.State.new(),
         high_council: HighCouncil.State.new(query_memex?: false),
         agent_huddle: AgentHuddle.State.new()
+      },
+      memex: %{
+        active?: false,
+        env: nil
+      },
+      theme: theme(),
+      #   # TODO move menubar to some other place in the radix state structure (should be under layer 2 probably)
+      menubar: %{
+        font: :ibm_plex_mono,
+        height: 60
+      },
+      # TODO move fonts to somewhere else too
+      fonts: %{
+        ibm_plex_mono: %{
+          metrics: ibm_plex_mono_font_metrics
+        }
       }
       # gui: %{}
     }

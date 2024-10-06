@@ -84,6 +84,8 @@ defmodule Flamelex.GUI.Component.AgentHuddle.Render do
     })
   end
 
+  # TODO have tab bar selector up top, let us choose between chat, control panel & info (see TidBit)
+
   # Render content in the right half
   defp render_right_half(graph, %Frame{} = frame, %State{} = _state) do
     graph

@@ -8,9 +8,11 @@ defmodule Flamelex.GUI.Component.Editor.CursorCaret do
   @blink_interval 500
   # Supported cursor modes
   @valid_modes [:cursor, :block]
+  # The fill color of the cursor
+  @color :black
 
   # Validate the data passed to the component
-  def validate(%{coords: _coords, height: _height, mode: mode} = data)
+  def validate(%{coords: _coords, height: _height, mode: mode, buffer_uuid: _uuid} = data)
       when mode in @valid_modes do
     {:ok, data}
   end
@@ -29,7 +31,7 @@ defmodule Flamelex.GUI.Component.Editor.CursorCaret do
           |> Scenic.Primitives.rect(
             {calc_width(mode, font), height},
             id: :cursor_rect,
-            fill: :black
+            fill: @color
           )
         end,
         id: :cursor,
@@ -41,6 +43,8 @@ defmodule Flamelex.GUI.Component.Editor.CursorCaret do
 
     # Capture keyboard input events
     # scene = capture_input(scene, [:key])
+
+    Flamelex.Lib.Utils.PubSub.subscribe(topic: {:buffers, args.buffer_uuid})
 
     # Assign initial state
     scene =
@@ -83,27 +87,37 @@ defmodule Flamelex.GUI.Component.Editor.CursorCaret do
     {:noreply, scene}
   end
 
-  # Handle input events
-  def handle_input({:key, {:key_left, 1, _}}, _context, scene) do
-    move_cursor(scene, :left)
-  end
-
-  def handle_input({:key, {:key_right, 1, _}}, _context, scene) do
-    move_cursor(scene, :right)
-  end
-
-  def handle_input({:key, {:key_up, 1, _}}, _context, scene) do
-    move_cursor(scene, :up)
-  end
-
-  def handle_input({:key, {:key_down, 1, _}}, _context, scene) do
-    move_cursor(scene, :down)
-  end
-
-  # Ignore other keys
-  def handle_input(_input, _context, scene) do
+  def handle_info({:user_input_fwd, _iid}, scene) do
+    # ignore user input in this component for now since input
+    # needs to get routed through the parent component
     {:noreply, scene}
   end
+
+  def handle_info({:move_cursor, direction, _x}, scene) do
+    move_cursor(scene, direction)
+  end
+
+  # # Handle input events
+  # def handle_input({:key, {:key_left, 1, _}}, _context, scene) do
+  #   move_cursor(scene, :left)
+  # end
+
+  # def handle_input({:key, {:key_right, 1, _}}, _context, scene) do
+  #   move_cursor(scene, :right)
+  # end
+
+  # def handle_input({:key, {:key_up, 1, _}}, _context, scene) do
+  #   move_cursor(scene, :up)
+  # end
+
+  # def handle_input({:key, {:key_down, 1, _}}, _context, scene) do
+  #   move_cursor(scene, :down)
+  # end
+
+  # Ignore other keys
+  # def handle_input(_input, _context, scene) do
+  #   {:noreply, scene}
+  # end
 
   # Helper function to move the cursor
   defp move_cursor(scene, direction) do

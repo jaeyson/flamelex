@@ -5,6 +5,7 @@ defmodule Flamelex.GUI.Component.Editor.State do
 
   use StructAccess
 
+  # TODO rename this to slate one of these days...
   defstruct active_buf: nil,
             buffers: []
 

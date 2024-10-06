@@ -70,6 +70,10 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.GUI.Component.TODOlist.Reducer.process(rdx, action)
   end
 
+  def process(rdx, {Flamelex.GUI.Component.Editor.Reducer, action}) do
+    Flamelex.GUI.Component.Editor.Reducer.process(rdx, action)
+  end
+
   def process(rdx, {Flamelex.GUI.Component.RapidSelector.Reducer, action}) do
     Flamelex.GUI.Component.RapidSelector.Reducer.process(rdx, action)
   end

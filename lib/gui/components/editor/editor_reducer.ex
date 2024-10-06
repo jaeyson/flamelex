@@ -20,6 +20,35 @@ defmodule Flamelex.GUI.Component.Editor.Reducer do
     |> Editor.Mutator.set_active_buf("New Buffer")
   end
 
+  @directions [:up, :down, :left, :right]
+  def process(
+        %Editor.State{} = state,
+        {:move_cursor, direction, x}
+      )
+      when is_integer(x) and x > 0 and direction in @directions do
+    IO.puts("ALSO HITTING REDUCER")
+    # state
+    # |> Editor.Mutator.move_cursor({direction, x})
+    Flamelex.Lib.Utils.PubSub.broadcast(
+      topic: {:buffers, hd(state.buffers).uuid},
+      msg: {:move_cursor, direction, x}
+    )
+
+    :re_routed
+  end
+
+  # @directions [:up, :down, :left, :right]
+  # def process(
+  #       rdx,
+  #       {:move_cursor, direction, x}
+  #     )
+  #     when is_integer(x) and x > 0 and direction in @directions do
+  #   IO.puts()
+
+  #   rdx
+  #   |> Editor.Mutator.move_cursor({direction, x})
+  # end
+
   #   # IO.puts("HERE WE NEED TO ADD A NEW BUFFER")
   #   {new_rdx, new_buf} = Editor.Mutator.add_buffer(rdx, %{name: "New Buffer"})
 

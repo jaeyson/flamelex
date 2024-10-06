@@ -211,6 +211,17 @@ defmodule Flamelex.Fluxus.RadixStore do
         :ignore ->
           :ignore
 
+        :re_routed ->
+          :ignore
+
+        # {:route_to, :first_buffer} ->
+        #   IO.puts("ROUTING TO FIRST BUFFER")
+        #   # this is a bit of a hack, but it's a way to route the event to a different store
+        #   # we could potentially have a list of stores to route to, and then we could
+        #   # broadcast the event to all of them, and they could all decide if they want to
+        #   # process it or not
+        #   :ignore
+
         actions when is_list(actions) ->
           # apply actions to the radix state in sequence to determine the new state
           new_rdx =

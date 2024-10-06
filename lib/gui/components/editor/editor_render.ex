@@ -55,6 +55,7 @@ defmodule Flamelex.GUI.Component.Editor.Render do
           )
           |> Flamelex.GUI.Component.Editor.CursorCaret.add_to_graph(
             %{
+              buffer_uuid: hd(state.buffers).uuid,
               coords: {10, 10},
               height: font_size,
               mode: :cursor,
