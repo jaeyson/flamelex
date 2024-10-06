@@ -39,6 +39,17 @@ defmodule Flamelex.GUI.Component.Editor.Render do
 
     colors = @cauldron
 
+    buf = hd(state.buffers)
+
+    # def add_component_to_graph(graph, component_module, component_pid, opts) do
+    #   graph
+    #   |> Scenic.Primitives.group(fn g ->
+    #     g |> component_module.add_to_graph(%{pid: component_pid}, opts)
+    #   end)
+    # end
+
+    # |> MyApp.BufferServer.add_to_graph(%{pid: buf.pid}, [])
+
     graph =
       Graph.build()
       |> Primitives.group(
@@ -55,7 +66,7 @@ defmodule Flamelex.GUI.Component.Editor.Render do
           )
           |> Flamelex.GUI.Component.Editor.CursorCaret.add_to_graph(
             %{
-              buffer_uuid: hd(state.buffers).uuid,
+              buffer_uuid: buf.uuid,
               coords: {10, 10},
               height: font_size,
               mode: :cursor,

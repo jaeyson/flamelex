@@ -59,65 +59,65 @@ defmodule Flamelex.GUI.Component.Editor do
     {:noreply, scene}
   end
 
-  def handle_info({:user_input_fwd, input}, %{assigns: %{state: state}} = scene) do
-    Logger.debug("Editor received input: #{inspect(input)}")
+  # def handle_cast({:user_input_fwd, input}, %{assigns: %{state: state}} = scene) do
+  #   Logger.debug("Editor received input: #{inspect(input)}")
 
-    # user input handle returns a list of actions, which must be processed by the reducer
-    # maybe on the component level we don't bother with that... though I think it will be awesome for undo/redo etc!
+  #   # user input handle returns a list of actions, which must be processed by the reducer
+  #   # maybe on the component level we don't bother with that... though I think it will be awesome for undo/redo etc!
 
-    # TODO use wormhole, abstract this out somewhere
-    case Editor.UserInputHandler.handle(state, input) do
-      :ignore ->
-        {:noreply, scene}
+  #   # TODO use wormhole, abstract this out somewhere
+  #   case Editor.UserInputHandler.handle(state, input) do
+  #     :ignore ->
+  #       {:noreply, scene}
 
-      :re_routed ->
-        IO.puts("RE ROUTED #{inspect(input)}")
-        {:noreply, scene}
+  #     :re_routed ->
+  #       IO.puts("RE ROUTED #{inspect(input)}")
+  #       {:noreply, scene}
 
-      actions when is_list(actions) ->
-        # TODO this gets into a repeat of the previous problem... I want to apply the actions,
-        # but I DONT wnt to always re-render!!
+  #     actions when is_list(actions) ->
+  #       # TODO this gets into a repeat of the previous problem... I want to apply the actions,
+  #       # but I DONT wnt to always re-render!!
 
-        # apply actions to the radix state in sequence to determine the new state
-        new_state =
-          actions
-          |> Enum.reduce(state, fn action, state_acc ->
-            case Editor.Reducer.process(state_acc, action) do
-              :ignore ->
-                state_acc
+  #       # apply actions to the radix state in sequence to determine the new state
+  #       new_state =
+  #         actions
+  #         |> Enum.reduce(state, fn action, state_acc ->
+  #           case Editor.Reducer.process(state_acc, action) do
+  #             :ignore ->
+  #               state_acc
 
-              # :re_routed ->
-              #   state_acc
+  #             # :re_routed ->
+  #             #   state_acc
 
-              %Editor.State{} = new_state ->
-                new_state
-            end
-          end)
+  #             %Editor.State{} = new_state ->
+  #               new_state
+  #           end
+  #         end)
 
-        # This ideally is where Scenic is able to go, no need to re-render if the state hasn't changed,
-        new_graph = Render.go(scene.assigns.frame, new_state)
+  #       # This ideally is where Scenic is able to go, no need to re-render if the state hasn't changed,
+  #       new_graph = Render.go(scene.assigns.frame, new_state)
 
-        new_scene =
-          scene
-          |> assign(state: new_state)
-          |> push_graph(new_graph)
+  #       new_scene =
+  #         scene
+  #         |> assign(state: new_state)
+  #         |> push_graph(new_graph)
 
-        # cast_children(new_state.buffers)
+  #       # cast_children(new_state.buffers)
 
-        {:noreply, new_scene}
-    end
+  #       {:noreply, new_scene}
+  #   end
 
-    # new_state = Editor.UserInputHandler.handle(state, input)
+  #   # new_state = Editor.UserInputHandler.handle(state, input)
 
-    # # TODO somehow we want to resist re-rendering all the time, we should mutate instead
-    # # by pushing input events down to the lowest level that can handle them
-    # new_graph = Render.go(scene.assigns.frame, new_state)
+  #   # # TODO somehow we want to resist re-rendering all the time, we should mutate instead
+  #   # # by pushing input events down to the lowest level that can handle them
+  #   # new_graph = Render.go(scene.assigns.frame, new_state)
 
-    # new_scene =
-    #   scene
-    #   |> assign(state: new_state)
-    #   |> push_graph(new_graph)
+  #   # new_scene =
+  #   #   scene
+  #   #   |> assign(state: new_state)
+  #   #   |> push_graph(new_graph)
 
-    # {:noreply, new_scene}
-  end
+  #   # {:noreply, new_scene}
+  # end
 end

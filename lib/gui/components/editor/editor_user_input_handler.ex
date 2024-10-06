@@ -56,9 +56,14 @@ defmodule Flamelex.GUI.Component.Editor.UserInputHandler do
   end
 
   def handle(%Editor.State{} = state, @right_arrow) do
-    Flamelex.Lib.Utils.PubSub.broadcast(
-      topic: {:buffers, hd(state.buffers).uuid},
-      msg: {:move_cursor, :right, 1}
+    # Flamelex.Lib.Utils.PubSub.broadcast(
+    #   topic: {:buffers, hd(state.buffers).uuid},
+    #   msg: {:move_cursor, :right, 1}
+    # )
+
+    Quillex.Buffer.BufferManager.cast_to_buffer(
+      hd(state.buffers).uuid,
+      {:user_input_fwd, @right_arrow}
     )
 
     :re_routed

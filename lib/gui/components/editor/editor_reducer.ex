@@ -12,30 +12,39 @@ defmodule Flamelex.GUI.Component.Editor.Reducer do
         rdx,
         :new_buffer
       ) do
-    {new_rdx, new_buf} = Editor.Mutator.add_buffer(rdx, %{"name" => "New Buffer"})
+    # {new_rdx, new_buf} = Editor.Mutator.add_buffer(rdx, %{"name" => "New Buffer"})
 
-    new_rdx
-    |> Layer1.set_active_apps([Editor])
+    # new_rdx
+    #
+    #
+    # |> Editor.Mutator.set_active_buf("New Buffer")
+    rdx
     |> Layer1.set_layout(:full_screen)
-    |> Editor.Mutator.set_active_buf("New Buffer")
+    |> Layer1.set_active_apps([Editor])
+    |> Editor.Mutator.new_buffer(%{"name" => "New Buffer"})
   end
 
-  @directions [:up, :down, :left, :right]
-  def process(
-        %Editor.State{} = state,
-        {:move_cursor, direction, x}
-      )
-      when is_integer(x) and x > 0 and direction in @directions do
-    IO.puts("ALSO HITTING REDUCER")
-    # state
-    # |> Editor.Mutator.move_cursor({direction, x})
-    Flamelex.Lib.Utils.PubSub.broadcast(
-      topic: {:buffers, hd(state.buffers).uuid},
-      msg: {:move_cursor, direction, x}
-    )
+  # @directions [:up, :down, :left, :right]
+  # def process(
+  #       %Editor.State{} = state,
+  #       {:move_cursor, direction, x}
+  #     )
+  #     when is_integer(x) and x > 0 and direction in @directions do
+  #   IO.puts("ALSO HITTING REDUCER")
+  #   # state
+  #   # |> Editor.Mutator.move_cursor({direction, x})
+  #   # Flamelex.Lib.Utils.PubSub.broadcast(
+  #   #   topic: {:buffers, hd(state.buffers).uuid},
+  #   #   msg: {:move_cursor, direction, x}
+  #   # )
 
-    :re_routed
-  end
+  #   Quillex.Buffer.BufferManager.cast_to_buffer(
+  #     hd(state.buffers).uuid,
+  #     {:move_cursor, direction, x}
+  #   )
+
+  #   :re_routed
+  # end
 
   # @directions [:up, :down, :left, :right]
   # def process(

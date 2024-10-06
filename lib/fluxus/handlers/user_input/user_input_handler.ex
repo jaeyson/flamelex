@@ -36,14 +36,28 @@ defmodule Flamelex.Fluxus.UserInputHandler do
 
   def handle(
         %{layers: %{one: %{active_apps: [Editor]}}} = rdx,
+        # %{layers: %{one: %{active_apps: [Quillex]}}} = rdx,
         input
       ) do
     buf = rdx.apps.editor.buffers |> List.first()
 
-    Flamelex.Lib.Utils.PubSub.broadcast(
-      topic: {:buffers, buf.uuid},
-      msg: {:user_input_fwd, input}
-    )
+    # right now we hard-code we only ever edit the active buffer lol
+    # Quillex.Buffer.BufferManager.cast_to_buffer(
+    #   hd(rdx.apps.editor.buffers),
+    #   {:user_input_fwd, input}
+    # )
+
+    # TODO maybe this is fine maybe needs to be more robust (do a lookup on name dont use pid)
+    GenServer.cast(buf.pid, {:user_input_fwd, input})
+
+    # TODO even here, we could route input to QuillEx...
+
+    # Flamelex.Lib.Utils.PubSub.broadcast(
+    #   topic: {:buffers, buf.uuid},
+    #   msg: {:user_input_fwd, input}
+    # )
+    # QuillEx.Fluxus.user_input(input)
+    # QuillEx.Buffer.new(%{"name" => "New Buffer"})
 
     :re_routed
 
