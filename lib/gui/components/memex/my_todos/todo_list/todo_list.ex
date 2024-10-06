@@ -187,23 +187,22 @@ defmodule Flamelex.GUI.Component.TODOlist do
         graph
         |> ScenicWidgets.SpareParts.LukesDropDown.add_to_graph(
           {[
-             {"Top Ten", :top_ten},
-             {"Oldest", :oldest},
+             {"All", :all},
+             #  {"Top Ten", :top_ten},
+             #  {"Oldest", :oldest},
              {"Newest", :newest},
              {"This week", :this_week},
              {"This month", :this_month},
-             {"Next month", :next_month},
-             {"Most urgent", :most_urgent},
+             #  {"Next month", :next_month},
+             #  {"Most urgent", :most_urgent},
              {"Overdue", :overdue},
-             {"Random 5", :random_5},
-             {"By Priority", :priority},
-             {"Soonest deadline", :soonest},
-             {"Un-prioritized", :un_prioritized},
+             {"Random 5", :random_5}
+             #  {"By Priority", :priority},
+             #  {"Soonest deadline", :soonest},
+             #  {"Un-prioritized", :un_prioritized},
              # upcoming should show 3 columns, today, this month, this quarter, and then optionally 6 months 1 year 5 year 10 years
-             {"Upcoming", :upcoming},
+             #  {"Upcoming", :upcoming},
              #  {"Done", :done},
-
-             {"All", :all}
            ], default},
           id: :filter_select,
           translate: {20, 20}
@@ -215,7 +214,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
              {"Cancelled", :cancelled}
            ], []},
           id: :status_select,
-          translate: {200, 20}
+          translate: {300, 20}
         )
       end,
       translate: frame.pin.point
