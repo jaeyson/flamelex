@@ -174,12 +174,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
 
   # %Flamelex.GUI.Component.TODOlist.State{list: []}
   def render_tools(graph, frame, %State{} = s) do
-    # TODO default needs to come from some kind of scene state otherwise whenevr we change scenes it doesn't
-    # remember the last selected filter, it defaults to the default
-    IO.inspect(s, label: "TODOlist state")
-
-    IO.inspect(s.filter, label: "TODOlist state filter")
-
+    # the Scene state remembers what the dropdown filter is
     default = s.filter || :all
 
     # TODO this should not "re-render" every single time that I chnge the dropdown !!
@@ -190,8 +185,6 @@ defmodule Flamelex.GUI.Component.TODOlist do
     |> Scenic.Primitives.group(
       fn graph ->
         graph
-        # |> Frame.draw_guidewires(frame, color: :green)
-        # |> Scenic.Component.Input.Dropdown.add_to_graph(
         |> ScenicWidgets.SpareParts.LukesDropDown.add_to_graph(
           {[
              {"Top Ten", :top_ten},
@@ -203,30 +196,27 @@ defmodule Flamelex.GUI.Component.TODOlist do
              {"Most urgent", :most_urgent},
              {"Overdue", :overdue},
              {"Random 5", :random_5},
-             {"Priority", :priority},
+             {"By Priority", :priority},
              {"Soonest deadline", :soonest},
              {"Un-prioritized", :un_prioritized},
              # upcoming should show 3 columns, today, this month, this quarter, and then optionally 6 months 1 year 5 year 10 years
              {"Upcoming", :upcoming},
-             {"Done", :done},
-             {"Cancelled", :cancelled},
+             #  {"Done", :done},
+
              {"All", :all}
            ], default},
           id: :filter_select,
           translate: {20, 20}
         )
-
-        # |> Scenic.Primitives.rect(frame.size.box, fill: :green)
-        #  stroke: {border_stroke, stroke_color},
-        #  translate: frame.pin
-        # )
-        # |> Scenic.Primitives.text(title,
-        #   # font: font.name,
-        #   font_size: 20,
-        #   fill: :black,
-        #   # translate: {0, 72}
-        #   # translate: {5, font.ascent}
-        # )
+        |> ScenicWidgets.SpareParts.LukesMultiSelect.add_to_graph(
+          {[
+             {"In progress", :in_progress},
+             {"Done", :done},
+             {"Cancelled", :cancelled}
+           ], []},
+          id: :status_select,
+          translate: {200, 20}
+        )
       end,
       translate: frame.pin.point
       # scissor: frame.size.box
@@ -384,21 +374,12 @@ defmodule Flamelex.GUI.Component.TODOlist do
     {:noreply, scene |> assign(dropdown_mode: true)}
   end
 
-  @valid_filters [:all, :this_week]
   def handle_event({:value_changed, :filter_select, filter_by}, _context, scene) do
-    if filter_by in @valid_filters do
-      Flamelex.Fluxus.action({TODOlist.Reducer, {:filter_todos, filter_by}})
-      {:noreply, scene}
-    else
-      IO.puts("Invalid filter: #{filter_by}")
-      # raise "no reason not to crash here, sorry"
-      IO.puts("the List of valid filters reject shit sbut we just need to add it!")
-      {:noreply, scene}
-    end
-
-    # # start here, this is where it "actually happens" - the event which fired as a result of user interaction, actually hyappened
-    # Flamelex.Fluxus.action({__MODULE__, {:filter_todos, filter_by}})
-    # {:noreply, scene}
+    # NOTE: don't need to validate the filter here, because the Reducer will do that
+    # TODO _however_, if the reducer fails, nothing crashes but the dropdown remains on the
+    # new selection, which causes it to "look" like it worked, but it didn't
+    Flamelex.Fluxus.action({TODOlist.Reducer, {:filter_todos, filter_by}})
+    {:noreply, scene}
   end
 
   # def handle_event(e, scene) do

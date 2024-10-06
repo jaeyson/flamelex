@@ -18,15 +18,16 @@ defmodule Flamelex.GUI.Component.TODOlist.Mutator do
     put_in(rdx, [:apps, :todo_list, :turbo_scroll?], turbo?)
   end
 
-  @valid_filters [:all, :this_week]
-  def set_filter(%RadixState{} = rdx, filter: f) when f in @valid_filters do
-    put_in(rdx, [:apps, :todo_list, :filter], f)
-  end
-
   def set_filter(%RadixState{} = rdx, filter: f) do
-    # put_in(rdx, [:apps, :todo_list, :filter], f)
-    IO.puts("Invalid filter: #{f}")
-    raise "no reason not to crash here, sorry"
-    # rdx
+    # NOTE I guess it's a touch *dangerous* not validating
+    # the filter here, but we do validation inside the reducer,
+    # adding further validation here is redundant and slows us down...
+
+    # Since writring that ^^ comment, I have _also_ removed validation
+    # from the reducer! We just assume the filter is valid, until it gets
+    # propagated to My.TODOs and crashes !!?!
+
+    # If we do add validation, do it right at the end, cause it's a lot of refactoring all the time right now having so much validation
+    put_in(rdx, [:apps, :todo_list, :filter], f)
   end
 end
