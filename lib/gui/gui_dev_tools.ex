@@ -25,6 +25,26 @@ defmodule Flamelex.GUI.DevTools do
     raise "not implemented"
   end
 
+  # This will clean and recompile everything, but it will be part of a cold restart, as it's more of a recompilation process.
+  # However, this isn't hot code reloading in the strict sense, where the system keeps running without downtime while code is reloaded.
+  def recompile_all_deps do
+    Mix.Task.run("deps.clean", ["--all"])
+    Mix.Task.run("clean")
+    Mix.Task.run("deps.get")
+    Mix.Task.run("compile", ["--force"])
+  end
+
+  def recompile_dep(dependency_name) do
+    Mix.Task.run("deps.clean", [dependency_name])
+    # Mix.Task.run("deps.clean", [dependency_name])
+  end
+
+  def reboot_viewport do
+    {:ok, vp} = Process.whereis(:main_viewport) |> Scenic.ViewPort.info()
+    {:ok, _} = Scenic.ViewPort.set_root(vp, Flamelex.GUI.RootScene, %{})
+    :ok
+  end
+
   @doc """
   Opens the component inspector, which displays information about the selected GUI components.
 
@@ -33,6 +53,28 @@ defmodule Flamelex.GUI.DevTools do
   def open_component_inspector(component) do
     # Logic to inspect the component
     raise "not implemented"
+  end
+
+  def open_widget_wkb do
+    # Flamelex.Fluxus.action({WidgetWorkbench, :open})
+    {:ok, vp} = Process.whereis(:main_viewport) |> Scenic.ViewPort.info()
+    {:ok, _} = Scenic.ViewPort.set_root(vp, WidgetWorkbench.Scene, %{})
+    :ok
+  end
+
+  # call this to restore the flamelex GUI after you've been playing with the widget workbench
+  def restore_flamelex do
+    {:ok, vp} = Process.whereis(:main_viewport) |> Scenic.ViewPort.info()
+    :ok = Scenic.ViewPort.set_root(vp, Flamelex.GUI.RootScene, %{})
+    :ok
+  end
+
+  def temet_nosce do
+    recompile_dep("memelex")
+    recompile_dep("scenic-widget-contrib")
+    Mix.Task.run("deps.get")
+    IEx.Helpers.recompile()
+    reboot_viewport()
   end
 
   @doc """
