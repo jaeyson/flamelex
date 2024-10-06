@@ -3,6 +3,7 @@ defmodule Flamelex.Fluxus.RadixState do
   alias Flamelex.GUI.Layers.Layer01
 
   alias Flamelex.GUI.Component.{
+    Editor,
     TODOlist,
     TODOdetails,
     RapidSelector,
@@ -48,13 +49,11 @@ defmodule Flamelex.Fluxus.RadixState do
         todo_list: TODOlist.State.new(),
         todo_details: TODOdetails.State.new(),
         rapid_selector: RapidSelector.State.new(),
-        editor: %{
-          buffers: []
-        },
+        editor: Editor.State.new(),
         high_council: HighCouncil.State.new(query_memex?: false),
         agent_huddle: AgentHuddle.State.new()
-      },
-      gui: %{}
+      }
+      # gui: %{}
     }
   end
 

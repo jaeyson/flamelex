@@ -43,23 +43,6 @@ defmodule Flamelex.Fluxus.RadixReducer do
   """
   alias Flamelex.Fluxus.RadixState
 
-  # If we try to open a TidBit and we're already in editor mode, don't switch to Memex mode
-  # def process(%{root: %{active_app: active_app}} = radix_state, {
-  #       Memelex.Fluxus.Reducers.TidbitReducer,
-  #       {:open_tidbit,
-  #        %{type: ["external", "textfile"], data: %{"filepath" => filepath}} = tidbit}
-  #     })
-  #     when active_app in [:desktop, :editor] do
-  #   QuillEx.Reducers.BufferReducer.process(
-  #     radix_state,
-  #     {:open_buffer, %{file: filepath, mode: {:vim, :normal}}}
-  #   )
-  # end
-
-  # def process(radix_state, {:widget_workbench, :open}) do
-  #   {:ok, radix_state |> open_widget_workbench()}
-  # end
-
   def process(rdx, {:load_memex, %Memelex.Environment{} = env}) do
     rdx
     # TODO when I eventually go multi-env, this may be a problem...
@@ -70,38 +53,6 @@ defmodule Flamelex.Fluxus.RadixReducer do
   def process(rdx, {Flamelex.GUI.Component.TODOlist, action}) do
     Flamelex.GUI.Component.TODOlist.Reducer.process(rdx, action)
   end
-
-  # def app_is_active?(rdx_state, app) do
-  #   case rdx_state[:layers][:one][:active_apps] do
-  #     {^app, _args} ->
-  #       true
-
-  #     app_list when is_list(app_list) ->
-  #       Enum.reduce(app_list, false, fn {a, _}, acc ->
-  #         if a == app do
-  #           true
-  #         else
-  #           acc
-  #         end
-  #       end)
-  #   end
-  # end
-
-  # def update_active_app(rdx_state, app, merge: new_state) do
-  #   new_active_apps =
-  #     rdx_state[:layers][:one][:active_apps]
-  #     |> Enum.map(fn
-  #       {a, s} when a == app -> {a, s |> Map.merge(new_state)}
-  #       {a, s} -> {a, s}
-  #     end)
-
-  #   rdx_state
-  #   |> put_in([:layers, :one, :active_apps], new_active_apps)
-
-  #   # |> put_in([:layers, :one, :active_apps], [
-  #   #   {app, rdx_state[:layers][:one][:active_apps][app] |> Map.merge(new_state)}
-  #   # ])
-  # end
 
   # for now hard code this redirect because we know it's going to be applied at the component level
   def process(rdx, {Flamelex.GUI.Component.TODOdetails, action}) do
@@ -124,8 +75,13 @@ defmodule Flamelex.Fluxus.RadixReducer do
   end
 
   def process(rdx, :show_agents) do
-    IO.puts("This is where we're going to actually show the agent, now we need to build it!")
     Flamelex.GUI.Component.HighCouncil.Reducer.process(rdx, :show_agents)
+  end
+
+  @quillex_actions [:new_buffer]
+  def process(rdx, q_action) when q_action in @quillex_actions do
+    # QuillEx.Reducer.process(rdx, q_action)
+    Flamelex.GUI.Component.Editor.Reducer.process(rdx, q_action)
   end
 
   # def process(rdx, {component, action}) when is_module(component) do
@@ -155,16 +111,70 @@ defmodule Flamelex.Fluxus.RadixReducer do
   # end
 
   # theoretically we dont need to handle things we dont know how to handle but it does make a lot of noise...
-  def process(rdx_state, action) do
-    # Logger.error("#{__MODULE__} unable to process action. #{inspect(action)}")
-    # IO.puts("#{__MODULE__} unable to process action. #{inspect(action)}")
+  # def process(rdx_state, action) do
+  #   # Logger.error("#{__MODULE__} unable to process action. #{inspect(action)}")
+  #   # IO.puts("#{__MODULE__} unable to process action. #{inspect(action)}")
 
-    IO.puts(
-      "\e[33m#{__MODULE__} === === ===\n\nunable to process action: #{inspect(action)}\e[0m\n"
-    )
+  #   IO.puts(
+  #     "\e[33m#{__MODULE__} === === ===\n\nunable to process action: #{inspect(action)}\e[0m\n"
+  #   )
 
-    # IO.inspect(rdx_state.layers.one.active_apps, label: "Active Apps")
+  #   # IO.inspect(rdx_state.layers.one.active_apps, label: "Active Apps")
 
-    :ignore
-  end
+  #   :ignore
+  # end
 end
+
+# If we try to open a TidBit and we're already in editor mode, don't switch to Memex mode
+# def process(%{root: %{active_app: active_app}} = radix_state, {
+#       Memelex.Fluxus.Reducers.TidbitReducer,
+#       {:open_tidbit,
+#        %{type: ["external", "textfile"], data: %{"filepath" => filepath}} = tidbit}
+#     })
+#     when active_app in [:desktop, :editor] do
+#   QuillEx.Reducers.BufferReducer.process(
+#     radix_state,
+#     {:open_buffer, %{file: filepath, mode: {:vim, :normal}}}
+#   )
+# end
+
+# this is a special case, we jump to a whole different scene
+# def process(rdx, {WidgetWorkbench, :open}) do
+#   # Flamelex.GUI.Component.TODOlist.Reducer.process(rdx, action)
+#   # {:ok, _} = Scenic.ViewPort.set_root(scene.viewport, {WidgetWorkbench.Scene, %{}})
+#   vp = Flamelex.GUI.RootScene.viewport()
+#   {:ok, _} = Scenic.ViewPort.set_root(vp, {WidgetWorkbench.Scene, %{}})
+#   :ignore
+# end
+
+# def app_is_active?(rdx_state, app) do
+#   case rdx_state[:layers][:one][:active_apps] do
+#     {^app, _args} ->
+#       true
+
+#     app_list when is_list(app_list) ->
+#       Enum.reduce(app_list, false, fn {a, _}, acc ->
+#         if a == app do
+#           true
+#         else
+#           acc
+#         end
+#       end)
+#   end
+# end
+
+# def update_active_app(rdx_state, app, merge: new_state) do
+#   new_active_apps =
+#     rdx_state[:layers][:one][:active_apps]
+#     |> Enum.map(fn
+#       {a, s} when a == app -> {a, s |> Map.merge(new_state)}
+#       {a, s} -> {a, s}
+#     end)
+
+#   rdx_state
+#   |> put_in([:layers, :one, :active_apps], new_active_apps)
+
+#   # |> put_in([:layers, :one, :active_apps], [
+#   #   {app, rdx_state[:layers][:one][:active_apps][app] |> Map.merge(new_state)}
+#   # ])
+# end

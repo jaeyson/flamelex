@@ -70,32 +70,47 @@ defmodule Flamelex.Fluxus do
 
   #   # having to include this is starting to feel like a bad thing... not really though, the lib computes the result & throws it away !
   def declare(a) do
-    with {:ok, results} <- do_declare(a) do
-      IO.inspect(results)
-      # NOTE - we replace this atom (the initial accumulator) in the successful case,
-      # so we have confidence when it matches (an atom can't match onto a list) the final result that this function worked
-      [final_radix_state] =
-        Enum.reduce(results, :accumulator, fn
-          # add the results from ActionListener to the accumulator, discard ones from UserInputListener
-          {Flamelex.Fluxus.ActionListener, {:ok, new_radix_state}}, acc ->
-            [new_radix_state]
+    # with {:ok, results} <- do_declare(a) do
+    # with {:ok, results} <- do_declare(a) do
+    case do_declare(a) do
+      [{Flamelex.Fluxus.RadixStore, :ignore}] ->
+        {:ok, :ignore}
 
-          {Flamelex.Fluxus.UserInputListener, _res}, acc ->
-            acc
-        end)
+      [{Flamelex.Fluxus.RadixStore, {:ok, %Flamelex.Fluxus.RadixState{} = r}}] ->
+        {:ok, r}
 
-      {:ok, final_radix_state}
+      [{Flamelex.Fluxus.RadixStore, {:error, _reason}}] ->
+        # {:error, reason} ->
+        #   IO.inspect(reason, label: "reason")
+        #   # raise "Was not able to declare action successfully - #{reason}"
+        {:error, "Was not able to declare action `#{inspect(a)}` successfully."}
     end
+
+    # IO.inspect(results)
+    # NOTE - we replace this atom (the initial accumulator) in the successful case,
+    # so we have confidence when it matches (an atom can't match onto a list) the final result that this function worked
+    # [final_radix_state] =
+    #   Enum.reduce(results, :accumulator, fn
+    #     # add the results from ActionListener to the accumulator, discard ones from UserInputListener
+    #     {Flamelex.Fluxus.ActionListener, {:ok, new_radix_state}}, acc ->
+    #       [new_radix_state]
+
+    #     {Flamelex.Fluxus.UserInputListener, _res}, acc ->
+    #       acc
+    #   end)
+
+    # {:ok, final_radix_state}
+    # end
   end
 
   @actions :flx_actions
   defp do_declare(a) do
-    {:ok,
-     EventBus.declare(%EventBus.Model.Event{
-       id: UUID.uuid4(),
-       topic: @actions,
-       data: a
-     })}
+    # {:ok,
+    EventBus.declare(%EventBus.Model.Event{
+      id: UUID.uuid4(),
+      topic: @actions,
+      data: a
+    })
   end
 end
 

@@ -47,7 +47,10 @@ defmodule Flamelex.Fluxus.RadixStore do
     # we need to pass event_shadow all the way through so that we can ack
     # the event at the end of the processing
     e = EventBus.fetch_event(event_shadow)
-    GenServer.cast(__MODULE__, {:event, e, event_shadow})
+    # TODO make this a call?? Then the results can be returned to whoever sent the event,
+    # and they can ack it, or use them e.g. make a new buffer - but will this lock up the RadixStore?
+    # GenServer.cast(__MODULE__, {:event, e, event_shadow})
+    GenServer.call(__MODULE__, {:event, e, event_shadow})
   end
 
   def handle_cast(_any_msg, :initialization_failure) do
@@ -56,6 +59,60 @@ defmodule Flamelex.Fluxus.RadixStore do
     )
 
     {:noreply, :initialization_failure}
+  end
+
+  def handle_call({:event, e, e_shadow}, _from, radix_state) do
+    # this can make a lot of noise, but sometimes I need to see it
+    crush_report? = true
+
+    case Wormhole.capture(handle_event_fn(radix_state, e), crush_report: crush_report?) do
+      {:ok, :ignore} ->
+        EventBus.mark_as_completed({__MODULE__, e_shadow})
+        {:reply, :ignore, radix_state}
+
+      # {:noreply, radix_state}
+
+      {:ok, new_radix_state} ->
+        # so for now, we're just going to double-down on this being the single channel
+        # I have a big debate about this because I feel like this is going to be very expensive,
+        # broadcasting out multiple copies of the RadixState! However, this is
+        # the simplest way to do it, and we can always optimize later. I am not able to
+        # really wrap my head around how I would do it otherwise... maybe I simply push the radix state
+        # through a reducer which has side-effects of broadcasting out messages on specific channels?
+        # that might make it possible to broadcast smaller state changes
+
+        # one idea would be to broadcast the action first to radix state, then radix state
+        # has control and can broadcast (potentially modified) actions down to it's
+        # children (or just publish it on a channel), the child stores can then
+        # update their state and broadcast out their changes
+
+        # The problem becomes when we need to access different parts of the state tree, or if
+        # something deeply nested within the state tree ends up affecting decisions made early/high in the funnel,
+        # which maybe shouldn't happen but somehow it seems to all the time...
+
+        # there's another idea which is, broadcast actions out to _all_ the stores, they decide individually if
+        # they care about it, and if they do, then they might broadcast just their own state changes out on their own channel
+        # to whatever GUI components are listening to those changes
+        Flamelex.Lib.Utils.PubSub.broadcast(
+          topic: :radix_state_change,
+          msg: {:radix_state_change, new_radix_state}
+        )
+
+        EventBus.mark_as_completed({__MODULE__, e_shadow})
+        {:reply, {:ok, new_radix_state}, new_radix_state}
+
+      {:error, _reason} ->
+        formatted_error = ~s|\n
+        id: #{e.id},
+        topic: #{e.topic},
+        event: #{inspect(e.data)}
+        |
+
+        Logger.error("#{__MODULE__} failed to process event.#{formatted_error}")
+
+        EventBus.mark_as_completed({__MODULE__, e_shadow})
+        {:reply, {:error, "#{__MODULE__} failed to process event."}, radix_state}
+    end
   end
 
   def handle_cast({:event, e, e_shadow}, radix_state) do
@@ -103,7 +160,7 @@ defmodule Flamelex.Fluxus.RadixStore do
         event: #{inspect(e.data)}
         |
 
-        Logger.error("#{__MODULE__} failed to process event.#{formatted_error}")
+        Logger.warn("#{__MODULE__} failed to process event.#{formatted_error}")
 
         EventBus.mark_as_completed({__MODULE__, e_shadow})
         {:noreply, radix_state}
@@ -127,7 +184,7 @@ defmodule Flamelex.Fluxus.RadixStore do
           # EventBus.mark_as_completed({__MODULE__, e_shadow})
           :ignore
 
-        new_radix_state ->
+        %Flamelex.Fluxus.RadixState{} = new_radix_state ->
           # EventBus.mark_as_completed({__MODULE__, e_shadow})
           new_radix_state
       end

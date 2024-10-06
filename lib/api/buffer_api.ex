@@ -16,20 +16,28 @@ defmodule Flamelex.API.Buffer do
   end
 
   def new do
-    new("")
-  end
+    # new("")
+    # {:ok, radix_state} = Flamelex.Fluxus.declare(:new_buffer)
+    # radix_state.editor.active_buf
 
-  def new_func do
-    IO.puts("PROOF THAT THIS WORK   demoooo    SSSSSS27272")
+    # TODO when this is done, no need for case, assert on ok match
+    # because theres no way making a new buffer should fail
+
+    case Flamelex.Fluxus.declare(:new_buffer) do
+      {:ok, :ignore} -> nil
+      {:ok, radix_state} -> radix_state.apps.editor.active_buf
+      {:error, _} -> raise "Could not create a new buffer"
+    end
   end
 
   def new(data) when is_bitstring(data) do
     {:ok, radix_state} =
       Flamelex.Fluxus.declare(
-        {QuillExBufrReducer, {:open_buffer, %{data: data, mode: {:vim, :normal}}}}
+        # {QuillExBufrReducer, {:open_buffer, %{data: data, mode: {:vim, :normal}}}}
+        :new_buffer
       )
 
-    radix_state.editor.active_buf
+    radix_state.apps.editor.active_buf
   end
 
   @doc """
@@ -45,14 +53,14 @@ defmodule Flamelex.API.Buffer do
   """
 
   # TODO THIS NEEDS TO CHECK IF THE buffer is already open or not
-  def open(filename) when is_bitstring(filename) do
-    {:ok, radix_state} =
-      Flamelex.Fluxus.declare(
-        {QuillExBufrReducer, {:open_buffer, %{file: filename, mode: {:vim, :normal}}}}
-      )
+  # def open(filename) when is_bitstring(filename) do
+  #   {:ok, radix_state} =
+  #     Flamelex.Fluxus.declare(
+  #       {QuillExBufrReducer, {:open_buffer, %{file: filename, mode: {:vim, :normal}}}}
+  #     )
 
-    radix_state.editor.active_buf
-  end
+  #   radix_state.editor.active_buf
+  # end
 
   # this is just for convenience
   def open({:buffer, _id} = buf), do: switch(buf)
