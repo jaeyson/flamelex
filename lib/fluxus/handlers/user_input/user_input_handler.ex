@@ -10,7 +10,7 @@ defmodule Flamelex.Fluxus.UserInputHandler do
   our lower-level input handlers.
   """
   require Logger
-  alias Flamelex.GUI.Component.{Editor, TODOlist}
+  alias Flamelex.GUI.Component.{QlxWrap, TODOlist}
 
   def handle(_rdx, {:key, {:key_leftalt, _up_or_down, _weird_list}}) do
     Logger.debug("Ignoring key_leftalt...")
@@ -26,53 +26,22 @@ defmodule Flamelex.Fluxus.UserInputHandler do
     TODOlist.UserInputHandler.handle(rdx, input)
   end
 
-  # def handle(
-  #       %{layers: %{one: %{active_apps: [Editor]}}} = rdx,
-  #       input
-  #     ) do
-  #   # IO.puts("WARNING - App: #{inspect(app)} did not have a specific handler in #{__MODULE__}...")
-  #   # Module.concat(app, UserInputHandler).handle(rdx, input)
-  # end
-
   def handle(
-        %{layers: %{one: %{active_apps: [Editor]}}} = rdx,
-        # %{layers: %{one: %{active_apps: [Quillex]}}} = rdx,
+        %{layers: %{one: %{active_apps: [QlxWrap]}}} = rdx,
         input
       ) do
-    buf = rdx.apps.editor.buffers |> List.first()
+    IO.puts("#{__MODULE__} - active_app: QlxWrap, got user input: #{inspect(input)}")
 
     # right now we hard-code we only ever edit the active buffer lol
-    # Quillex.Buffer.BufferManager.cast_to_buffer(
-    #   hd(rdx.apps.editor.buffers),
-    #   {:user_input_fwd, input}
-    # )
+    buf_ref = rdx.apps.qlx_wrap.buffers |> List.first()
 
-    # TODO maybe this is fine maybe needs to be more robust (do a lookup on name dont use pid)
-    GenServer.cast(buf.pid, {:user_input_fwd, input})
-
-    # TODO even here, we could route input to QuillEx...
-
-    # Flamelex.Lib.Utils.PubSub.broadcast(
-    #   topic: {:buffers, buf.uuid},
-    #   msg: {:user_input_fwd, input}
-    # )
-    # QuillEx.Fluxus.user_input(input)
-    # QuillEx.Buffer.new(%{"name" => "New Buffer"})
+    Quillex.Buffer.BufferManager.cast_to_buffer(
+      buf_ref,
+      {:user_input_fwd, input}
+    )
 
     :re_routed
-
-    # IO.puts("WARNING - App: #{inspect(app)} did not have a specific handler in #{__MODULE__}...")
-    # Module.concat(app, UserInputHandler).handle(rdx, input)
-    # Flamelex.GUI.Component.Editor.UserInputHandler.handle(rdx, input)
-    # {:route_to, [Flamelex.GUI.Component.Editor.UserInputHandler]}
-    # {:route_to, :first_buffer}
-    # [{Editor.Reducer, :close_todo_details}]
-    # Flamelex.GUI.Component.Editor.UserInputHandler.handle(rdx, input)
-    # broadcast out the user input to the _specific_ components!
-    # :input_re_routed
   end
-
-  # {:key, {:key_leftalt, 0, []}}
 
   # if we only have one app open then we can just pass the input to that app
   def handle(

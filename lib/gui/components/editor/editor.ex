@@ -21,15 +21,16 @@ defmodule Flamelex.GUI.Component.Editor do
       |> assign(state: state)
       |> push_graph(graph)
 
-    Flamelex.Lib.Utils.PubSub.subscribe(topic: {:buffers, hd(state.buffers).uuid})
+    # TODO this level actually _does_ need to also subscribe to the radix state incase the active buffer changes
+    Quillex.Utils.PubSub.subscribe(topic: {:buffers, hd(state.buffers).uuid})
 
     {:ok, init_scene}
   end
 
-  def handle_info({:move_cursor, _dir, _x}, scene) do
-    # sort of weird, we fire this event but also recv it, we just ignore it but cursor needs to catch it
-    {:noreply, scene}
-  end
+  # def handle_info({:move_cursor, _dir, _x}, scene) do
+  #   # sort of weird, we fire this event but also recv it, we just ignore it but cursor needs to catch it
+  #   {:noreply, scene}
+  # end
 end
 
 # defmodule QuillEx.GUI.Components.Editor do
@@ -39,7 +40,7 @@ end
 #   alias ScenicWidgets.{TabSelector, TextPad}
 #   # alias ScenicWidgets.Core.Structs.Frame
 #   alias Widgex.Frame
-#   alias QuillEx.Structs.Buffer
+#   alias Quillex.Structs.Buffer
 #   alias ScenicWidgets.TextPad.Structs.Font
 
 #   # NOTE - we need to take in the `app` because this component is re-used by Flamelex...

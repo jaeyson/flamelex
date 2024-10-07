@@ -70,9 +70,13 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.GUI.Component.TODOlist.Reducer.process(rdx, action)
   end
 
-  def process(rdx, {Flamelex.GUI.Component.Editor.Reducer, action}) do
-    Flamelex.GUI.Component.Editor.Reducer.process(rdx, action)
-  end
+  # def process(rdx, {Flamelex.GUI.Component.Editor.Reducer, action}) do
+  #   Flamelex.GUI.Component.Editor.Reducer.process(rdx, action)
+  # end
+
+  # def process(rdx, {Flamelex.GUI.Component.QlxWrap.Reducer, action}) do
+  #   Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, action)
+  # end
 
   def process(rdx, {Flamelex.GUI.Component.RapidSelector.Reducer, action}) do
     Flamelex.GUI.Component.RapidSelector.Reducer.process(rdx, action)
@@ -82,10 +86,8 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.GUI.Component.HighCouncil.Reducer.process(rdx, :show_agents)
   end
 
-  @quillex_actions [:new_buffer]
-  def process(rdx, q_action) when q_action in @quillex_actions do
-    # QuillEx.Reducer.process(rdx, q_action)
-    Flamelex.GUI.Component.Editor.Reducer.process(rdx, q_action)
+  def process(rdx, {Flamelex.GUI.Component.QlxWrap, action}) do
+    Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, action)
   end
 
   # def process(rdx, {component, action}) when is_module(component) do

@@ -10,7 +10,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
     base_menu_map =
       [
         flamelex_menu(),
-        buffer_menu(radix_state),
+        quillex_menu(radix_state),
         memex_menu(radix_state),
         api_menu(),
         help_menu()
@@ -38,17 +38,15 @@ defmodule Flamelex.GUI.Menus.MainMenu do
        #     {"open wdg-wkb", fn -> raise "no" end}
        #   ]},
        devtools(),
-       #  open_agents(),
-
-       #  re_source_shell(),
        quit()
      ]}
   end
 
-  def buffer_menu(radix_state) do
-    {:sub_menu, "Quillex", do_buffer_menu(radix_state)}
+  def quillex_menu(radix_state) do
+    {:sub_menu, "Quillex", do_quillex_menu(radix_state)}
   end
 
+  # hide the memex menu under certain conditions
   def memex_menu(%{memex: %{active?: false}}), do: nil
   def memex_menu(%{memex: %{env: nil}}), do: nil
 
@@ -117,23 +115,22 @@ defmodule Flamelex.GUI.Menus.MainMenu do
      ]}
   end
 
-  def do_buffer_menu(%{apps: %{editor: %{buffers: []}}} = _radix_state) do
+  def do_quillex_menu(%{apps: %{qlx_wrap: %{buffers: []}}} = _radix_state) do
     # what I currently call :sub_menu should be renamed :node,
     # and these ones should have a tag like :leaf or :button
     [
-      {"new clean slate", &Flamelex.API.Buffer.new/0}
-      # {"save", &Flamelex.API.Buffer.save/0},
-      # {"close", &Flamelex.API.Buffer.close/0}
+      {"new buffer", &Flamelex.API.Buffer.new/0}
     ]
   end
 
-  def do_buffer_menu(radix_state) do
+  def do_quillex_menu(radix_state) do
     [
+      {"raise error", fn -> raise "nothing works :(" end}
       # do_open_buffers_menu(radix_state),
-      {"new", &Flamelex.API.Buffer.new/0},
-      #  {"list", &Flamelex.API.Buffer.new/0}, #TODO list should be an arrow-out menudown, that lists open buffers
-      {"save", &Flamelex.API.Buffer.save/0},
-      {"close", &Flamelex.API.Buffer.close/0}
+      # {"new", &Flamelex.API.Buffer.new/0},
+      # #  {"list", &Flamelex.API.Buffer.new/0}, #TODO list should be an arrow-out menudown, that lists open buffers
+      # {"save", &Flamelex.API.Buffer.save/0},
+      # {"close", &Flamelex.API.Buffer.close/0}
     ]
   end
 
@@ -361,69 +358,69 @@ defmodule Flamelex.GUI.Menus.MainMenu do
      ]}
   end
 
-  def font_sub_menu do
-    {:sub_menu, "font",
-     [
-       {:sub_menu, "primary font",
-        [
-          {"ibm plex mono",
-           fn ->
-             Flamelex.Fluxus.RadixStore.get()
-             |> QuillEx.Reducers.RadixReducer.change_font(:ibm_plex_mono)
-             |> Flamelex.Fluxus.RadixStore.update()
-           end},
-          {"roboto",
-           fn ->
-             Flamelex.Fluxus.RadixStore.get()
-             |> QuillEx.Reducers.RadixReducer.change_font(:roboto)
-             |> Flamelex.Fluxus.RadixStore.update()
-           end},
-          {"roboto mono",
-           fn ->
-             Flamelex.Fluxus.RadixStore.get()
-             |> QuillEx.Reducers.RadixReducer.change_font(:roboto_mono)
-             |> Flamelex.Fluxus.RadixStore.update()
-           end},
-          {"iosevka",
-           fn ->
-             Flamelex.Fluxus.RadixStore.get()
+  # def font_sub_menu do
+  #   {:sub_menu, "font",
+  #    [
+  #      {:sub_menu, "primary font",
+  #       [
+  #         {"ibm plex mono",
+  #          fn ->
+  #            Flamelex.Fluxus.RadixStore.get()
+  #            |> QuillEx.Reducers.RadixReducer.change_font(:ibm_plex_mono)
+  #            |> Flamelex.Fluxus.RadixStore.update()
+  #          end},
+  #         {"roboto",
+  #          fn ->
+  #            Flamelex.Fluxus.RadixStore.get()
+  #            |> QuillEx.Reducers.RadixReducer.change_font(:roboto)
+  #            |> Flamelex.Fluxus.RadixStore.update()
+  #          end},
+  #         {"roboto mono",
+  #          fn ->
+  #            Flamelex.Fluxus.RadixStore.get()
+  #            |> QuillEx.Reducers.RadixReducer.change_font(:roboto_mono)
+  #            |> Flamelex.Fluxus.RadixStore.update()
+  #          end},
+  #         {"iosevka",
+  #          fn ->
+  #            Flamelex.Fluxus.RadixStore.get()
 
-             QuillEx.Reducers.RadixReducer.change_font(:iosevka)
-             |> Flamelex.Fluxus.RadixStore.update()
-           end},
-          {"source code pro",
-           fn ->
-             Flamelex.Fluxus.RadixStore.get()
-             |> QuillEx.Reducers.RadixReducer.change_font(:source_code_pro)
-             |> Flamelex.Fluxus.RadixStore.update()
-           end},
-          {"fira code",
-           fn ->
-             Flamelex.Fluxus.RadixStore.get()
-             |> QuillEx.Reducers.RadixReducer.change_font(:fira_code)
-             |> Flamelex.Fluxus.RadixStore.update()
-           end},
-          {"bitter",
-           fn ->
-             Flamelex.Fluxus.RadixStore.get()
-             |> QuillEx.Reducers.RadixReducer.change_font(:bitter)
-             |> Flamelex.Fluxus.RadixStore.update()
-           end}
-        ]},
-       {"make bigger",
-        fn ->
-          Flamelex.Fluxus.RadixStore.get()
-          |> QuillEx.Reducers.RadixReducer.change_font_size(:increase)
-          |> Flamelex.Fluxus.RadixStore.update()
-        end},
-       {"make smaller",
-        fn ->
-          Flamelex.Fluxus.RadixStore.get()
-          |> QuillEx.Reducers.RadixReducer.change_font_size(:decrease)
-          |> Flamelex.Fluxus.RadixStore.update()
-        end}
-     ]}
-  end
+  #            QuillEx.Reducers.RadixReducer.change_font(:iosevka)
+  #            |> Flamelex.Fluxus.RadixStore.update()
+  #          end},
+  #         {"source code pro",
+  #          fn ->
+  #            Flamelex.Fluxus.RadixStore.get()
+  #            |> QuillEx.Reducers.RadixReducer.change_font(:source_code_pro)
+  #            |> Flamelex.Fluxus.RadixStore.update()
+  #          end},
+  #         {"fira code",
+  #          fn ->
+  #            Flamelex.Fluxus.RadixStore.get()
+  #            |> QuillEx.Reducers.RadixReducer.change_font(:fira_code)
+  #            |> Flamelex.Fluxus.RadixStore.update()
+  #          end},
+  #         {"bitter",
+  #          fn ->
+  #            Flamelex.Fluxus.RadixStore.get()
+  #            |> QuillEx.Reducers.RadixReducer.change_font(:bitter)
+  #            |> Flamelex.Fluxus.RadixStore.update()
+  #          end}
+  #       ]},
+  #      {"make bigger",
+  #       fn ->
+  #         Flamelex.Fluxus.RadixStore.get()
+  #         |> QuillEx.Reducers.RadixReducer.change_font_size(:increase)
+  #         |> Flamelex.Fluxus.RadixStore.update()
+  #       end},
+  #      {"make smaller",
+  #       fn ->
+  #         Flamelex.Fluxus.RadixStore.get()
+  #         |> QuillEx.Reducers.RadixReducer.change_font_size(:decrease)
+  #         |> Flamelex.Fluxus.RadixStore.update()
+  #       end}
+  #    ]}
+  # end
 
   # def open_agents do
   #   {"open agents",

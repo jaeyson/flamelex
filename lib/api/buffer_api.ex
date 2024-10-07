@@ -1,44 +1,42 @@
+# TODO delegate this all to quillex one day
 defmodule Flamelex.API.Buffer do
   @moduledoc """
   The interface to all the Buffer commands.
   """
-  use Flamelex.Lib.ProjectAliases
-  alias Flamelex.BufferManager
-  # NOTE: We use the QuillEx QuillExBufrReducer...
-  alias QuillEx.Reducers.BufferReducer, as: QuillExBufrReducer
-  alias Flamelex.Fluxus.RadixStore
+
+  # use Flamelex.Lib.ProjectAliases
+  # alias Flamelex.BufferManager
+  # alias Flamelex.Fluxus.RadixStore
 
   @doc """
   List all the open buffers.
   """
+
   def list do
-    RadixStore.get().editor.buffers
+    raise "lol dont think this works any more"
+    Flamelex.Fluxus.RadixStore.get().editor.buffers
   end
 
   def new do
-    # new("")
-    # {:ok, radix_state} = Flamelex.Fluxus.declare(:new_buffer)
-    # radix_state.editor.active_buf
+    # maybe this should all go through Quillex... quillex can throw
+    # events back up to flamelex for GUI responsiveness... but today is not that day
+    # Quillex.Fluxus.declare(rdx, q_action)
 
-    # TODO when this is done, no need for case, assert on ok match
-    # because theres no way making a new buffer should fail
-
-    case Flamelex.Fluxus.declare(:new_buffer) do
-      {:ok, :ignore} -> nil
-      {:ok, radix_state} -> radix_state.apps.editor.active_buf
-      {:error, _} -> raise "Could not create a new buffer"
-    end
+    # use declare here so that we can return the new buffer to the
+    # caller of this function, providing a nice API
+    {:ok, radix_state} = Flamelex.Fluxus.declare({Flamelex.GUI.Component.QlxWrap, :new_buffer})
+    radix_state.apps.qlx_wrap.buffers |> List.first()
   end
 
-  def new(data) when is_bitstring(data) do
-    {:ok, radix_state} =
-      Flamelex.Fluxus.declare(
-        # {QuillExBufrReducer, {:open_buffer, %{data: data, mode: {:vim, :normal}}}}
-        :new_buffer
-      )
+  # def new(data) when is_bitstring(data) do
+  #   {:ok, radix_state} =
+  #     Flamelex.Fluxus.declare(
+  #       # {QuillExBufrReducer, {:open_buffer, %{data: data, mode: {:vim, :normal}}}}
+  #       :new_buffer
+  #     )
 
-    radix_state.apps.editor.active_buf
-  end
+  #   radix_state.apps.editor.active_buf
+  # end
 
   @doc """
   Open a file and load the contents into a buffer.

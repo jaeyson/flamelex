@@ -3,7 +3,7 @@ defmodule Flamelex.Fluxus.RadixState do
   alias Flamelex.GUI.Layers.Layer01
 
   alias Flamelex.GUI.Component.{
-    Editor,
+    QlxWrap,
     TODOlist,
     TODOdetails,
     RapidSelector,
@@ -33,8 +33,7 @@ defmodule Flamelex.Fluxus.RadixState do
         todo_list: TODOlist.State.new(),
         todo_details: TODOdetails.State.new(),
         rapid_selector: RapidSelector.State.new(),
-        # TODO rename editor to quillex
-        editor: Editor.State.new(),
+        qlx_wrap: QlxWrap.State.new(),
         high_council: HighCouncil.State.new(query_memex?: false),
         agent_huddle: AgentHuddle.State.new()
       },
@@ -221,7 +220,7 @@ end
 #       kommander: %{
 #         hidden?: true,
 #         buffer:
-#           QuillEx.Structs.Buffer.new(%{
+#           Quillex.Structs.Buffer.new(%{
 #             id: {:buffer, Flamelex.API.Kommander},
 #             type: :text,
 #             data: "",
