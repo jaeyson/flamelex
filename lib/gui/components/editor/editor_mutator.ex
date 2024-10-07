@@ -12,7 +12,7 @@ defmodule Flamelex.GUI.Component.Editor.Mutator do
         # we still need to keep a reference to the buffer in our radix state,
         # so we can route input & events to it
         rdx
-        |> put_in([:apps, :editor, :buffers], rdx.apps.editor.buffers ++ [buf_ref])
+        |> put_in([:apps, :editor, :buffers], [buf_ref] ++ rdx.apps.editor.buffers)
         |> set_active_buf(buf_ref)
 
       {:error, _reason} ->
