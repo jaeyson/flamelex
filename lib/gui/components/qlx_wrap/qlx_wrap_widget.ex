@@ -29,7 +29,7 @@ defmodule Flamelex.GUI.Component.QlxWrap do
 
     # NOTE - this component needs (does it?) to subscribe to both radix state changes and buffer changes
     Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
-    Quillex.Utils.PubSub.subscribe(topic: {:buffers, hd(state.buffers).uuid})
+    # Quillex.Utils.PubSub.subscribe(topic: {:buffers, hd(state.buffers).uuid})
 
     {:ok, init_scene}
   end

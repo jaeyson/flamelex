@@ -35,10 +35,12 @@ defmodule Flamelex.Fluxus.UserInputHandler do
     # right now we hard-code we only ever edit the active buffer lol
     buf_ref = rdx.apps.qlx_wrap.buffers |> List.first()
 
-    Quillex.Buffer.BufferManager.cast_to_buffer(
-      buf_ref,
-      {:user_input_fwd, input}
-    )
+    Quillex.Utils.PubSub.broadcast(topic: {:buffers, buf_ref.uuid}, msg: {:user_input_fwd, input})
+
+    # Quillex.Buffer.BufferManager.cast_to_buffer(
+    #   buf_ref,
+    #   {:user_input_fwd, input}
+    # )
 
     :re_routed
   end
