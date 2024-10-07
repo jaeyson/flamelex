@@ -1,12 +1,4 @@
 defmodule Flamelex.GUI.Component.QlxWrap.Mutator do
-  # def set_agents(%RadixState{} = rdx, agents) do
-  #   put_in(rdx, [:apps, :high_council, :agents], agents)
-  # end
-
-  # def set_new_agent_mode(%RadixState{} = rdx, new_agent_mode?) when is_boolean(new_agent_mode?) do
-  #   put_in(rdx, [:apps, :high_council, :new_agent_mode?], new_agent_mode?)
-  # end
-
   def add_open_buffer(rdx, buf_ref) do
     rdx
     |> put_in([:apps, :qlx_wrap, :buffers], rdx.apps.qlx_wrap.buffers ++ [buf_ref])
