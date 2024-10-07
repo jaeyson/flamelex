@@ -9,7 +9,7 @@ defmodule Flamelex.GUI.Component.QlxWrap do
   because that library is supposed to be a shareable, embeddable GUI library
   """
   use Scenic.Component
-  alias __MODULE__
+  alias Flamelex.GUI.Component.QlxWrap
 
   def validate(%{frame: %Widgex.Frame{}} = data) do
     {:ok, data}
@@ -18,11 +18,7 @@ defmodule Flamelex.GUI.Component.QlxWrap do
   def init(scene, %{frame: %Widgex.Frame{} = frame}, _opts) do
     # TODO this would be a cool place to do something better here...
     state = Flamelex.Fluxus.RadixStore.get().apps.qlx_wrap
-    buf_ref = state.buffers |> List.first()
-
-    graph =
-      Scenic.Graph.build()
-      |> Quillex.GUI.Components.Buffer.add_to_graph(%{frame: frame, buf_ref: buf_ref})
+    graph = QlxWrap.Render.go(frame, state)
 
     init_scene =
       scene
@@ -33,7 +29,7 @@ defmodule Flamelex.GUI.Component.QlxWrap do
 
     # NOTE - this component needs (does it?) to subscribe to both radix state changes and buffer changes
     Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
-    Quillex.Utils.PubSub.subscribe(topic: {:buffers, buf_ref.uuid})
+    Quillex.Utils.PubSub.subscribe(topic: {:buffers, hd(state.buffers).uuid})
 
     {:ok, init_scene}
   end
