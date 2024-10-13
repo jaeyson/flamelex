@@ -18,6 +18,19 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     |> QlxWrap.Mutator.set_active_buf(buf_ref)
   end
 
+  def process(
+        %RadixState{} = rdx,
+        {:open_buffer, %{filepath: filepath}}
+      ) do
+    {:ok, buf_ref} = Quillex.Buffer.open(%{filepath: filepath})
+
+    rdx
+    |> Layer1.set_layout(:full_screen)
+    |> Layer1.set_active_apps([QlxWrap])
+    |> QlxWrap.Mutator.add_open_buffer(buf_ref)
+    |> QlxWrap.Mutator.set_active_buf(buf_ref)
+  end
+
   # @directions [:up, :down, :left, :right]
   # def process(
   #       %Editor.State{} = state,
@@ -99,32 +112,6 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   #   {:ok, new_radix_state}
   # end
 end
-
-# # defmodule Flamelex.Fluxus.Reducers.Editor do
-# defmodule Flamelex.GUI.Component.Editor.Reducer do
-#   # @moduledoc false
-#   # use Flamelex.Lib.ProjectAliases
-#   # require Logger
-#   alias Flamelex.Fluxus.RadixState
-#   # alias Flamelex.GUI.Component.Editor
-#   alias Flamelex.GUI.Layers.Layer01.Mutator, as: Layer1
-
-#   def process(
-#         # %RadixState{layers: %{one: %{active_apps: []}}} = rdx,
-#         rdx,
-#         :new_buffer
-#       ) do
-#     # {new_rdx, new_buf} = Editor.Mutator.add_buffer(rdx, %{"name" => "New Buffer"})
-
-#     # new_rdx
-#     #
-#     #
-#     # |> Editor.Mutator.set_active_buf("New Buffer")
-#     rdx
-#     |> Layer1.set_layout(:full_screen)
-#     |> Layer1.set_active_apps([Editor])
-#     |> Editor.Mutator.new_buffer(%{"name" => "New Buffer"})
-#   end
 
 #   # @directions [:up, :down, :left, :right]
 #   # def process(
