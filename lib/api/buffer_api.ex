@@ -13,8 +13,7 @@ defmodule Flamelex.API.Buffer do
   """
 
   def list do
-    raise "lol dont think this works any more"
-    Flamelex.Fluxus.RadixStore.get().editor.buffers
+    Flamelex.Fluxus.RadixStore.get().apps.qlx_wrap.buffers
   end
 
   def new do
@@ -28,16 +27,6 @@ defmodule Flamelex.API.Buffer do
     radix_state.apps.qlx_wrap.buffers |> List.first()
   end
 
-  # def new(data) when is_bitstring(data) do
-  #   {:ok, radix_state} =
-  #     Flamelex.Fluxus.declare(
-  #       # {QuillExBufrReducer, {:open_buffer, %{data: data, mode: {:vim, :normal}}}}
-  #       :new_buffer
-  #     )
-
-  #   radix_state.apps.editor.active_buf
-  # end
-
   @doc """
   Open a file and load the contents into a buffer.
 
@@ -49,73 +38,85 @@ defmodule Flamelex.API.Buffer do
   iex> Buffer.open("README.md")
   {:buffer, {:file, "README.md"}}
   """
+  def open(filepath) when is_bitstring(filepath) do
+    # Flamelex.Fluxus.declare(
+    {:ok, radix_state} =
+      Flamelex.Fluxus.declare(
+        {Flamelex.GUI.Component.QlxWrap, {:open_buffer, %{filepath: filepath}}}
+      )
 
-  # TODO THIS NEEDS TO CHECK IF THE buffer is already open or not
-  # def open(filename) when is_bitstring(filename) do
+    # )
+
+    radix_state.apps.qlx_wrap.buffers |> List.first()
+  end
+
+  # def new(data) when is_bitstring(data) do
   #   {:ok, radix_state} =
   #     Flamelex.Fluxus.declare(
-  #       {QuillExBufrReducer, {:open_buffer, %{file: filename, mode: {:vim, :normal}}}}
+  #       # {QuillExBufrReducer, {:open_buffer, %{data: data, mode: {:vim, :normal}}}}
+  #       :new_buffer
   #     )
 
-  #   radix_state.editor.active_buf
+  #   radix_state.apps.editor.active_buf
   # end
 
   # this is just for convenience
-  def open({:buffer, _id} = buf), do: switch(buf)
+  # def open({:buffer, _id} = buf), do: switch(buf)
 
   @doc """
   Return the active Buffer.
   """
-  def active, do: active_buf()
 
-  def active_buf do
-    RadixStore.get().editor.active_buf
-  end
+  # def active, do: active_buf()
 
-  def switch({:buffer, _id} = buf) do
-    Flamelex.Fluxus.action({QuillExBufrReducer, {:activate, buf}})
-  end
+  # def active_buf do
+  #   RadixStore.get().editor.active_buf
+  # end
 
-  def switch(%{id: {:buffer, _id} = buf}) do
-    switch(buf)
-  end
+  # def switch({:buffer, _id} = buf) do
+  #   Flamelex.Fluxus.action({QuillExBufrReducer, {:activate, buf}})
+  # end
 
-  def switch(n) when n >= 1 do
-    RadixStore.get().editor.buffers
-    |> Enum.at(n - 1)
-    |> switch()
-  end
+  # def switch(%{id: {:buffer, _id} = buf}) do
+  #   switch(buf)
+  # end
+
+  # def switch(n) when n >= 1 do
+  #   RadixStore.get().editor.buffers
+  #   |> Enum.at(n - 1)
+  #   |> switch()
+  # end
+
+  # # @doc """
+  # # Searches the open buffers and returns a single Buffer.id
+  # # """
+  # def find(search_term) do
+  #   raise "Nop"
+  #   # {:ok, res} = GenServer.call(BufferManager, {:find_buffer, search_term})
+  #   # res
+  # end
 
   # @doc """
-  # Searches the open buffers and returns a single Buffer.id
+  # Searches the open buffers, but raises an error if it can't find any Buffer
+  # like the search_term.
   # """
-  def find(search_term) do
-    raise "Nop"
-    # {:ok, res} = GenServer.call(BufferManager, {:find_buffer, search_term})
-    # res
-  end
+  # def find!(search_term) do
+  #   raise "Nop"
+  #   # case GenServer.call(BufferManager, {:find_buffer, search_term}) do
+  #   #   {:ok, nil} ->
+  #   #     raise "Could not find any Buffer related to: #{inspect search_term}"
+  #   #   {:ok, res} ->
+  #   #     res
+  #   # end
+  # end
 
-  @doc """
-  Searches the open buffers, but raises an error if it can't find any Buffer
-  like the search_term.
-  """
-  def find!(search_term) do
-    raise "Nop"
-    # case GenServer.call(BufferManager, {:find_buffer, search_term}) do
-    #   {:ok, nil} ->
-    #     raise "Could not find any Buffer related to: #{inspect search_term}"
-    #   {:ok, res} ->
-    #     res
-    # end
-  end
-
-  @doc """
-  Return the contents of a buffer.
-  """
-  def read(buf) do
-    [buf] = list() |> Enum.filter(&(&1.id == buf))
-    buf.data
-  end
+  # @doc """
+  # Return the contents of a buffer.
+  # """
+  # def read(buf) do
+  #   [buf] = list() |> Enum.filter(&(&1.id == buf))
+  #   buf.data
+  # end
 
   @doc """
   Make modifications or edits, to a buffer. e.g.
@@ -128,52 +129,52 @@ defmodule Flamelex.API.Buffer do
   ```
   """
 
-  # does editing actions on a buffer
-  def edit() do
-    raise "do it"
-  end
+  # # does editing actions on a buffer
+  # def edit() do
+  #   raise "do it"
+  # end
 
-  def modify(%{id: buf_id}, modification) do
-    modify(buf_id, modification)
-  end
+  # def modify(%{id: buf_id}, modification) do
+  #   modify(buf_id, modification)
+  # end
 
-  def modify({:buffer, _buf_id} = buffer, modification) do
-    Flamelex.Fluxus.action({QuillExBufrReducer, {:modify_buf, buffer, modification}})
-  end
+  # def modify({:buffer, _buf_id} = buffer, modification) do
+  #   Flamelex.Fluxus.action({QuillExBufrReducer, {:modify_buf, buffer, modification}})
+  # end
 
-  @doc """
-  Scroll the buffer around.
-  """
-  def scroll({_x_scroll, _y_scroll} = scroll_delta) do
-    Flamelex.Fluxus.action({QuillExBufrReducer, {:scroll, :active_buf, {:delta, scroll_delta}}})
-  end
+  # @doc """
+  # Scroll the buffer around.
+  # """
+  # def scroll({_x_scroll, _y_scroll} = scroll_delta) do
+  #   Flamelex.Fluxus.action({QuillExBufrReducer, {:scroll, :active_buf, {:delta, scroll_delta}}})
+  # end
 
-  def split do
-    Flamelex.API.Editor.split()
-  end
+  # def split do
+  #   Flamelex.API.Editor.split()
+  # end
 
-  @doc """
-  Scroll the buffer around.
-  """
-  @absolute_positions [:first_line, :last_line]
-  def move_cursor(absolute) when absolute in @absolute_positions do
-    Flamelex.Fluxus.action({QuillExBufrReducer, {:move_cursor, :active_buf, absolute}})
-  end
+  # @doc """
+  # Scroll the buffer around.
+  # """
+  # @absolute_positions [:first_line, :last_line]
+  # def move_cursor(absolute) when absolute in @absolute_positions do
+  #   Flamelex.Fluxus.action({QuillExBufrReducer, {:move_cursor, :active_buf, absolute}})
+  # end
 
-  def move_cursor({_column_delta, _line_delta} = cursor_move_delta) do
-    Flamelex.Fluxus.action({QuillExBufrReducer, {:move_cursor, {:delta, cursor_move_delta}}})
-  end
+  # def move_cursor({_column_delta, _line_delta} = cursor_move_delta) do
+  #   Flamelex.Fluxus.action({QuillExBufrReducer, {:move_cursor, {:delta, cursor_move_delta}}})
+  # end
 
-  @doc """
-  Tell a buffer to save it's contents.
-  """
-  def save do
-    save(active_buf())
-  end
+  # @doc """
+  # Tell a buffer to save it's contents.
+  # """
+  # def save do
+  #   save(active_buf())
+  # end
 
-  def save({:buffer, _details} = buf) do
-    Flamelex.Fluxus.action({QuillExBufrReducer, {:save, buf}})
-  end
+  # def save({:buffer, _details} = buf) do
+  #   Flamelex.Fluxus.action({QuillExBufrReducer, {:save, buf}})
+  # end
 
   # TODO
   # @doc """
@@ -190,19 +191,19 @@ defmodule Flamelex.API.Buffer do
   #   {:noreply, buf}
   # end
 
-  def close do
-    active() |> close()
-  end
+  # def close do
+  #   active() |> close()
+  # end
 
-  def close(buf) do
-    # TODO this is causing GUI controller & VimServer to also restart??
-    Flamelex.Fluxus.action({QuillExBufrReducer, {:close_buffer, buf}})
-  end
+  # def close(buf) do
+  #   # TODO this is causing GUI controller & VimServer to also restart??
+  #   Flamelex.Fluxus.action({QuillExBufrReducer, {:close_buffer, buf}})
+  # end
 
-  def close_all! do
-    # raise "this should work, but is it too dangerous??"
-    list() |> Enum.each(&close(&1))
-  end
+  # def close_all! do
+  #   # raise "this should work, but is it too dangerous??"
+  #   list() |> Enum.each(&close(&1))
+  # end
 end
 
 # def handle_call({:find_buffer, search_term}, _from, state) do

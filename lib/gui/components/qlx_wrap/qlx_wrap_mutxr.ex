@@ -1,7 +1,7 @@
 defmodule Flamelex.GUI.Component.QlxWrap.Mutator do
   def add_open_buffer(rdx, buf_ref) do
     rdx
-    |> put_in([:apps, :qlx_wrap, :buffers], rdx.apps.qlx_wrap.buffers ++ [buf_ref])
+    |> put_in([:apps, :qlx_wrap, :buffers], [buf_ref] ++ rdx.apps.qlx_wrap.buffers)
   end
 
   def set_active_buf(rdx, %Quillex.Structs.Buffer.BufRef{} = buf_ref) do

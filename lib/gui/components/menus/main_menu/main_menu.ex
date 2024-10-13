@@ -47,8 +47,8 @@ defmodule Flamelex.GUI.Menus.MainMenu do
   end
 
   # hide the memex menu under certain conditions
-  def memex_menu(%{memex: %{active?: false}}), do: nil
-  def memex_menu(%{memex: %{env: nil}}), do: nil
+  # def memex_menu(%{memex: %{active?: false}}), do: nil
+  # def memex_menu(%{memex: %{env: nil}}), do: nil
 
   def memex_menu(
         %{
@@ -60,8 +60,8 @@ defmodule Flamelex.GUI.Menus.MainMenu do
     # TODO add random memex button
 
     base_menu = [
-      {"open", &Flamelex.API.Diary.open/0},
-      {"close", &Flamelex.API.Diary.close/0},
+      # TODO if the current app is RapidSelector, it should be close, otherwise show open since basically this opens the RapidSelector even though it's called "memex"
+      # {"close", &Flamelex.API.Diary.close/0},
       {"my TODOs", &Memelex.My.TODOs.show/0},
       {"my Agents", &Memelex.My.Agents.show/0},
       {:sub_menu, "my Calendar",
@@ -88,6 +88,34 @@ defmodule Flamelex.GUI.Menus.MainMenu do
       |> maybe_add_custom_menu(radix_state)
 
     {:sub_menu, "Memex", full_menu}
+  end
+
+  def memex_menu(_radix_state) do
+    memex_menu = [
+      {"novum memexi", fn -> raise "not yet" end},
+      {:sub_menu, "library",
+       [
+         {"flamelex README", fn -> Flamelex.API.Buffer.open("README.md") end},
+         {"Spinoza's ethics", fn -> Memelex.My.Journal.yesterday() end},
+         encyclopedia()
+       ]}
+    ]
+
+    {:sub_menu, "Memex", memex_menu}
+  end
+
+  def encyclopedia do
+    {:sub_menu, "encyclopedia",
+     [
+       {:sub_menu, "A",
+        [
+          {"today's journal'", fn -> Memelex.My.Journal.today() end}
+        ]},
+       {:sub_menu, "B", []},
+       {:sub_menu, "C", []},
+       {:sub_menu, "D", []},
+       {:sub_menu, "E", []}
+     ]}
   end
 
   def api_menu do
@@ -326,7 +354,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
   def devtools do
     {:sub_menu, "DevTools",
      [
-       #  {"get radix state", fn -> Flamelex.API.DevTools.get_radix_state() end},
+       {"temet nosce", &Flamelex.GUI.DevTools.temet_nosce/0},
        {"reboot ViewPort", fn -> Flamelex.GUI.DevTools.reboot_viewport() end},
        {
          "load Telaranrhiod",
@@ -352,9 +380,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
          end
        },
        widget_workbench(),
-       {"temet nosce", &Flamelex.GUI.DevTools.temet_nosce/0},
        alias_flx()
-       #  {"temet nosce", &Flamelex.temet_nosce/0}
      ]}
   end
 

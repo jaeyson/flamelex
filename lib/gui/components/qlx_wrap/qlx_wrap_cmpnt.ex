@@ -33,6 +33,17 @@ defmodule Flamelex.GUI.Component.QlxWrap do
 
     {:ok, init_scene}
   end
+
+  def handle_info({:radi_state_change, new_radix_state}, scene) do
+    # new_graph = QlxWrap.Render.go(scene.assigns.frame, new_radix_state)
+
+    # new_scene =
+    #   scene
+    #   |> assign(graph: new_graph)
+    #   |> push_graph(new_graph)
+
+    {:noreply, scene}
+  end
 end
 
 # defmodule Flamelex.GUI.Component.Editor do
