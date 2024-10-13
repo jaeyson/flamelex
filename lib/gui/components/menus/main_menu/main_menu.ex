@@ -96,7 +96,12 @@ defmodule Flamelex.GUI.Menus.MainMenu do
       {:sub_menu, "library",
        [
          {"flamelex README", fn -> Flamelex.API.Buffer.open("README.md") end},
-         {"Spinoza's ethics", fn -> Memelex.My.Journal.yesterday() end},
+         {"Spinoza's ethics",
+          fn ->
+            Flamelex.API.Buffer.open(
+              "/home/luke/workbench/flx/quillex/test/support/spinozas_ethics_p1.txt"
+            )
+          end},
          encyclopedia()
        ]}
     ]
