@@ -10,25 +10,21 @@ defmodule Flamelex.App do
       if boot_memelex?() do
         IO.puts("attempting to boot Memex...")
         :ok = start_memelex()
-
-        # Flamelex.Fluxus.Structs.RadixState.initialize(%{
-        #   memex: %{
-        #     active?: true
-        #   }
-        # })
-
         %{memex: %{active?: true}}
       else
         IO.puts("starting Flamelex (no Memex)...")
-
-        # Flamelex.Fluxus.Structs.RadixState.initialize(%{
-        #   memex: %{
-        #     active?: false
-        #   }
-        # })
-
         %{memex: %{active?: false}}
       end
+
+    # Quillex won't boot it's own GUI if we set this to true
+    Application.put_env(:quillex, :started_by_flamelex?, true)
+
+    # in mix.exs we disabled booting the Quillex app/sup-tree (runtime: false)
+    # because it will automatically boot it's own GUI (and this happens
+    # before we ever get a chance to set the environment
+    # variable below, because deps get booted first) but now that
+    # we have set the variable which disables the GUI, we should go ahead and boot Quillex
+    {:ok, _apps_started} = Application.ensure_all_started(:quillex)
 
     children = start_flamelex(init_args)
 
@@ -53,16 +49,7 @@ defmodule Flamelex.App do
 
   defp start_flamelex(args) do
     [
-      # Fluxus, which holds the application/GUI state
-      # {Flamelex.Fluxus, %{init_args: init_args}},
       {Flamelex.Fluxus.Supervisor, args},
-      # Listeners, which handle user input and other events
-      # {Flamelex.Listeners.Supervisor,
-      #  [
-      #    Flamelex.Fluxus.ActionListener,
-      #    Flamelex.Fluxus.UserInputListener,
-      #    Flamelex.Fluxus.MemelexListener
-      #  ]},
       {Scenic, [Flamelex.GUI.viewport_config()]}
     ]
   end

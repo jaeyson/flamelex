@@ -12,7 +12,6 @@ defmodule Flamelex.GUI.Menus.MainMenu do
         flamelex_menu(),
         quillex_menu(radix_state),
         memex_menu(radix_state),
-        api_menu(),
         help_menu()
       ]
       |> Enum.reject(&is_nil/1)
@@ -38,6 +37,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
        #     {"open wdg-wkb", fn -> raise "no" end}
        #   ]},
        devtools(),
+       api_menu(),
        quit()
      ]}
   end
