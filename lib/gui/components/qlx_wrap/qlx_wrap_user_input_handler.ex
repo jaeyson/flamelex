@@ -1,3 +1,25 @@
+defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
+  def handle(rdx, input) do
+    # # right now we hard-code we only ever edit the active buffer lol
+    buf_ref = rdx.apps.qlx_wrap.buffers |> List.first()
+
+    # case buf_ref.mode do
+    #   {:vim, :insert} ->
+    Quillex.Buffer.BufferManager.send_to_buffer_gui_component(
+      buf_ref,
+      {:user_input_fwd, input}
+    )
+
+    #     :re_routed
+
+    #   {:vim, :normal} ->
+    #     # raise "cant handle any other mode yet"
+    #     :ignore
+    # end
+    :re_routed
+  end
+end
+
 # defmodule Flamelex.GUI.Component.Editor.UserInputHandler do
 #   @moduledoc """
 #   Handles user input for the Editor component.
@@ -61,7 +83,7 @@
 #     #   msg: {:move_cursor, :right, 1}
 #     # )
 
-#     Quillex.Buffer.BufferManager.cast_to_buffer(
+#     Quillex.Buffer.BufferManager.send_to_buffer(
 #       hd(state.buffers).uuid,
 #       {:user_input_fwd, @right_arrow}
 #     )

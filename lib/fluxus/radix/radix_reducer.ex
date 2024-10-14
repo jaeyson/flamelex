@@ -90,6 +90,10 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, action)
   end
 
+  def process(rdx, {Flamelex.GUI.Component.QlxWrap, buf, action}) do
+    Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, buf, action)
+  end
+
   # def process(rdx, {component, action}) when is_module(component) do
   #   # Flamelex.GUI.Component.TODOdetails.Reducer.process(rdx, action)
   #   raise "somehow you hit this experimental clause... but I like it - uncomment this raise and lets see what happens"

@@ -31,6 +31,51 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     |> QlxWrap.Mutator.set_active_buf(buf_ref)
   end
 
+  # def process(
+  #       %RadixState{} = rdx,
+  #       {:move_cursor, direction, x}
+  #     ) do
+  #   rdx
+  # |> Layer1.set_layout(:full_screen)
+  # |> Layer1.set_active_apps([QlxWrap])
+  # |> QlxWrap.Mutator.add_open_buffer(buf_ref)
+  # |> QlxWrap.Mutator.set_active_buf(buf_ref)
+  # end
+
+  def process(
+        %RadixState{} = rdx,
+        buf_ref,
+        {:set_mode, m}
+      ) do
+    # TODO idea, maybe we could PUT EVENTS "UP" the component chain instead?
+
+    Quillex.Buffer.BufferManager.cast_to_buffer(
+      buf_ref,
+      {:action, {:set_mode, m}}
+    )
+
+    rdx
+    |> QlxWrap.Mutator.set_buf_mode(buf_ref, m)
+
+    # |> Layer1.set_layout(:full_screen)
+    # |> Layer1.set_active_apps([QlxWrap])
+    # |> QlxWrap.Mutator.add_open_buffer(buf_ref)
+    # |> QlxWrap.Mutator.set_active_buf(buf_ref)
+  end
+
+  def process(
+        %RadixState{} = rdx,
+        buf_ref,
+        {:move_cursor, direction, x}
+      ) do
+    Quillex.Buffer.BufferManager.cast_to_buffer(
+      buf_ref,
+      {:action, {:move_cursor, direction, x}}
+    )
+
+    :ignore
+  end
+
   # @directions [:up, :down, :left, :right]
   # def process(
   #       %Editor.State{} = state,
@@ -45,7 +90,7 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   #   #   msg: {:move_cursor, direction, x}
   #   # )
 
-  #   Quillex.Buffer.BufferManager.cast_to_buffer(
+  #   Quillex.Buffer.BufferManager.send_to_buffer(
   #     hd(state.buffers).uuid,
   #     {:move_cursor, direction, x}
   #   )
@@ -127,7 +172,7 @@ end
 #   #   #   msg: {:move_cursor, direction, x}
 #   #   # )
 
-#   #   Quillex.Buffer.BufferManager.cast_to_buffer(
+#   #   Quillex.Buffer.BufferManager.send_to_buffer(
 #   #     hd(state.buffers).uuid,
 #   #     {:move_cursor, direction, x}
 #   #   )
