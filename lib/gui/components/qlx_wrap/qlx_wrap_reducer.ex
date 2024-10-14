@@ -63,14 +63,38 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     # |> QlxWrap.Mutator.set_active_buf(buf_ref)
   end
 
+  # def process(
+  #       %RadixState{} = rdx,
+  #       buf_ref,
+  #       {:insert, text, :at_cursor}
+  #     ) do
+  #   Quillex.Buffer.BufferManager.cast_to_buffer(
+  #     buf_ref,
+  #     {:action, {:insert, text, :at_cursor}}
+  #   )
+  # end
+
+  # def process(
+  #       %RadixState{} = rdx,
+  #       buf_ref,
+  #       {:move_cursor, direction, x}
+  #     ) do
+  #   Quillex.Buffer.BufferManager.cast_to_buffer(
+  #     buf_ref,
+  #     {:action, {:move_cursor, direction, x}}
+  #   )
+
+  #   :ignore
+  # end
+
   def process(
         %RadixState{} = rdx,
         buf_ref,
-        {:move_cursor, direction, x}
+        actions
       ) do
     Quillex.Buffer.BufferManager.cast_to_buffer(
       buf_ref,
-      {:action, {:move_cursor, direction, x}}
+      actions
     )
 
     :ignore

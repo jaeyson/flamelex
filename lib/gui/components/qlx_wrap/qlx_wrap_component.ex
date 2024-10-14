@@ -33,7 +33,7 @@ defmodule Flamelex.GUI.Component.QlxWrap do
 
   # these are actions that bubble up from the Buffer GUI component
   def handle_cast({:gui_action, buf_ref, actions}, scene) do
-    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, buf_ref, actions})
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, buf_ref, {:action, actions}})
     {:noreply, scene}
   end
 
