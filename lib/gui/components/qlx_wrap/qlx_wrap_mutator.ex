@@ -4,6 +4,21 @@ defmodule Flamelex.GUI.Component.QlxWrap.Mutator do
     |> put_in([:apps, :qlx_wrap, :buffers], [buf_ref] ++ rdx.apps.qlx_wrap.buffers)
   end
 
+  # TODO should probably have guards here for valid mode
+  def set_buf_mode(rdx, %{uuid: buf_uuid} = buf_ref, mode) do
+    updated_bufs =
+      Enum.map(rdx.apps.qlx_wrap.buffers, fn
+        %{uuid: ^buf_uuid} = buf ->
+          %{buf | mode: mode}
+
+        buf ->
+          buf
+      end)
+
+    rdx
+    |> put_in([:apps, :qlx_wrap, :buffers], updated_bufs)
+  end
+
   def set_active_buf(rdx, %Quillex.Structs.Buffer.BufRef{} = buf_ref) do
     case rdx.apps.qlx_wrap.buffers
          |> Enum.find_index(&(&1.uuid == buf_ref.uuid)) do

@@ -16,7 +16,6 @@ defmodule Flamelex.GUI.Component.QlxWrap do
   end
 
   def init(scene, %{frame: %Widgex.Frame{} = frame}, _opts) do
-    # TODO this would be a cool place to do something better here...
     state = Flamelex.Fluxus.RadixStore.get().apps.qlx_wrap
     graph = QlxWrap.Render.go(frame, state)
 
@@ -27,22 +26,77 @@ defmodule Flamelex.GUI.Component.QlxWrap do
       |> assign(state: state)
       |> push_graph(graph)
 
-    # NOTE - this component needs (does it?) to subscribe to both radix state changes and buffer changes
     Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
-    # Quillex.Utils.PubSub.subscribe(topic: {:buffers, hd(state.buffers).uuid})
 
     {:ok, init_scene}
   end
 
-  def handle_info({:radi_state_change, new_radix_state}, scene) do
-    # new_graph = QlxWrap.Render.go(scene.assigns.frame, new_radix_state)
-
-    # new_scene =
-    #   scene
-    #   |> assign(graph: new_graph)
-    #   |> push_graph(new_graph)
-
+  # these are actions that bubble up from the Buffer GUI component
+  def handle_cast({:gui_action, buf_ref, actions}, scene) do
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, buf_ref, actions})
     {:noreply, scene}
+  end
+
+  # def handle_info({:radix_state_change, %{apps: %{qlx_wrap: }}new_radix_state}, scene) do
+  #   # new_graph = QlxWrap.Render.go(scene.assigns.frame, new_radix_state)
+
+  #   # new_scene =
+  #   #   scene
+  #   #   |> assign(graph: new_graph)
+  #   #   |> push_graph(new_graph)
+
+  #   {:noreply, scene}
+  # end
+
+  # Handle state changes where the state hasn't changed
+  def handle_info(
+        {:radix_state_change, %{apps: %{qlx_wrap: state}}},
+        %{assigns: %{state: state}} = scene
+      ) do
+    # State variables in pattern match are the same; no state change occurred
+    {:noreply, scene}
+  end
+
+  # Handle state changes where the state has changed
+  def handle_info(
+        {:radix_state_change, %{apps: %{qlx_wrap: new_state}}},
+        %{assigns: %{state: old_state}} = scene
+      ) do
+    # State has changed; raise an error as handling is app-specific
+    # raise "State change handling not implemented in template"
+
+    # todo NEED TO FIGURE OUT IF A BUFFER CLOSED
+
+    # IF A BUFFER DIDN'T CLOSE, THEN WE NEED TO RE-RENDER THE BUFFER, but we do it by casting messages not re-rendering from scratch
+
+    # NOTE - this is a perfect example right here, now I have to
+    # put in all this logic to figure out "how" the state changed and
+    # apply those changes, instead of just re-rendering (efficiently) based on the new state
+
+    if length(new_state.buffers) != length(old_state.buffers) do
+      # A buffer was added
+      # IO.puts("QLX STATE CHANGED")
+      # IO.inspect({old_state, new_state})
+      # raise "cant handle buffer changes yet"
+      # {:noreply, scene}
+
+      new_graph = QlxWrap.Render.go(scene.assigns.frame, new_state)
+
+      new_scene =
+        scene
+        |> assign(graph: new_graph)
+        |> assign(state: new_state)
+        |> push_graph(new_graph)
+
+      {:noreply, new_scene}
+    else
+      # cast_children(scene, {:state_change, new_state})
+      # Enum.each(new_state.buffers, fn buf ->
+      #   Quillex.Buffer.BufferManager.cast_to_buffer(buf, {:state_change, buf})
+      # end)
+
+      {:noreply, scene}
+    end
   end
 end
 
