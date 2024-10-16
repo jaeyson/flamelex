@@ -5,7 +5,7 @@ defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
 
     # case buf_ref.mode do
     #   {:vim, :insert} ->
-    Quillex.Buffer.BufferManager.send_to_buffer_gui_component(
+    Quillex.Buffer.BufferManager.send_to_gui_component(
       buf_ref,
       {:user_input_fwd, input}
     )

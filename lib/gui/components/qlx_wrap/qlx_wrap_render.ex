@@ -8,7 +8,13 @@ defmodule Flamelex.GUI.Component.QlxWrap.Render do
 
     graph =
       Scenic.Graph.build()
-      |> Buffer.add_to_graph(%{frame: frame, buf_ref: buf_ref})
+      |> Scenic.Primitives.group(
+        fn graph ->
+          graph
+          |> Buffer.add_to_graph(%{frame: frame, buf_ref: buf_ref, font: state.font})
+        end,
+        translate: frame.pin.point
+      )
   end
 end
 

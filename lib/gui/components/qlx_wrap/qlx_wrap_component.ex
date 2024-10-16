@@ -142,7 +142,7 @@ end
 # #   alias ScenicWidgets.{TabSelector, TextPad}
 # #   # alias ScenicWidgets.Core.Structs.Frame
 # #   alias Widgex.Frame
-# #   alias Quillex.Structs.Buffer
+# #   alias Quillex.Structs.BufState
 # #   alias ScenicWidgets.TextPad.Structs.Font
 
 # #   # NOTE - we need to take in the `app` because this component is re-used by Flamelex...

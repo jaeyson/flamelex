@@ -19,7 +19,7 @@ defmodule Flamelex.GUI.Component.QlxWrap.Mutator do
     |> put_in([:apps, :qlx_wrap, :buffers], updated_bufs)
   end
 
-  def set_active_buf(rdx, %Quillex.Structs.Buffer.BufRef{} = buf_ref) do
+  def set_active_buf(rdx, %Quillex.Structs.BufState.BufRef{} = buf_ref) do
     case rdx.apps.qlx_wrap.buffers
          |> Enum.find_index(&(&1.uuid == buf_ref.uuid)) do
       nil ->

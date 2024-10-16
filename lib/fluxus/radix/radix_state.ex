@@ -220,7 +220,7 @@ end
 #       kommander: %{
 #         hidden?: true,
 #         buffer:
-#           Quillex.Structs.Buffer.new(%{
+#           Quillex.Structs.BufState.new(%{
 #             id: {:buffer, Flamelex.API.Kommander},
 #             type: :text,
 #             data: "",
