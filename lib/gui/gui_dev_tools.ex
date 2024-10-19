@@ -138,7 +138,7 @@ defmodule Flamelex.GUI.DevTools do
 
     # List of files to create with their content generators
     files = [
-      {Path.join(base_path, "#{file_base}.ex"), component_module_content(module_base)},
+      {Path.join(base_path, "#{file_base}_cmpnt.ex"), component_module_content(module_base)},
       {Path.join(base_path, "#{file_base}_state.ex"), state_module_content(module_base)},
       {Path.join(base_path, "#{file_base}_reducer.ex"), reducer_module_content(module_base)},
       {Path.join(base_path, "#{file_base}_mutator.ex"), mutator_module_content(module_base)},
