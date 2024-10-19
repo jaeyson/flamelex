@@ -1,5 +1,13 @@
 defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
+  def handle(%{apps: %{qlx_wrap: %{req_save: %{do?: true}}}}, input) do
+    IO.puts("could do something here now we're REQUESTIN SAVE")
+    :ignore
+  end
+
   def handle(rdx, input) do
+    # %{buf: %{uuid: "47c1b778-1507-4926-bebc-4bca7313ded6"}, data: nil, do?: true}
+    # IO.inspect(rdx.apps.qlx_wrap.req_save, label: "REQ_SAVE")
+    # IO.inspect(input, label: "ININININININ")
     # # right now we hard-code we only ever edit the active buffer lol
     buf_ref = rdx.apps.qlx_wrap.buffers |> List.first()
 

@@ -5,6 +5,14 @@ defmodule Flamelex.GUI.Component.QlxWrap.State do
   use StructAccess
 
   defstruct buffers: [],
+            # it's layers all the way down baby...
+            # implement a layer system for the QlxWrap component
+            layers: [],
+            req_save: %{
+              do?: false,
+              buf: nil,
+              data: nil
+            },
             font: nil
 
   def new do

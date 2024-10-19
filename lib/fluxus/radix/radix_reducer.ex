@@ -74,10 +74,6 @@ defmodule Flamelex.Fluxus.RadixReducer do
   #   Flamelex.GUI.Component.Editor.Reducer.process(rdx, action)
   # end
 
-  # def process(rdx, {Flamelex.GUI.Component.QlxWrap.Reducer, action}) do
-  #   Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, action)
-  # end
-
   def process(rdx, {Flamelex.GUI.Component.RapidSelector.Reducer, action}) do
     Flamelex.GUI.Component.RapidSelector.Reducer.process(rdx, action)
   end
@@ -89,6 +85,10 @@ defmodule Flamelex.Fluxus.RadixReducer do
   def process(rdx, {Flamelex.GUI.Component.QlxWrap, action}) do
     Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, action)
   end
+
+  # def process(rdx, {Flamelex.GUI.Component.QlxWrap.Reducer, action}) do
+  #   Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, action)
+  # end
 
   def process(rdx, {Flamelex.GUI.Component.QlxWrap, buf, action}) do
     Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, buf, action)

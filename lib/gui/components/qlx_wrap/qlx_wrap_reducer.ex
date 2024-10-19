@@ -90,13 +90,36 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   def process(
         %RadixState{} = rdx,
         buf_ref,
-        actions
+        {:action, {:request_save, %{uuid: buf_uuid}}} = a
       ) do
-    Quillex.Buffer.BufferManager.cast_to_buffer(
-      buf_ref,
-      actions
-    )
+    # Quillex.Buffer.BufferManager.cast_to_buffer(buf_ref, a)
+    # :ignore
 
+    IO.puts(":THIS HERE IS WHERE WE NEED TO TRIGGER THE SAVE POPUP")
+
+    rdx
+    #   # |> Layer1.set_layout(:full_screen)
+    #   # |> Layer1.set_active_apps([QlxWrap])
+    |> QlxWrap.Mutator.request_save_for_buffer(buf_ref)
+
+    # :ignore
+  end
+
+  def process(
+        %RadixState{} = rdx,
+        buf_ref,
+        {:action, {:insert, _char, :at_cursor}} = a
+      ) do
+    Quillex.Buffer.BufferManager.cast_to_buffer(buf_ref, a)
+    :ignore
+  end
+
+  def process(
+        %RadixState{} = rdx,
+        buf_ref,
+        {:action, {:newline, :at_cursor}} = a
+      ) do
+    Quillex.Buffer.BufferManager.cast_to_buffer(buf_ref, a)
     :ignore
   end
 

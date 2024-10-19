@@ -148,6 +148,8 @@ defmodule Flamelex.GUI.Menus.MainMenu do
      ]}
   end
 
+  # TODO here, add save, maybe od a modal popup just to prove how cool we are!
+  # Then implement ctrl+s as insert mode save (since I'm pretty sure it doesn't do anything in vim?)
   def do_quillex_menu(%{apps: %{qlx_wrap: %{buffers: []}}} = _radix_state) do
     # what I currently call :sub_menu should be renamed :node,
     # and these ones should have a tag like :leaf or :button
@@ -158,28 +160,33 @@ defmodule Flamelex.GUI.Menus.MainMenu do
 
   def do_quillex_menu(radix_state) do
     [
-      {"raise error", fn -> raise "nothing works :(" end}
-      # do_open_buffers_menu(radix_state),
+      # {"raise error", fn -> raise "nothing works :(" end}
+      open_buffers_menu(radix_state),
       # {"new", &Flamelex.API.Buffer.new/0},
       # #  {"list", &Flamelex.API.Buffer.new/0}, #TODO list should be an arrow-out menudown, that lists open buffers
-      # {"save", &Flamelex.API.Buffer.save/0},
+      {"save", &Flamelex.API.Buffer.save/0}
       # {"close", &Flamelex.API.Buffer.close/0}
     ]
   end
 
-  def do_open_buffers_menu(%{apps: %{editor: %{buffers: open_buffers}}})
+  # def open_buffers_menu(%{apps: %{editor: %{buffers: open_buffers}}}) do
+  #   raise "got open buffers #{inspect(open_buffers)}"
+  # end
+
+  def open_buffers_menu(%{apps: %{qlx_wrap: %{buffers: open_buffers}}})
       when length(open_buffers) >= 1 do
     # build the open-buffers sub-menu & open the buffer when we click on one
     # TODO if the buffer is unsaved, put an * at the end of it
     open_bufs_sub_menu =
       open_buffers
-      |> Enum.map(fn %{id: {:buffer, name} = buf_id} ->
+      |> Enum.map(fn %Quillex.Structs.BufState.BufRef{uuid: buf_uuid, name: name} ->
         # NOTE: Wrap this call in it's closure so it's a function of arity /0
-        {name, fn -> Flamelex.API.Buffer.switch(buf_id) end}
+        # {name, fn -> Flamelex.API.Buffer.switch(buf_uuid) end}
+        # {name, fn -> Quillex.API.Buffer.switch(buf_uuid) end}
+        {name, fn -> raise "NO - figure out what to do about quillex vs flamelex api buffer" end}
       end)
 
-    IO.puts("RECOMPUTING MENUBARRRRRR")
-    {:sub_menu, "open-buffers", open_bufs_sub_menu}
+    {:sub_menu, "open buffers", open_bufs_sub_menu}
   end
 
   # def memex_menu(

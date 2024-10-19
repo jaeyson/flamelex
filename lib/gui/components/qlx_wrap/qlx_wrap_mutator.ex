@@ -37,4 +37,12 @@ defmodule Flamelex.GUI.Component.QlxWrap.Mutator do
         )
     end
   end
+
+  def request_save_for_buffer(
+        %{apps: %{qlx_wrap: %{req_save: %{do?: false, data: nil}}}} = rdx,
+        buf_ref
+      ) do
+    rdx
+    |> put_in([:apps, :qlx_wrap, :req_save], %{do?: true, buf: buf_ref, data: nil})
+  end
 end
