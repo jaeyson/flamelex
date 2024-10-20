@@ -55,7 +55,16 @@ defmodule Flamelex.API.Buffer do
 
   def active_buf do
     Flamelex.Fluxus.RadixStore.get()
-    |> Flamelex.GUI.Component.QlxWrap.active_buf()
+    |> active_buf()
+  end
+
+  def active_buf(%Flamelex.Fluxus.RadixState{} = rdx) do
+    buf_ref =
+      rdx
+      |> Flamelex.GUI.Component.QlxWrap.active_buf()
+
+    {:ok, buf} = Quillex.Buffer.BufferManager.call_buffer(buf_ref, :get_state)
+    buf
   end
 end
 

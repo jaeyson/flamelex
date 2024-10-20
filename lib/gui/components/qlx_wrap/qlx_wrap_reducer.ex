@@ -29,11 +29,19 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   def process(
         %RadixState{} = rdx,
         {:save_buffer, filename}
-      ) do
+      )
+      when is_binary(filename) do
     # TODO in reality we need to marry this mnodalkk up to a buiffer, need to know if this is a new vs existing filename etc
     # but this will work for now and prove the plumbing is in place
 
-    IO.puts("SIDE EFFECT HERE DO THE REAL SAVE")
+    # TODO if we have a memex loaded, we could save this as in the memex, even instead of the filesystem !!
+
+    {:ok, cwd} = File.cwd()
+
+    buf = Flamelex.API.Buffer.active_buf(rdx)
+    text = Enum.join(buf.data, "\n")
+
+    File.write!("#{cwd}/#{filename}.txt", text)
 
     rdx
     |> QlxWrap.Mutator.cancel_modal()
@@ -131,6 +139,15 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
         %RadixState{} = rdx,
         buf_ref,
         {:action, {:newline, :at_cursor}} = a
+      ) do
+    Quillex.Buffer.BufferManager.cast_to_buffer(buf_ref, a)
+    :ignore
+  end
+
+  def process(
+        %RadixState{} = rdx,
+        buf_ref,
+        {:action, {:delete, :before_cursor}} = a
       ) do
     Quillex.Buffer.BufferManager.cast_to_buffer(buf_ref, a)
     :ignore
