@@ -41,6 +41,9 @@ defmodule Flamelex.GUI.RootScene do
   # the graphs in. When a layer needs to change, it get's picked up by the
   # %Layer{} component, not the RootScene
 
+  # cast is the real name of this (iot was above a transformation fn) function, we should use that, shoud blog about that...
+  # what I mean by this is, that "cast" is transmute, it means 'change the type' or to 'change the form'
+
   def init(scene, args, opts) do
     # Logger.debug("#{__MODULE__} initializing...")
 
@@ -54,8 +57,6 @@ defmodule Flamelex.GUI.RootScene do
 
     rdx = Flamelex.Fluxus.RadixStore.get()
 
-    # We update a few details in the RadixStore which are
-    # force-refreshed due to this process starting up
     {:ok, graph} = render_layers(scene.viewport, rdx)
 
     new_scene =
@@ -158,22 +159,16 @@ defmodule Flamelex.GUI.RootScene do
   #   {:noreply, new_scene}
   # end
 
-  # TODO this is the MainEntry for rendering the graph - this is the highest level
-  # function, where we map from radix_state to the graph
   def render_layers(viewport, radix_state) do
-    # Note that this list is ordered, so that it readws nicely
-    # for humans - the firstt entry in this list will show _on top_
-    # of the other layers, but for it to show up top it actually gets drawn *last*,
-    # this is why we reverse the list at the end of this function
-
     full_window = Widgex.Frame.new(viewport)
     app_frame = calc_app_frame(full_window, radix_state)
 
+    # TODO experiment with the idea of each layer fetching their own state from RadixState during init...
     full_graph =
       Scenic.Graph.build()
-      # TODO experiment with the idea of each layer fetching their own state from RadixState during init...
       |> Layer0.add_to_graph(%{
-        # we want the Renseijin to be centered within the app_frame (the app_frame is the frame of the app, minus the menubar)
+        # we want the Renseijin to be centered within the app_frame
+        # (the app_frame is the frame of the app, minus the menubar)
         frame: app_frame
       })
       |> Layer01.add_to_graph(%{
@@ -183,15 +178,8 @@ defmodule Flamelex.GUI.RootScene do
       |> NeoLayer02.add_to_graph(%{
         id: :menubar,
         frame: full_window,
-        # we can use this to resize the frame to accomodate menubar space, once I get that working again...
-        # frame: NeoLayer01.compute_frame(viewport, radix_state),
         state: NeoLayer02.cast_rdx_to_layer_state(radix_state)
-        # pubsub: Flamelex.Lib.Utils.PubSub
       })
-
-    # |> second_layer(:menubar, radix_state)
-
-    # |> kommander_layer(radix_state)
 
     {:ok, full_graph}
   end
@@ -200,104 +188,4 @@ defmodule Flamelex.GUI.RootScene do
     [_menubar_frame, app_frame] = Widgex.Frame.v_split(full_window_frame, px: menubar_h)
     app_frame
   end
-
-  # def base_layer(graph, :renseijin, radix_state) do
-  #   # layer_state = Flamelex.GUI.Component.Renseijin.State.cast(radix_state)
-
-  #   graph
-  #   |> render_layer(
-  #     radix_state,
-  #     Flamelex.GUI.Layers.LayerZero.cast(radix_state)
-  #     # layer_state
-  #   )
-  # end
-
-  # def working_layer(graph, radix_state) do
-  #   graph
-  #   |> render_layer(radix_state, %LayerCake{
-  #     id: :working_layer,
-  #     # layer: {:working, "Working"},
-  #     layout: %Widgex.Structs.GridLayout{},
-  #     state: %{}
-  #   })
-  # end
-
-  # def first_layer(graph, :editor_and_apps, radix_state) do
-  #   # state = Flamelex.GUI.Layers.Layer01.cast(radix_state)
-
-  #   # # TODO should be cast...
-  #   # layer_cake =
-  #   #   LayerCake.new(%{
-  #   #     "id" => :editor_and_apps,
-  #   #     "state" => state,
-  #   #     "layerable" => Flamelex.GUI.Layers.Layer01
-  #   #   })
-
-  #   # graph |> do_render_layer(radix_state, layer_cake)
-
-  #   graph
-  #   |> Flamelex.GUI.Layers.NeoLayer01.add_to_graph(radix_state)
-  # end
-
-  # def second_layer(graph, :menubar, radix_state) do
-  #   # TODO actually, cast is the real name of this function, we should use that, shoud blog about that...
-  #   # what I mean by this is, that "cast" is transmute, it means 'change the type' or to 'change the form'
-  #   state = Flamelex.GUI.Layers.Layer02.cast(radix_state)
-
-  #   layer_cake =
-  #     LayerCake.new(%{
-  #       "id" => :menubar,
-  #       "state" => state,
-  #       "layerable" => Flamelex.GUI.Layers.Layer02
-  #     })
-
-  #   graph |> do_render_layer(radix_state, layer_cake)
-
-  #   #     |> render_layer(radix_state, %LayerCake{
-  #   #   # layer: {:menu, "Menu"},
-  #   #   id: :menubar,
-  #   #   layout: %Widgex.Structs.GridLayout{},
-  #   #   state: %{}
-  #   # })
-
-  #   # |> render_layer(
-  #   #   radix_state,
-  #   #   Flamelex.GUI.Layers.Layer02.cast(radix_state)
-  #   # )
-  # end
-
-  # def kommander_layer(graph, radix_state) do
-  #   # graph
-  #   # |> render_layer(
-  #   #   radix_state,
-  #   #   Flamelex.GUI.Layers.Layer03.cast(radix_state)
-  #   # )
-
-  #   # TODO THIS ONE is the best interfact here, this module
-  #   # should implement a behaviour which abstracts away all common
-  #   # layer behaviour, but it doesnt makse sense having one layer
-  #   # component which accepts a streuct with module names, just
-  #   # call the module but have that behaviour ("wink wink!") abstracted away
-  #   # but call the module itself directly
-  #   # Flamelex.GUI.Layers.Layer03.stack_layer(graph, radix_state)
-
-  #   layer_cake =
-  #     LayerCake.new(%{
-  #       "id" => :kommander,
-  #       "state" => Flamelex.GUI.Layers.Layer03.cast(radix_state),
-  #       "layerable" => Flamelex.GUI.Layers.Layer03
-  #     })
-
-  #   graph |> do_render_layer(radix_state, layer_cake)
-  # end
-
-  # def render_layer(graph, radix_state, %LayerCake{id: l_id} = layer) do
-  #   graph
-  #   |> Flamelex.GUI.Component.Layer.add_to_graph({radix_state, layer}, id: l_id)
-  # end
-
-  # def do_render_layer(graph, radix_state, %LayerCake{id: l_id} = layer) do
-  #   graph
-  #   |> Flamelex.GUI.Component.Layer.add_to_graph({radix_state, layer}, id: l_id)
-  # end
 end

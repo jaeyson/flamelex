@@ -70,6 +70,7 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
       ) do
     # TODO idea, maybe we could PUT EVENTS "UP" the component chain instead?
 
+    # TODO this should just go to the GUI process, the buffer doesn't really have "modes"
     Quillex.Buffer.BufferManager.cast_to_buffer(
       buf_ref,
       {:action, {:set_mode, m}}

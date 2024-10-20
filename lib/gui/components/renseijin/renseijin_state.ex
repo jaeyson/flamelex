@@ -57,7 +57,6 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
 
   # don't start at 0, the ying/yang looks vertical, it's cooler to
   # make it same as the hexagon (verticies meet)
-  # @starting_rotation 15
   @starting_rotation 30
 
   defstruct inner_radius: %{
