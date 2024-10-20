@@ -34,41 +34,34 @@ defmodule Flamelex.GUI.Component.Renseijin do
   - https://fma.fandom.com/wiki/Alchemy
   """
   use Scenic.Component
+  alias Flamelex.GUI.Component.Renseijin
   alias Flamelex.GUI.Component.Renseijin.{State, Utils}
-  # alias Widgex.Structs.{Dimensions}
   alias Widgex.Frame
   require Logger
 
   @starting_rotation Flamelex.GUI.Component.Renseijin.State.starting_rotation()
 
-  def validate(
-        %{
-          frame: %Frame{} = _f,
-          state: %State{} = _
-        } = data
-      ) do
-    Logger.debug("#{__MODULE__} has valid input data.")
-
+  def validate(%{frame: %Widgex.Frame{} = _f} = data) do
     {:ok, data}
   end
 
-  # @spec init(Scenic.Scene.t(), {Frame.t(), State.t()}, list()) :: {:ok, Scenic.Scene.t()}
   def init(
         %Scenic.Scene{} = scene,
-        args,
+        %{frame: %Widgex.Frame{} = frame},
         opts
       ) do
     Logger.debug("#{__MODULE__} initializing...")
 
     # TODO fetch the theme coming in from the opts, and use it to set the primary_color
+    state = Renseijin.State.new()
 
-    new_graph = render(args.frame, args.state)
+    new_graph = render(frame, state)
 
     new_scene =
       scene
       |> assign(graph: new_graph)
-      |> assign(frame: args.frame)
-      |> assign(state: args.state)
+      |> assign(frame: frame)
+      |> assign(state: state)
       |> push_graph(new_graph)
 
     request_input(new_scene, [:cursor_pos])

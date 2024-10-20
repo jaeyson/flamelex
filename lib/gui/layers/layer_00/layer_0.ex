@@ -1,9 +1,6 @@
 defmodule Flamelex.GUI.Layers.Layer0 do
   use Scenic.Component
-  alias Flamelex.GUI.Layers.Layer01
   alias Flamelex.GUI.Component.Renseijin
-  alias Flamelex.GUI.Component.Renseijin
-  require Logger
 
   def validate(%{frame: %Widgex.Frame{}} = data) do
     {:ok, data}
@@ -14,34 +11,22 @@ defmodule Flamelex.GUI.Layers.Layer0 do
         %{frame: %Widgex.Frame{} = frame},
         _opts
       ) do
-    {:ok, graph} = render(frame, %{})
+    # state = Renseijin.State.new()
+
+    graph =
+      Scenic.Graph.build()
+      |> Renseijin.add_to_graph(%{
+        frame: frame
+        # state: state
+      })
 
     new_scene =
       scene
       |> assign(frame: frame)
       |> assign(graph: graph)
+      # |> assign(state: state)
       |> push_graph(graph)
 
     {:ok, new_scene}
-  end
-
-  def render(frame, state) do
-    Scenic.Graph.build()
-    |> render(frame, state)
-  end
-
-  def render(graph, frame, _state) do
-    Wormhole.capture(
-      fn ->
-        r_state = Flamelex.GUI.Component.Renseijin.State.new()
-
-        graph
-        |> Renseijin.add_to_graph(%{
-          frame: frame,
-          state: r_state
-        })
-      end,
-      crush_report: true
-    )
   end
 end
