@@ -45,6 +45,7 @@ defmodule Flamelex.GUI.Components.Renseijin do
     {:ok, data}
   end
 
+  @taijitu_speed 30
   def init(
         %Scenic.Scene{} = scene,
         %{frame: %Widgex.Frame{} = frame},
@@ -65,7 +66,7 @@ defmodule Flamelex.GUI.Components.Renseijin do
       |> push_graph(new_graph)
 
     # run a separate timer for the changing colours in the taijitu tails
-    {:ok, _timer} = :timer.send_interval(15, :taijitu_tick)
+    {:ok, _timer} = :timer.send_interval(@taijitu_speed, :taijitu_tick)
 
     request_input(new_scene, [:cursor_pos])
 
@@ -196,11 +197,6 @@ defmodule Flamelex.GUI.Components.Renseijin do
         :taijitu_tail,
         &Scenic.Primitives.update_opts(&1, stroke: {state.taijitu.stroke_width, new_stroke_color})
       )
-
-    # |> Graph.modify(
-    #   :taijitu_tail_2,
-    #   &update_opts(&1, stroke: {state.taijitu.stroke.width, stroke_color})
-    # )
 
     t = state.taijitu
 
