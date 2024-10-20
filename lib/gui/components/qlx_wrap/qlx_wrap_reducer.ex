@@ -20,6 +20,27 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
 
   def process(
         %RadixState{} = rdx,
+        :modal_cancel
+      ) do
+    rdx
+    |> QlxWrap.Mutator.cancel_modal()
+  end
+
+  def process(
+        %RadixState{} = rdx,
+        {:save_buffer, filename}
+      ) do
+    # TODO in reality we need to marry this mnodalkk up to a buiffer, need to know if this is a new vs existing filename etc
+    # but this will work for now and prove the plumbing is in place
+
+    IO.puts("SIDE EFFECT HERE DO THE REAL SAVE")
+
+    rdx
+    |> QlxWrap.Mutator.cancel_modal()
+  end
+
+  def process(
+        %RadixState{} = rdx,
         {:open_buffer, %{filepath: filepath}}
       ) do
     {:ok, buf_ref} = Quillex.Buffer.open(%{filepath: filepath})
@@ -92,17 +113,8 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
         buf_ref,
         {:action, {:request_save, %{uuid: buf_uuid}}} = a
       ) do
-    # Quillex.Buffer.BufferManager.cast_to_buffer(buf_ref, a)
-    # :ignore
-
-    IO.puts(":THIS HERE IS WHERE WE NEED TO TRIGGER THE SAVE POPUP")
-
     rdx
-    #   # |> Layer1.set_layout(:full_screen)
-    #   # |> Layer1.set_active_apps([QlxWrap])
     |> QlxWrap.Mutator.request_save_for_buffer(buf_ref)
-
-    # :ignore
   end
 
   def process(

@@ -52,6 +52,16 @@ defmodule Flamelex.GUI.Component.QlxWrap do
     {:noreply, scene}
   end
 
+  def handle_cast({:modal_save, filename}, scene) do
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, {:save_buffer, filename}})
+    {:noreply, scene}
+  end
+
+  def handle_cast(:modal_cancel, scene) do
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, :modal_cancel})
+    {:noreply, scene}
+  end
+
   # def handle_info({:radix_state_change, %{apps: %{qlx_wrap: }}new_radix_state}, scene) do
   #   # new_graph = QlxWrap.Render.go(scene.assigns.frame, new_radix_state)
 

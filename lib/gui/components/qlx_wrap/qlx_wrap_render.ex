@@ -11,7 +11,14 @@ defmodule Flamelex.GUI.Component.QlxWrap.Render do
       |> Scenic.Primitives.group(
         fn graph ->
           graph
-          |> Widgex.Frame.draw_guidewires(frame)
+          # |> Widgex.Frame.draw_guidewires(frame)
+          |> Flamelex.GUI.Component.InputModal.add_to_graph(%{
+            # frame: modal_frame(frame),
+            id: hd(state.buffers).uuid,
+            frame: frame,
+            # parent_pid: self(),
+            prompt: "Enter filename:"
+          })
         end,
         translate: frame.pin.point
       )
