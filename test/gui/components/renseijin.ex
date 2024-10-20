@@ -1,6 +1,6 @@
-defmodule Flamelex.GUI.Component.RenseijinTest do
+defmodule Flamelex.GUI.Components.RenseijinTest do
   use ExUnit.Case, async: true
-  import Flamelex.GUI.Component.Renseijin
+  import Flamelex.GUI.Components.Renseijin
 
   describe "init/3" do
     test "initializes the scene with correct attributes" do

@@ -1,4 +1,4 @@
-defmodule Flamelex.GUI.Component.Renseijin do
+defmodule Flamelex.GUI.Components.Renseijin do
   @moduledoc """
   In order to begin an alchemical transmutation, a symbol called a
   Transmutation Circle (錬成陣, Renseijin) is necessary. A Transmutation
@@ -34,12 +34,12 @@ defmodule Flamelex.GUI.Component.Renseijin do
   - https://fma.fandom.com/wiki/Alchemy
   """
   use Scenic.Component
-  alias Flamelex.GUI.Component.Renseijin
-  alias Flamelex.GUI.Component.Renseijin.{State, Utils}
+  alias Flamelex.GUI.Components.Renseijin
+  # alias Flamelex.GUI.Components.Renseijin.{State, Utils}
   alias Widgex.Frame
   require Logger
 
-  @starting_rotation Flamelex.GUI.Component.Renseijin.State.starting_rotation()
+  @starting_rotation Renseijin.State.starting_rotation()
 
   def validate(%{frame: %Widgex.Frame{} = _f} = data) do
     {:ok, data}
@@ -64,6 +64,9 @@ defmodule Flamelex.GUI.Component.Renseijin do
       |> assign(state: state)
       |> push_graph(new_graph)
 
+    # run a separate timer for the changing colours in the taijitu tails
+    {:ok, _timer} = :timer.send_interval(15, :taijitu_tick)
+
     request_input(new_scene, [:cursor_pos])
 
     {:ok, new_scene}
@@ -71,7 +74,7 @@ defmodule Flamelex.GUI.Component.Renseijin do
 
   def handle_cast(
         :start_animation,
-        %{assigns: %{state: %State{animate?: true}}} = scene
+        %{assigns: %{state: %Renseijin.State{animate?: true}}} = scene
       ) do
     # Logger.debug(
     #   "#{__MODULE__} received msg: :start_animation, but ignoring it because we're already animated..."
@@ -82,7 +85,7 @@ defmodule Flamelex.GUI.Component.Renseijin do
 
   def handle_cast(
         :start_animation,
-        %{assigns: %{state: %State{timer: nil} = state}} = scene
+        %{assigns: %{state: %Renseijin.State{timer: nil} = state}} = scene
       ) do
     Logger.debug("#{__MODULE__} received msg: :start_animation")
 
@@ -112,21 +115,21 @@ defmodule Flamelex.GUI.Component.Renseijin do
     # Evaluates Destination ! Message repeatedly after Time milliseconds
     {:ok, timer} = :timer.send_interval(scene.assigns.state.animation_rate, :tick)
 
-    new_state = State.cast(state, %{animate?: true, timer: timer})
+    new_state = Renseijin.State.cast(state, %{animate?: true, timer: timer})
 
     {:noreply, scene |> assign(state: new_state)}
   end
 
   def handle_cast(
         :stop_animation,
-        %{assigns: %{state: %State{animate?: true, timer: timer} = state}} = scene
+        %{assigns: %{state: %Renseijin.State{animate?: true, timer: timer} = state}} = scene
       ) do
     Logger.debug("#{__MODULE__} received msg: :stop_animation")
 
     :timer.cancel(timer)
 
     new_state =
-      State.cast(state, %{
+      Renseijin.State.cast(state, %{
         animate?: false,
         timer: nil
       })
@@ -144,43 +147,81 @@ defmodule Flamelex.GUI.Component.Renseijin do
     Logger.debug("#{__MODULE__} received msg: :reset_animation...")
 
     new_state =
-      State.cast(state, %{
+      Renseijin.State.cast(state, %{
         rotation: @starting_rotation
       })
 
     handle_render(scene, new_state)
   end
 
-  def handle_cast({:redraw, %State{} = new_state}, scene) do
+  def handle_cast({:redraw, %Renseijin.State{} = new_state}, scene) do
     handle_render(scene, new_state)
   end
 
-  def handle_info(:tick, %{assigns: %{state: %State{rotation: r} = state}} = scene)
+  def handle_info(:tick, %{assigns: %{state: %Renseijin.State{rotation: r} = state}} = scene)
       when r < 0 or r > 360 do
     # reset the rotation, we've gone full-circle
 
     new_state =
-      State.cast(state, %{
+      Renseijin.State.cast(state, %{
         rotation: @starting_rotation
       })
 
     handle_render(scene, new_state)
   end
 
-  def handle_info(:tick, %{assigns: %{state: %State{rotation: r} = state}} = scene)
+  def handle_info(:tick, %{assigns: %{state: %Renseijin.State{rotation: r} = state}} = scene)
       when r >= 0 and r <= 360 do
     # Logger.debug("#{__MODULE__} received: :tick")
 
-    new_state = State.cast(state, :tick)
+    new_state = Renseijin.State.cast(state, :tick)
 
     # TODO don't re-render the whole scene here :( this is tragic!!
     handle_render(scene, new_state)
   end
 
+  # def handle_info(:taijitu_tick, scene) do
+  #   {:noreply, scene}
+  # end
+
+  def handle_info(:taijitu_tick, %{assigns: assigns} = scene) do
+    %{state: state, graph: graph} = assigns
+
+    new_color_index = rem(state.taijitu.color_index + 1, length(state.taijitu.rainbow))
+    new_stroke_color = Enum.at(state.taijitu.rainbow, new_color_index)
+
+    updated_graph =
+      graph
+      |> Scenic.Graph.modify(
+        :taijitu_tail,
+        &Scenic.Primitives.update_opts(&1, stroke: {state.taijitu.stroke_width, new_stroke_color})
+      )
+
+    # |> Graph.modify(
+    #   :taijitu_tail_2,
+    #   &update_opts(&1, stroke: {state.taijitu.stroke.width, stroke_color})
+    # )
+
+    t = state.taijitu
+
+    new_t = %{
+      t
+      | color_index: new_color_index
+    }
+
+    # new_state = %{state | color_index: new_color_index}
+    new_state = %{state | taijitu: new_t}
+
+    {:noreply,
+     scene
+     |> assign(state: new_state, graph: updated_graph)
+     |> push_graph(updated_graph)}
+  end
+
   def handle_input({:cursor_pos, {x, y}}, _context, scene) do
     centerpoint = Frame.center(scene.assigns.frame)
     # Logger.debug "#{__MODULE__} handling cursor_pos - centerpoint: #{inspect centerpoint}"
-    if {x, y} |> Utils.within_box?(centerpoint, scene.assigns.state.cool_kid_radius) do
+    if {x, y} |> Renseijin.Utils.within_box?(centerpoint, scene.assigns.state.cool_kid_radius) do
       GenServer.cast(self(), :start_animation)
       {:noreply, scene}
     else
@@ -193,17 +234,17 @@ defmodule Flamelex.GUI.Component.Renseijin do
   @doc """
   The unique function which renders the Renseijin component.
   """
-  @spec render(Frame.t(), State.t()) :: Scenic.Graph.t()
-  def render(%Frame{} = frame, %State{} = state) do
+  @spec render(Widgex.Frame.t(), Renseijin.State.t()) :: Scenic.Graph.t()
+  def render(%Widgex.Frame{} = frame, %Renseijin.State{} = state) do
     Scenic.Graph.build()
-    |> Utils.draw_background(frame, state)
+    |> Renseijin.Utils.draw_background(frame, state)
     |> Scenic.Primitives.group(
       fn graph ->
         graph
-        |> Utils.draw_circles(frame, state)
-        |> Utils.draw_triangles(frame, state)
-        |> Utils.draw_taijitu(frame, state)
-        |> Utils.draw_hexagons(frame, state)
+        |> Renseijin.Utils.draw_circles(frame, state)
+        |> Renseijin.Utils.draw_triangles(frame, state)
+        |> Renseijin.Utils.draw_taijitu(frame, state)
+        |> Renseijin.Utils.draw_hexagons(frame, state)
 
         # |> Utils.draw_squares(frame, state)
         # |> Utils.draw_pyramids(frame, state)
@@ -211,12 +252,11 @@ defmodule Flamelex.GUI.Component.Renseijin do
       id: __MODULE__,
       translate: Frame.center(frame).point
     )
-    # |> Scenic.Graph.modify(:scissor, Dimensions.box(frame.size))
     |> Scenic.Graph.modify(:scissor, frame.size.box)
   end
 
   # a way of re-using a code-pattern inside this module, nothing more
-  defp handle_render(%Scenic.Scene{} = scene, %State{} = new_state) do
+  defp handle_render(%Scenic.Scene{} = scene, %Renseijin.State{} = new_state) do
     new_graph = render(scene.assigns.frame, new_state)
 
     new_scene =

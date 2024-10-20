@@ -1,4 +1,4 @@
-defmodule Flamelex.GUI.Component.Renseijin.State do
+defmodule Flamelex.GUI.Components.Renseijin.State do
   @moduledoc """
   Defines the internal state of a Renseijin.
 
@@ -68,7 +68,10 @@ defmodule Flamelex.GUI.Component.Renseijin.State do
               offset_size: 12
             },
             taijitu: %{
-              stroke: {2, :yellow}
+              stroke: {2, :yellow},
+              rainbow: MyApp.Rainbow.colors(),
+              color_index: 0,
+              stroke_width: 2
             },
             rotation: @starting_rotation,
             animate?: false,

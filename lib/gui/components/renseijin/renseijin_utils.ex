@@ -1,6 +1,6 @@
-defmodule Flamelex.GUI.Component.Renseijin.Utils do
+defmodule Flamelex.GUI.Components.Renseijin.Utils do
   alias Widgex.Frame
-  alias Flamelex.GUI.Component.Renseijin.State
+  alias Flamelex.GUI.Components.Renseijin.State
 
   # a constant for π (change for potentially wacky behaviour~~)
   @pi 3.14159265359
@@ -118,25 +118,37 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
   end
 
   def draw_taijitu_group(graph, frame, state, radius) do
-    stroke = state.taijitu.stroke
+    {stroke_w, _yellow} = state.taijitu.stroke
+
+    stroke_color = Enum.at(state.taijitu.rainbow, state.taijitu.color_index)
 
     graph
     |> Scenic.Primitives.group(
       fn graph ->
         graph
-        |> Scenic.Primitives.circle(radius / 6, stroke: stroke, translate: {0, -radius / 2})
-        |> Scenic.Primitives.circle(radius / 6, stroke: stroke, translate: {0, radius / 2})
+        |> Scenic.Primitives.circle(radius / 6,
+          stroke: {stroke_w, stroke_color},
+          translate: {0, -radius / 2},
+          id: :taijitu_tail
+        )
+        |> Scenic.Primitives.circle(radius / 6,
+          stroke: {stroke_w, stroke_color},
+          translate: {0, radius / 2},
+          id: :taijitu_tail
+        )
         |> Scenic.Primitives.arc({radius / 2, @pi},
-          stroke: stroke,
+          stroke: {stroke_w, stroke_color},
           rotate: 3 * @pi / 2,
-          translate: {0, -radius / 2}
+          translate: {0, -radius / 2},
+          id: :taijitu_tail
         )
         |> Scenic.Primitives.arc({radius / 2, @pi},
-          stroke: stroke,
+          stroke: {stroke_w, stroke_color},
           rotate: @pi / 2,
-          translate: {0, radius / 2}
+          translate: {0, radius / 2},
+          id: :taijitu_tail
         )
-        |> Scenic.Primitives.circle(radius, stroke: stroke)
+        |> Scenic.Primitives.circle(radius, stroke: {stroke_w, stroke_color}, id: :taijitu_tail)
       end,
       id: :taijitu,
       rotate: degree_in_radians(state.rotation)
@@ -148,6 +160,9 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
     width_factor = 6.12
     finish_height = 3 * inner_radius
 
+    stroke_color = Enum.at(state.taijitu.rainbow, state.taijitu.color_index)
+
+    # same id for both paths, so they can be updated together
     graph
     |> Scenic.Primitives.path(
       [
@@ -157,7 +172,8 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
          (1 - 0.67) * inner_radius * width_factor, finish_height, inner_radius * width_factor,
          finish_height}
       ],
-      stroke: state.taijitu.stroke
+      stroke: {state.taijitu.stroke_width, stroke_color},
+      id: :taijitu_tail
     )
     |> Scenic.Primitives.path(
       [
@@ -167,7 +183,8 @@ defmodule Flamelex.GUI.Component.Renseijin.Utils do
          -1 * (1 - 0.67) * inner_radius * width_factor, -1 * finish_height,
          -1 * inner_radius * width_factor, -1 * finish_height}
       ],
-      stroke: state.taijitu.stroke
+      stroke: {state.taijitu.stroke_width, stroke_color},
+      id: :taijitu_tail
     )
   end
 

@@ -1,6 +1,6 @@
 defmodule Flamelex.GUI.Layers.Layer0 do
   use Scenic.Component
-  alias Flamelex.GUI.Component.Renseijin
+  alias Flamelex.GUI.Components.Renseijin
 
   def validate(%{frame: %Widgex.Frame{}} = data) do
     {:ok, data}
