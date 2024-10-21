@@ -42,6 +42,22 @@ defmodule Flamelex.GUI.Layers.Layer01.Mutator do
     )
   end
 
+  def open_project(
+        %Flamelex.Fluxus.RadixState{} = rdx,
+        project_dir
+      ) do
+    rdx
+    # |> put_in([:layers, :one, :active_apps], [])
+    |> put_in([:layers, :one, :projects], [project_dir])
+
+    # update_in(
+    #   rdx_state[:apps][:rapid_selector],
+    #   fn state ->
+    #     put_in(state, [:story_river, :open_tidbits], [project_dir | state.story_river.open_tidbits])
+    #   end
+    # )
+  end
+
   # def set_turbo(rdx_state, turbo?) when is_boolean(turbo?) do
   #   update_in(
   #     rdx_state[:layers][:one],

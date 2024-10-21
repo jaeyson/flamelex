@@ -61,9 +61,18 @@ defmodule Flamelex.GUI.Menus.MainMenu do
 
     base_menu = [
       # TODO if the current app is RapidSelector, it should be close, otherwise show open since basically this opens the RapidSelector even though it's called "memex"
+      {"open",
+       fn ->
+         Flamelex.Fluxus.action({Flamelex.GUI.Component.RapidSelector.Reducer, :open_memex})
+       end},
       # {"close", &Flamelex.API.Diary.close/0},
       {"my TODOs", &Memelex.My.TODOs.show/0},
       {"my Agents", &Memelex.My.Agents.show/0},
+      {:sub_menu, "my Projects",
+       [
+         {"all", &Memelex.My.Projects.show/0},
+         {"Flamelex", &Flamelex.API.Projects.open_flamelex/0}
+       ]},
       {:sub_menu, "my Calendar",
        [
          {"today",
@@ -239,11 +248,6 @@ defmodule Flamelex.GUI.Menus.MainMenu do
   #   else
   #     IO.puts "The function #{function}/#{arity} is not exported from the module #{module}."
   #   end
-  # end
-
-  # def memex_menu(rdx_state) do
-  #   IO.puts("UNKNOWN RDX STATE #{inspect(rdx_state.memex)}")
-  #   nil
   # end
 
   def maybe_add_agents_menu(memex_sub_menu, %{memex: %{env: %{env_modz_module: mod}}} = memex_env)

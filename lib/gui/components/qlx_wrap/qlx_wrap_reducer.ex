@@ -2,7 +2,7 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   # @moduledoc false
 
   alias Flamelex.Fluxus.RadixState
-  alias Flamelex.GUI.Layers.Layer01.Mutator, as: Layer1
+  alias Flamelex.GUI.Layers.Layer01
   alias Flamelex.GUI.Component.QlxWrap
 
   def process(
@@ -12,8 +12,8 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     {:ok, buf_ref} = Quillex.Buffer.new()
 
     rdx
-    |> Layer1.set_layout(:full_screen)
-    |> Layer1.set_active_apps([QlxWrap])
+    |> Layer01.Mutator.set_layout(:full_screen)
+    |> Layer01.Mutator.set_active_apps([QlxWrap])
     |> QlxWrap.Mutator.add_open_buffer(buf_ref)
     |> QlxWrap.Mutator.set_active_buf(buf_ref)
   end
@@ -54,8 +54,8 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     {:ok, buf_ref} = Quillex.Buffer.open(%{filepath: filepath})
 
     rdx
-    |> Layer1.set_layout(:full_screen)
-    |> Layer1.set_active_apps([QlxWrap])
+    |> Layer01.Mutator.set_layout(:full_screen)
+    |> Layer01.Mutator.set_active_apps([QlxWrap])
     |> QlxWrap.Mutator.add_open_buffer(buf_ref)
     |> QlxWrap.Mutator.set_active_buf(buf_ref)
   end
@@ -65,8 +65,8 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   #       {:move_cursor, direction, x}
   #     ) do
   #   rdx
-  # |> Layer1.set_layout(:full_screen)
-  # |> Layer1.set_active_apps([QlxWrap])
+  # |> Layer01.Mutator.set_layout(:full_screen)
+  # |> Layer01.Mutator.set_active_apps([QlxWrap])
   # |> QlxWrap.Mutator.add_open_buffer(buf_ref)
   # |> QlxWrap.Mutator.set_active_buf(buf_ref)
   # end
@@ -87,8 +87,8 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     rdx
     |> QlxWrap.Mutator.set_buf_mode(buf_ref, m)
 
-    # |> Layer1.set_layout(:full_screen)
-    # |> Layer1.set_active_apps([QlxWrap])
+    # |> Layer01.Mutator.set_layout(:full_screen)
+    # |> Layer01.Mutator.set_active_apps([QlxWrap])
     # |> QlxWrap.Mutator.add_open_buffer(buf_ref)
     # |> QlxWrap.Mutator.set_active_buf(buf_ref)
   end

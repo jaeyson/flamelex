@@ -271,29 +271,6 @@
 
 #   # def render(
 #   #       {:radix_state, radix_state},
-#   #       %{
-#   #         active_app: :editor,
-#   #         layout: %{
-#   #           explorer: explorer_frame,
-#   #           editor: editor_frame
-#   #         }
-#   #       }
-#   #     ) do
-#   #   {:ok,
-#   #    Scenic.Graph.build()
-#   #    |> Flamelex.GUI.Component.FileExplorer.add_to_graph(%{
-#   #      frame: explorer_frame,
-#   #      state: radix_state.projects
-#   #    })
-#   #    |> QuillEx.GUI.Components.Editor.add_to_graph(%{
-#   #      frame: editor_frame,
-#   #      radix_state: radix_state,
-#   #      app: Flamelex
-#   #    })}
-#   # end
-
-#   # def render(
-#   #       {:radix_state, radix_state},
 #   #       %{active_app: :editor, frame: frame}
 #   #     ) do
 #   #   {:ok,
@@ -375,74 +352,6 @@
 #     {:ok, new_graph}
 #   end
 
-#   def render(
-#         %Scenic.ViewPort{} = viewport,
-#         %{active_app: :editor, layout: :explorer_open, frames: [f1 | f2]} = state
-#       ) do
-#     IO.puts("ACTIVE APP EXPLORERER NOSPLIT EDITOR #{inspect(state)}")
-
-#     # %{framestack: [_menubar_f | editor_f]} =
-#     #   FlexiFrame.calc(
-#     #     viewport,
-#     #     # {:standard_rule, linemark: state.menu_bar.height}
-#     #     # TODO
-#     #     {:standard_rule, linemark: 60}
-#     #   )
-
-#     # # editor_f is always a tail list (for now...)
-#     # editor_frame = hd(editor_f)
-
-#     # you know what fuck it
-#     radix_state = Flamelex.Fluxus.RadixStore.get()
-
-#     new_graph =
-#       Scenic.Graph.build()
-#       |> Flamelex.GUI.Component.FileExplorer.add_to_graph(%{
-#         frame: f1,
-#         state: radix_state.projects
-#       })
-#       |> QuillEx.GUI.Components.Editor.add_to_graph(%{
-#         frame: hd(f2),
-#         radix_state: radix_state,
-#         app: Flamelex
-#       })
-
-#     {:ok, new_graph}
-#   end
-
-#   def render(
-#         %Scenic.ViewPort{} = viewport,
-#         %{active_app: :todos} = state
-#       ) do
-#     radix_state = Flamelex.Fluxus.RadixStore.get()
-
-#     main_pane =
-#       FlexiFrame.main_pane_frame(radix_state.gui.viewport,
-#         menu_bar_height: radix_state.desktop.menu_bar.height
-#       )
-
-#     new_graph =
-#       Scenic.Graph.build()
-#       |> Flamelex.GUI.Component.TODOlist.add_to_graph(%{
-#         frame: main_pane,
-#         state: %{}
-#       })
-
-#     {:ok, new_graph}
-#   end
-
-#   # def render(
-#   #       {:radix_state, radix_state},
-#   #       %{active_app: :memex, frame: frame}
-#   #     ) do
-#   #   {:ok,
-#   #    Scenic.Graph.build()
-#   #    |> Memelex.GUI.Components.Projector.add_to_graph(%{
-#   #      frame: frame,
-#   #      state: Flamelex.Fluxus.MemexStore.get()
-#   #    })}
-#   # end
-
 #   # def render(
 #   #       {:radix_state, radix_state},
 #   #       %{active_app: :hexdocs, frame: frame}
@@ -454,16 +363,3 @@
 #   #      state: %{}
 #   #    })}
 #   # end
-
-#   # def render(
-#   #       {:radix_state, _rdx},
-#   #       %{active_app: :widget_workbench, frame: f}
-#   #     ) do
-#   #   {:ok,
-#   #    Scenic.Graph.build()
-#   #    |> WidgetWorkbench.Desk.add_to_graph(%{
-#   #      frame: f,
-#   #      state: %{}
-#   #    })}
-#   # end
-# end
