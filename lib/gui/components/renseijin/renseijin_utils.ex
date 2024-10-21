@@ -1,5 +1,6 @@
 defmodule Flamelex.GUI.Components.Renseijin.Utils do
   alias Widgex.Frame
+  alias Flamelex.GUI.Components.Renseijin
   alias Flamelex.GUI.Components.Renseijin.State
 
   # a constant for π (change for potentially wacky behaviour~~)
@@ -9,16 +10,16 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
   # Drawing circles
   # ===========================================================================
 
-  def draw_circles(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
+  def draw_circles(%Scenic.Graph{} = graph, %Frame{} = frame, %Renseijin.State{} = state) do
     graph
-    |> draw_circle(state, State.radius(frame))
-    |> draw_circle(state, State.inner_radius(frame, state))
-    |> draw_circle(state, State.outer_radius(frame, state))
+    |> draw_circle(state, Renseijin.State.radius(frame))
+    |> draw_circle(state, Renseijin.State.inner_radius(frame, state))
+    |> draw_circle(state, Renseijin.State.outer_radius(frame, state))
   end
 
   def draw_circle(
         %Scenic.Graph{} = graph,
-        %State{} = state,
+        %Renseijin.State{} = state,
         radius
       )
       when is_float(radius) do
@@ -36,16 +37,16 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
   # Drawing triangles
   # ===========================================================================
 
-  def draw_triangles(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
+  def draw_triangles(%Scenic.Graph{} = graph, %Frame{} = frame, %Renseijin.State{} = state) do
     graph
-    |> draw_triangle(state, equilateral: State.radius(frame))
-    |> draw_triangle(state, equilateral: State.inner_radius(frame, state))
-    |> draw_triangle(state, equilateral: State.outer_radius(frame, state))
+    |> draw_triangle(state, equilateral: Renseijin.State.radius(frame))
+    |> draw_triangle(state, equilateral: Renseijin.State.inner_radius(frame, state))
+    |> draw_triangle(state, equilateral: Renseijin.State.outer_radius(frame, state))
   end
 
   def draw_triangle(
         %Scenic.Graph{} = graph,
-        %State{} = state,
+        %Renseijin.State{} = state,
         equilateral: radius
       )
       when is_float(radius) do
@@ -73,14 +74,14 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
   # Draw Squares
   # ===========================================================================
 
-  def draw_squares(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
+  def draw_squares(%Scenic.Graph{} = graph, %Frame{} = frame, %Renseijin.State{} = state) do
     graph
-    |> draw_square(state, State.inner_radius(frame, state))
+    |> draw_square(state, Renseijin.State.inner_radius(frame, state))
   end
 
   def draw_square(
         %Scenic.Graph{} = graph,
-        %State{} = state,
+        %Renseijin.State{} = state,
         radius
       ) do
     # note - the `radius` of the square is the centroid to the flat-edge, NOT the vertex
@@ -108,7 +109,7 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
   # ===========================================================================
 
   def draw_taijitu(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
-    radius = State.inner_radius(frame, state)
+    radius = Renseijin.State.inner_radius(frame, state)
     # dot_radii = radius / 2
 
     graph
@@ -210,8 +211,8 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
   # Draw Pyramids
   # ===========================================================================
 
-  def draw_pyramids(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
-    radius = State.inner_radius(frame, state) * (2 / 3) * (3 / 4) * (2 / 3)
+  def draw_pyramids(%Scenic.Graph{} = graph, %Frame{} = frame, %Renseijin.State{} = state) do
+    radius = Renseijin.State.inner_radius(frame, state) * (2 / 3) * (3 / 4) * (2 / 3)
     dot_radii = radius / 2
 
     graph
@@ -220,7 +221,7 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
 
   def draw_triangle(
         %Scenic.Graph{} = graph,
-        %State{} = state,
+        %Renseijin.State{} = state,
         right_angle: length
       )
       when is_float(length) do
@@ -248,8 +249,8 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
 
   # some AI magix, don't touch
   @magic_coefficient 2 / 3 * (3 / 4) * (2 / 3)
-  def draw_hexagons(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
-    radius = State.inner_radius(frame, state)
+  def draw_hexagons(%Scenic.Graph{} = graph, %Widgex.Frame{} = frame, %Renseijin.State{} = state) do
+    radius = Renseijin.State.inner_radius(frame, state)
 
     graph
     |> draw_hexagon(state, radius: radius / 2)
@@ -257,7 +258,7 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
     # |> draw_hexagon(state, radius: radius * @magic_coefficient)
   end
 
-  def draw_hexagon(%Scenic.Graph{} = graph, %State{} = state, radius: radius) do
+  def draw_hexagon(%Scenic.Graph{} = graph, %Renseijin.State{} = state, radius: radius) do
     hexagon_path_elements = hexagon_path_elements(radius)
 
     graph
@@ -296,7 +297,11 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
     "images/burning_man_2016_temple_friday_sunrise.jpeg"
   ]
 
-  def draw_background(%Scenic.Graph{} = graph, %Frame{} = frame, %State{} = state) do
+  def draw_background(
+        %Scenic.Graph{} = graph,
+        %Widgex.Frame{} = frame,
+        %Renseijin.State{} = state
+      ) do
     graph
     |> Scenic.Primitives.rect(frame.size.box,
       # translate: Coordinates.point(frame.pin),
@@ -304,15 +309,50 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
       # fill: {:image, "images/burning_man_2016_temple_friday_sunrise.jpeg"}
       fill: {:image, Enum.random(@background_images)}
     )
-    |> draw_mask(frame, state)
+    |> draw_mask_with_gradient(frame, state)
+
+    # |> Scenic.Primitives.rect({100, 50},
+    #   fill: {:linear, {50, 25, 10, 45, :blue, :yellow}},
+    #   translate: frame.pin.point
+    # )
   end
 
-  def draw_mask(graph, frame, state) do
+  # def draw_mask(graph, frame, state) do
+  #   graph
+  #   |> Scenic.Primitives.circle(
+  #     State.outer_radius(frame, state),
+  #     fill: :black,
+  #     translate: Frame.center(frame).point
+  #   )
+  # end
+
+  # @inner_color :white
+  # @inner_color {:color_rgba, {255, 255, 255, 172}}
+  @inner_color {:color_rgba, {250, 250, 210, 172}}
+  @fade_out 500
+  @fully_transparent {0, 0, 0, 0}
+  def draw_mask_with_gradient(graph, frame, state) do
+    # Get the center of the frame and radius
+    center_point = Widgex.Frame.center(frame).point
+    {center_x, center_y} = center_point
+    inner_radius = Renseijin.State.inner_radius(frame, state)
+    outer_radius = Renseijin.State.outer_radius(frame, state)
+
+    # stroke_color = Enum.at(state.taijitu.rainbow, state.taijitu.color_index)
+
+    # Define a radial gradient with proper parameters
+    # gradient = {:radial, {0, 0, outer_radius, outer_radius + @fade_out, :white, :black}}
+    gradient = {:radial, {0, 0, inner_radius / 3, outer_radius, @inner_color, @fully_transparent}}
+
+    # Apply the radial gradient to the circle primitive
     graph
     |> Scenic.Primitives.circle(
-      State.outer_radius(frame, state),
-      fill: :black,
-      translate: Frame.center(frame).point
+      outer_radius + @fade_out,
+      # outer_radius,
+      # Apply the radial gradient
+      fill: gradient,
+      translate: center_point
+      # id: :taijitu_tail
     )
   end
 

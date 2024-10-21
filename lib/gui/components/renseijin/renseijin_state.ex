@@ -16,6 +16,7 @@ defmodule Flamelex.GUI.Components.Renseijin.State do
   - `circle_size`: The size of the circle component. Defaults to `47`.
   """
   alias Widgex.Frame
+  alias Flamelex.GUI.Components.Renseijin.State.RainbowColors
 
   @type t :: %__MODULE__{
           # coefficients of the equation which determine the radius of the inner circle
@@ -69,7 +70,7 @@ defmodule Flamelex.GUI.Components.Renseijin.State do
             },
             taijitu: %{
               stroke: {2, :yellow},
-              rainbow: MyApp.Rainbow.colors(),
+              rainbow: RainbowColors.colors(),
               color_index: 0,
               stroke_width: 2
             },

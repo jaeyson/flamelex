@@ -1,4 +1,4 @@
-defmodule MyApp.Rainbow do
+defmodule Flamelex.GUI.Components.Renseijin.State.RainbowColors do
   def colors(steps \\ 360) do
     Enum.map(0..(steps - 1), fn i ->
       hue = i / steps
