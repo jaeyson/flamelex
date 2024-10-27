@@ -56,7 +56,8 @@ defmodule Flamelex.GUI.Components.Renseijin do
     # TODO fetch the theme coming in from the opts, and use it to set the primary_color
     state = Renseijin.State.new()
 
-    new_graph = render(frame, state)
+    # new_graph = render(frame, state)
+    new_graph = Renseijin.Rend.er(frame, state)
 
     new_scene =
       scene
@@ -227,33 +228,33 @@ defmodule Flamelex.GUI.Components.Renseijin do
     end
   end
 
-  @doc """
-  The unique function which renders the Renseijin component.
-  """
-  @spec render(Widgex.Frame.t(), Renseijin.State.t()) :: Scenic.Graph.t()
-  def render(%Widgex.Frame{} = frame, %Renseijin.State{} = state) do
-    Scenic.Graph.build()
-    |> Renseijin.Utils.draw_background(frame, state)
-    |> Scenic.Primitives.group(
-      fn graph ->
-        graph
-        |> Renseijin.Utils.draw_circles(frame, state)
-        |> Renseijin.Utils.draw_triangles(frame, state)
-        |> Renseijin.Utils.draw_taijitu(frame, state)
-        |> Renseijin.Utils.draw_hexagons(frame, state)
+  # @doc """
+  # The unique function which renders the Renseijin component.
+  # """
+  # @spec render(Widgex.Frame.t(), Renseijin.State.t()) :: Scenic.Graph.t()
+  # def render(%Widgex.Frame{} = frame, %Renseijin.State{} = state) do
+  #   Scenic.Graph.build()
+  #   |> Renseijin.Utils.draw_background(frame, state)
+  #   |> Scenic.Primitives.group(
+  #     fn graph ->
+  #       graph
+  #       |> Renseijin.Utils.draw_circles(frame, state)
+  #       |> Renseijin.Utils.draw_triangles(frame, state)
+  #       |> Renseijin.Utils.draw_taijitu(frame, state)
+  #       |> Renseijin.Utils.draw_hexagons(frame, state)
 
-        # |> Utils.draw_squares(frame, state)
-        # |> Utils.draw_pyramids(frame, state)
-      end,
-      id: __MODULE__,
-      translate: Frame.center(frame).point
-    )
-    |> Scenic.Graph.modify(:scissor, frame.size.box)
-  end
+  #       # |> Utils.draw_squares(frame, state)
+  #       # |> Utils.draw_pyramids(frame, state)
+  #     end,
+  #     id: __MODULE__,
+  #     translate: Frame.center(frame).point
+  #   )
+  #   |> Scenic.Graph.modify(:scissor, frame.size.box)
+  # end
 
   # a way of re-using a code-pattern inside this module, nothing more
   defp handle_render(%Scenic.Scene{} = scene, %Renseijin.State{} = new_state) do
-    new_graph = render(scene.assigns.frame, new_state)
+    new_graph = Renseijin.Rend.er(scene.assigns.frame, new_state)
 
     new_scene =
       scene
