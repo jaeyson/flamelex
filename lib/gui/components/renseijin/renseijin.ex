@@ -198,6 +198,10 @@ defmodule Flamelex.GUI.Components.Renseijin do
         :taijitu_tail,
         &Scenic.Primitives.update_opts(&1, stroke: {state.taijitu.stroke_width, new_stroke_color})
       )
+      |> Scenic.Graph.modify(
+        :taijitu_text,
+        &Scenic.Primitives.update_opts(&1, fill: new_stroke_color)
+      )
 
     t = state.taijitu
 
@@ -227,30 +231,6 @@ defmodule Flamelex.GUI.Components.Renseijin do
       {:noreply, scene}
     end
   end
-
-  # @doc """
-  # The unique function which renders the Renseijin component.
-  # """
-  # @spec render(Widgex.Frame.t(), Renseijin.State.t()) :: Scenic.Graph.t()
-  # def render(%Widgex.Frame{} = frame, %Renseijin.State{} = state) do
-  #   Scenic.Graph.build()
-  #   |> Renseijin.Utils.draw_background(frame, state)
-  #   |> Scenic.Primitives.group(
-  #     fn graph ->
-  #       graph
-  #       |> Renseijin.Utils.draw_circles(frame, state)
-  #       |> Renseijin.Utils.draw_triangles(frame, state)
-  #       |> Renseijin.Utils.draw_taijitu(frame, state)
-  #       |> Renseijin.Utils.draw_hexagons(frame, state)
-
-  #       # |> Utils.draw_squares(frame, state)
-  #       # |> Utils.draw_pyramids(frame, state)
-  #     end,
-  #     id: __MODULE__,
-  #     translate: Frame.center(frame).point
-  #   )
-  #   |> Scenic.Graph.modify(:scissor, frame.size.box)
-  # end
 
   # a way of re-using a code-pattern inside this module, nothing more
   defp handle_render(%Scenic.Scene{} = scene, %Renseijin.State{} = new_state) do

@@ -22,9 +22,6 @@ defmodule Flamelex.Fluxus.RadixState do
             gui: nil
 
   def new(_args) do
-    {:ok, ibm_plex_mono_font_metrics} =
-      TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
-
     %__MODULE__{
       layers: %{
         one: Layer01.State.new()
@@ -47,12 +44,7 @@ defmodule Flamelex.Fluxus.RadixState do
         font: :ibm_plex_mono,
         height: 60
       },
-      # TODO move fonts to somewhere else too
-      fonts: %{
-        ibm_plex_mono: %{
-          metrics: ibm_plex_mono_font_metrics
-        }
-      }
+      fonts: fonts()
       # gui: %{}
     }
   end
@@ -60,6 +52,30 @@ defmodule Flamelex.Fluxus.RadixState do
   def theme do
     Scenic.Primitive.Style.Theme.preset(:light)
     |> Scenic.Primitive.Style.Theme.normalize()
+  end
+
+  def fonts do
+    # TruetypeMetrics.load("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf")
+    {:ok, ibm_plex_mono_font_metrics} =
+      TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
+
+    {:ok, noto_sans_font_metrics} =
+      TruetypeMetrics.load("./assets/fonts/Noto_Sans/static/NotoSans-Regular.ttf")
+
+    {:ok, meroitic_font_metrics} =
+      TruetypeMetrics.load("./assets/fonts/Noto_Sans_Meroitic/NotoSansMeroitic-Regular.ttf")
+
+    %{
+      ibm_plex_mono: %{
+        metrics: ibm_plex_mono_font_metrics
+      },
+      noto_sans: %{
+        metrics: noto_sans_font_metrics
+      },
+      meroitic: %{
+        metrics: meroitic_font_metrics
+      }
+    }
   end
 end
 
