@@ -141,6 +141,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
     {:sub_menu, "Help",
      [
        {"Open user manual", fn -> raise "you wish lol" end},
+       {"Keybinding discovery", fn -> raise "you wish lol" end},
        {:sub_menu, "Getting Started",
         [
           {"Installation", fn -> IO.puts("This is the installation guide") end},
