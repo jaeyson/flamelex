@@ -20,7 +20,7 @@ defmodule Flamelex.GUI.Components.Renseijin.Rend do
         |> Renseijin.Utils.draw_circles(frame, state)
         |> Renseijin.Utils.draw_triangles(frame, state)
         |> draw_taijitu(frame, state)
-        |> Renseijin.Utils.draw_hexagons(frame, state)
+        |> draw_hexagons(frame, state)
 
         # |> draw_symbols(frame, state)
 
@@ -31,6 +31,84 @@ defmodule Flamelex.GUI.Components.Renseijin.Rend do
       translate: Widgex.Frame.center(frame).point
     )
     |> Scenic.Graph.modify(:scissor, frame.size.box)
+  end
+
+  #############################################################################
+  # Draw Hexagon
+  # ===========================================================================
+
+  # some AI magix, don't touch
+  @magic_coefficient 2 / 3 * (3 / 4) * (2 / 3)
+  def draw_hexagons(%Scenic.Graph{} = graph, %Widgex.Frame{} = frame, %Renseijin.State{} = state) do
+    radius = Renseijin.State.inner_radius(frame, state)
+
+    graph
+    |> draw_hexagon(state, radius: radius / 2)
+    |> draw_little_hexagons(frame, state)
+    |> draw_little_hexagons(frame, state, 1)
+    |> draw_little_hexagons(frame, state, 2)
+
+    # |> draw_little_hexagon(state, radius: radius / 2)
+    # |> draw_little_hexagon(state, radius: radius / 4)
+    # |> draw_little_hexagon(state, radius: radius / 8)
+
+    # |> draw_hexagon(state, radius: radius * @magic_coefficient)
+  end
+
+  def draw_little_hexagons(graph, frame, state, n \\ 0) do
+    radius = Renseijin.State.inner_radius(frame, state)
+
+    graph
+    |> Scenic.Primitives.group(
+      fn graph ->
+        graph
+        |> draw_little_hexagon(state, radius: radius / 2)
+        |> draw_little_hexagon(state, radius: radius / 4)
+        |> draw_little_hexagon(state, radius: radius / 8)
+        |> draw_little_hexagon(state, radius: radius / 16)
+      end,
+      rotate: n * @pi / 3
+    )
+
+    # I think the effect is kind of lost after 4
+    # |> draw_little_hexagon(state, radius: radius / 32)
+  end
+
+  def draw_hexagon(%Scenic.Graph{} = graph, %Renseijin.State{} = state, radius: radius) do
+    hexagon_path_elements = hexagon_path_elements(radius)
+
+    graph
+    |> Scenic.Primitives.path(
+      hexagon_path_elements,
+      stroke: state.relief_stroke,
+      cap: :round
+    )
+  end
+
+  def draw_little_hexagon(%Scenic.Graph{} = graph, %Renseijin.State{} = state, radius: radius) do
+    hexagon_path_elements = hexagon_path_elements(radius / 2)
+
+    graph
+    |> Scenic.Primitives.path(
+      hexagon_path_elements,
+      stroke: state.relief_stroke,
+      cap: :round,
+      translate: {0, -radius}
+    )
+  end
+
+  def hexagon_path_elements(radius) do
+    angle_step = :math.pi() / 3
+
+    path_elements =
+      Enum.map(0..5, fn i ->
+        angle = i * angle_step
+        x = :math.cos(angle) * radius
+        y = :math.sin(angle) * radius
+        {:line_to, x, y}
+      end)
+
+    [{:move_to, :math.cos(0) * radius, :math.sin(0) * radius}] ++ path_elements ++ [:close_path]
   end
 
   #############################################################################
