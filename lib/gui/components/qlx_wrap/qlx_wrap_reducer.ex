@@ -1,6 +1,5 @@
 defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
-  # @moduledoc false
-
+  @moduledoc false
   alias Flamelex.Fluxus.RadixState
   alias Flamelex.GUI.Layers.Layer01
   alias Flamelex.GUI.Component.QlxWrap
@@ -92,17 +91,6 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     # |> QlxWrap.Mutator.add_open_buffer(buf_ref)
     # |> QlxWrap.Mutator.set_active_buf(buf_ref)
   end
-
-  # def process(
-  #       %RadixState{} = rdx,
-  #       buf_ref,
-  #       {:insert, text, :at_cursor}
-  #     ) do
-  #   Quillex.Buffer.BufferManager.cast_to_buffer(
-  #     buf_ref,
-  #     {:action, {:insert, text, :at_cursor}}
-  #   )
-  # end
 
   # def process(
   #       %RadixState{} = rdx,

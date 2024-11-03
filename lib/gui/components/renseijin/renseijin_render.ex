@@ -19,8 +19,8 @@ defmodule Flamelex.GUI.Components.Renseijin.Rend do
         graph
         |> Renseijin.Utils.draw_circles(frame, state)
         |> Renseijin.Utils.draw_triangles(frame, state)
-        |> draw_taijitu(frame, state)
         |> draw_hexagons(frame, state)
+        |> draw_taijitu(frame, state)
 
         # |> draw_symbols(frame, state)
 
@@ -47,12 +47,9 @@ defmodule Flamelex.GUI.Components.Renseijin.Rend do
     |> draw_little_hexagons(frame, state)
     |> draw_little_hexagons(frame, state, 1)
     |> draw_little_hexagons(frame, state, 2)
-
-    # |> draw_little_hexagon(state, radius: radius / 2)
-    # |> draw_little_hexagon(state, radius: radius / 4)
-    # |> draw_little_hexagon(state, radius: radius / 8)
-
-    # |> draw_hexagon(state, radius: radius * @magic_coefficient)
+    |> draw_little_hexagons(frame, state, 3)
+    |> draw_little_hexagons(frame, state, 4)
+    |> draw_little_hexagons(frame, state, 5)
   end
 
   def draw_little_hexagons(graph, frame, state, n \\ 0) do
@@ -66,12 +63,12 @@ defmodule Flamelex.GUI.Components.Renseijin.Rend do
         |> draw_little_hexagon(state, radius: radius / 4)
         |> draw_little_hexagon(state, radius: radius / 8)
         |> draw_little_hexagon(state, radius: radius / 16)
+
+        # I think the effect is kind of lost after 4
+        # |> draw_little_hexagon(state, radius: radius / 32)
       end,
       rotate: n * @pi / 3
     )
-
-    # I think the effect is kind of lost after 4
-    # |> draw_little_hexagon(state, radius: radius / 32)
   end
 
   def draw_hexagon(%Scenic.Graph{} = graph, %Renseijin.State{} = state, radius: radius) do
