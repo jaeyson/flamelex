@@ -724,3 +724,12 @@ show the community what I've done so far.`
 
 NEXT is MenuBar
 
+
+# next big TODOs
+
+- add ripgrep for fuzzy searching
+- git tree
+- hexdocs
+- LLM agent coding assistance
+- autocorrect / Elixir LSP / connect to runtime for real-time compilation
+- 
