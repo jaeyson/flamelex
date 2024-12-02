@@ -15,18 +15,23 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
     [{TODOlist.Reducer, :show_todos}]
   end
 
-  def handle(rdx, {:open_tidbit, t}) do
-    [{RapidSelector.Reducer, {:open_tidbit, t}}]
-  end
+  # def handle(rdx, {:open_tidbit, t}) do
+  #   # [{RapidSelector.Reducer, {:open_tidbit, t}}]
+  #   {:open_tidbit, t}
+  # end
 
-  def handle(rdx, :show_agents) do
-    IO.puts("show the agent for realsies, from flamelex")
-    # rdx
-    # :ignore
-    # []
-    [:show_agents]
-    # [{TODOlist.Reducer, :show_agents}]
-  end
+  # def handle(rdx, :show_agents) do
+  #   IO.puts("show the agent for realsies, from flamelex")
+  #   # rdx
+  #   # :ignore
+  #   # []
+  #   [:show_agents]
+  #   # [{TODOlist.Reducer, :show_agents}]
+  # end
+
+  # def handle(rdx, {:reloaded_my_modz, env}) do
+  #   [{:reloaded_my_modz, env}]
+  # end
 
   def handle(rdx, {:tidbit_saved, t}) do
     # IO.inspect(t)
@@ -43,6 +48,12 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
       {TODOdetails.Reducer, {:refresh_tidbit, t}}
       # {RapidSelector.Reducer, {:refresh_tidbit, t}}
     ]
+  end
+
+  def handle(_rdx, mmlx_event) do
+    # pass memelex events along to be treated as actions by Fluxus (cause we trust Memelex, right !>?)
+    Logger.warn "implicitely handling a Memelex event as a Flamelex action..."
+    [mmlx_event]
   end
 end
 

@@ -1,8 +1,9 @@
 defmodule Memelex.GUI.Components.HyperCard do
   use Scenic.Component
+  alias __MODULE__
   # alias Memelex.Fluxus.Reducers.RadixReducer
   # alias Memelex.Fluxus.Reducers.TidbitReducer
-  alias Flamelex.GUI.Component.RapidSelector.Reducer
+  # alias Flamelex.GUI.Component.RapidSelector.Reducer
 
   # TODO document this point
   # TODO good idea: render each sub-component as a seperate graph,
@@ -16,17 +17,34 @@ defmodule Memelex.GUI.Components.HyperCard do
   # REMINDER: Here we call back to the outer-component with out size, since
   # 		     HyperCards are flexible in size
 
-  def validate(%{frame: _frame, state: %{uuid: _uuid}} = data) do
-    {:ok, data}
+  def validate(%{
+    frame: %Widgex.Frame{} = frame,
+    state: %Memelex.TidBit{} = state
+  } = data) do
+    {:ok, %{
+      frame: frame,
+      state: state
+    }}
   end
 
-  def init(scene, args, opts) do
-    init_graph = Memelex.GUI.Components.HyperCard.Render.hyper_card(args)
+  def init(
+    %Scenic.Scene{} = scene,
+    %{
+      frame: %Widgex.Frame{} = frame,
+      state: %Memelex.TidBit{} = state
+    },
+    opts
+  ) do
+
+    # init_graph = Memelex.GUI.Components.HyperCard.Render.hyper_card(args)
+
+    # graph = Scenic.Graph.build()
+    graph = HyperCard.Renderizer.render(Scenic.Graph.build(), scene, frame, state)
 
     init_scene =
       scene
-      |> assign(graph: init_graph)
-      |> push_graph(init_graph)
+      |> assign(graph: graph)
+      |> push_graph(graph)
 
     # Memelex.Utils.PubSub.subscribe()
 
@@ -51,18 +69,18 @@ defmodule Memelex.GUI.Components.HyperCard do
   # 		{:noreply, scene}
   # 	end
 
-  def handle_cast({:click, {:close, tidbit_uuid}}, scene) do
-    # TODO pass it up to the story river (including tidbit info)
-    # which will then in turn call the API to close it?? Or just keep doing it here??
-    Flamelex.Fluxus.action({RapidSelector.Reducer, {:close_tidbit, %{tidbit_uuid: tidbit_uuid}}})
-    {:noreply, scene}
-  end
+  # def handle_cast({:click, {:close, tidbit_uuid}}, scene) do
+  #   # TODO pass it up to the story river (including tidbit info)
+  #   # which will then in turn call the API to close it?? Or just keep doing it here??
+  #   Flamelex.Fluxus.action({RapidSelector.Reducer, {:close_tidbit, %{tidbit_uuid: tidbit_uuid}}})
+  #   {:noreply, scene}
+  # end
 
-  def handle_cast({:click, {:edit, tidbit_uuid}}, scene) do
-    IO.puts("SHOULD EDIT TIDBIT")
-    # Memelex.Fluxus.action({TidbitReducer, {:set_gui_mode, :edit, %{tidbit_uuid: tidbit_uuid}}})
-    {:noreply, scene}
-  end
+  # def handle_cast({:click, {:edit, tidbit_uuid}}, scene) do
+  #   IO.puts("SHOULD EDIT TIDBIT")
+  #   # Memelex.Fluxus.action({TidbitReducer, {:set_gui_mode, :edit, %{tidbit_uuid: tidbit_uuid}}})
+  #   {:noreply, scene}
+  # end
 
   # def handle_cast({:click, {:save, tidbit_uuid}}, scene) do
   #   Memelex.Fluxus.action({TidbitReducer, {:save_tidbit, %{tidbit_uuid: tidbit_uuid}}})

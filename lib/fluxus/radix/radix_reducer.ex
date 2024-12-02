@@ -74,6 +74,11 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.GUI.Layers.Layer3.Mutator.activate_popup(rdx)
   end
 
+  def process(rdx, {:reloaded_my_modz, _env}) do
+    IO.puts "Hey cool man - should do something about reloading these mods hey!"
+    :ignore
+  end
+
   def process(
         %RadixState{layers: %{one: %{active_apps: [Flamelex.GUI.Component.HighCouncil]}}} = rdx,
         {Flamelex.GUI.Component.HighCouncil, action}
@@ -88,6 +93,10 @@ defmodule Flamelex.Fluxus.RadixReducer do
   # def process(rdx, {Flamelex.GUI.Component.Editor.Reducer, action}) do
   #   Flamelex.GUI.Component.Editor.Reducer.process(rdx, action)
   # end
+
+  def process(rdx, {:open_tidbit, %Memelex.TidBit{} = _t} = action) do
+    Flamelex.GUI.Component.RapidSelector.Reducer.process(rdx, action)
+  end
 
   def process(rdx, {Flamelex.GUI.Component.RapidSelector.Reducer, action}) do
     Flamelex.GUI.Component.RapidSelector.Reducer.process(rdx, action)
@@ -140,18 +149,18 @@ defmodule Flamelex.Fluxus.RadixReducer do
   # end
 
   # theoretically we dont need to handle things we dont know how to handle but it does make a lot of noise...
-  # def process(rdx_state, action) do
-  #   # Logger.error("#{__MODULE__} unable to process action. #{inspect(action)}")
-  #   # IO.puts("#{__MODULE__} unable to process action. #{inspect(action)}")
+  def process(rdx_state, action) do
+    # Logger.error("#{__MODULE__} unable to process action. #{inspect(action)}")
+    # IO.puts("#{__MODULE__} unable to process action. #{inspect(action)}")
 
-  #   IO.puts(
-  #     "\e[33m#{__MODULE__} === === ===\n\nunable to process action: #{inspect(action)}\e[0m\n"
-  #   )
+    IO.puts(
+      "\e[33m#{__MODULE__} === === ===\n\nunable to process action: #{inspect(action)}\e[0m\n"
+    )
 
-  #   # IO.inspect(rdx_state.layers.one.active_apps, label: "Active Apps")
+    # IO.inspect(rdx_state.layers.one.active_apps, label: "Active Apps")
 
-  #   :ignore
-  # end
+    :ignore
+  end
 end
 
 # If we try to open a TidBit and we're already in editor mode, don't switch to Memex mode

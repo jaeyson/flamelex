@@ -141,7 +141,7 @@ defmodule Flamelex.Fluxus do
   defp do_declare(a) do
     EventBus.declare(%EventBus.Model.Event{
       id: UUID.uuid4(),
-      topic: @actions,
+      topic: @flx_actions,
       data: a
     })
   end
