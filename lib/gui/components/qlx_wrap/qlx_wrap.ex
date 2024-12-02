@@ -453,7 +453,7 @@ end
 # # #     #Logger.debug "#{__MODULE__} ignoring radix_state: #{inspect new_state}, scene_state: #{inspect scene.assigns.state}}"
 # # #     Logger.debug "#{__MODULE__} drawing a 2-tab TabSelector --"
 
-# # #     {:ok, ibm_plex_mono_fm} = TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
+# # #     {:ok, ibm_plex_mono_fm} = TruetypeMetrics.load("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf")
 # # #     fm = ibm_plex_mono_fm #TODO get this once and keep hold of it in the state
 
 # # #     render_tabs = fn(init_graph) ->

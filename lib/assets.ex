@@ -2,7 +2,7 @@ defmodule Flamelex.App.Scenic.Assets do
   use Scenic.Assets.Static,
     otp_app: :flamelex,
     alias: [
-      ibm_plex_mono: "fonts/IBMPlexMono-Regular.ttf",
+      ibm_plex_mono: "fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf",
       # mate: "fonts/Mate/Mate-Regular.ttf",
       # math: "fonts/Noto_Sans_Math/NotoSansMath-Regular.ttf",
       # emoji: "fonts/Noto_Emoji/static/NotoEmoji-Regular.ttf",

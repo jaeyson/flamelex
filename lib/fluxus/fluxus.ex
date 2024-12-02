@@ -103,14 +103,21 @@ defmodule Flamelex.Fluxus do
 #   #     # a copy of the root state inside itself?
 #   #   """
 
-  defdelegate user_input(ii), to: Flamelex.Fluxus.Utils
-
-  @actions :flx_actions
+  @flx_actions :flx_actions
   def action(a) do
     EventBus.notify(%EventBus.Model.Event{
       id: UUID.uuid4(),
-      topic: @actions,
+      topic: @flx_actions,
       data: a
+    })
+  end
+
+  @flx_user_input :flx_user_input
+  def user_input(u_input) do
+    EventBus.notify(%EventBus.Model.Event{
+      id: UUID.uuid4(),
+      topic: @flx_user_input,
+      data: u_input
     })
   end
 

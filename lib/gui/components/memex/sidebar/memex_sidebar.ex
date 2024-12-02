@@ -312,7 +312,7 @@ defmodule Memelex.GUI.Component.Memex.SideBar do
 
     # TODO...
     {:ok, ibm_plex_mono_font_metrics} =
-      TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
+      TruetypeMetrics.load("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf")
 
     # TODO make this more efficient, pass it in same everywhere
     ascent = FontMetrics.ascent(36, ibm_plex_mono_font_metrics)

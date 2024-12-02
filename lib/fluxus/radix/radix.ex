@@ -234,7 +234,7 @@ defmodule Flamelex.Fluxus.RadixStore do
     fn ->
       handler =
         case topic do
-          :flx_user_input -> Flamelex.Fluxus.UserInputHandler
+          :flx_user_input -> Flamelex.Fluxus.Radix.UserInputHandler
           :memelex -> Flamelex.Fluxus.MemelexEventHandler
         end
 
@@ -328,7 +328,8 @@ defmodule Flamelex.Fluxus.RadixStore do
       {__MODULE__,
        [
          to_string(:flx_actions),
-        #  to_string(:flx_user_input),
+         to_string(:flx_user_input),
+        #  to_string(:mmlx_events)
          to_string(:memelex)
        ]}
     )

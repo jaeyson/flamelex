@@ -44,6 +44,10 @@ defmodule Flamelex.Fluxus.RadixReducer do
   alias Flamelex.Fluxus.RadixState
   require Logger
 
+  def process(%{layers: %{three: %{open_memex_popup_open?: true}}} = rdx, {:memex_aperi, :close}) do
+    Flamelex.GUI.Layers.Layer3.Mutator.deactivate_popup(rdx)
+  end
+
   def process(%{layers: %{three: %{open_memex_popup_open?: true}}} = rdx, action) do
     Logger.warning "Ignoring action #{inspect action} cause we're in a popup state..."
     rdx

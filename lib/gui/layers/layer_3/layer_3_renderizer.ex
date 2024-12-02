@@ -86,24 +86,28 @@ defmodule Flamelex.GUI.Layers.Layer3.Renderizer do
         |> Scenic.Primitives.group(fn graph ->
           graph
           |> render_background(frame, state)
+          |> render_modal_box(frame, state)
         end, id: @popup_modal)
 
       _primitive ->
         # push the modal through the render/update pipeline
         graph
         |> render_background(frame, state)
+        |> render_modal_box(frame, state)
     end
   end
 
   @background :background
-  @semi_transparent_white {255, 255, 255, Integer.floor_div(255, 3)}
+  @semi_transparent_white {255, 255, 255, 85}
+  @semi_transparent_black {0, 0, 0, 167}
+
   defp render_background(graph, frame, _state) do
     case Scenic.Graph.get(graph, @background) do
       [] ->
         graph
         |> Scenic.Primitives.rect(frame.size.box,
             id: @background,
-            fill: {:color_rgba, @semi_transparent_white},
+            fill: {:color_rgba, @semi_transparent_black},
             translate: frame.pin.point
         )
 
@@ -115,4 +119,89 @@ defmodule Flamelex.GUI.Layers.Layer3.Renderizer do
         # )
     end
   end
+
+  @modal_box :modal_box
+  defp render_modal_box(graph, frame, state) do
+    case Scenic.Graph.get(graph, @modal_box) do
+      [] ->
+        graph
+        |> draw_modal_box(frame, state)
+
+      _primitive ->
+        # The modal box already exists; no need to redraw
+        graph
+    end
+  end
+
+  defp draw_modal_box(graph, frame, state) do
+    modal_width = frame.size.width * 0.6
+    modal_height = frame.size.height * 0.67
+    modal_x = frame.pin.x + (frame.size.width - modal_width) / 2
+    modal_y = frame.pin.y + (frame.size.height - modal_height) / 2
+    corner_radius = 14
+    button_size = 48
+    button_padding = 10
+    button_rect_size = 36
+    button_corner_radius = 12
+
+    graph
+    |> Scenic.Primitives.group(fn graph ->
+      graph
+      |> Scenic.Primitives.rrect({modal_width, modal_height, corner_radius},
+        fill: :white,
+        stroke: {2, :blue},
+        translate: {modal_x, modal_y}
+      )
+      |> draw_close_modal_button(frame, state)
+    end, id: @modal_box)
+  end
+
+  defp draw_close_modal_button(graph, frame, state) do
+    modal_width = frame.size.width * 0.6
+    modal_height = frame.size.height * 0.67
+    modal_x = frame.pin.x + (frame.size.width - modal_width) / 2
+    modal_y = frame.pin.y + (frame.size.height - modal_height) / 2
+    corner_radius = 14
+    font_size = 48
+    button_padding = 10
+    button_rect_size = 52
+    button_corner_radius = 12
+
+    graph
+    |> Scenic.Primitives.group(fn graph ->
+      graph
+      # Rounded rectangle background
+      |> Scenic.Primitives.rrect({button_rect_size, button_rect_size, button_corner_radius},
+        id: :close_modal_btn,
+      # |> Scenic.Primitives.rect({button_rect_size, button_rect_size},
+        fill: :light_gray,
+        stroke: {2, :dark_gray},
+        translate: {
+          modal_x + modal_width - button_rect_size - button_padding,
+          modal_y + button_padding
+        },
+        input: :cursor_button
+      )
+      # "X" text centered within the rectangle
+      |> Scenic.Primitives.text("X",
+        id: :cancel_button,
+        font: :ibm_plex_mono,
+        font_size: font_size,
+        translate: {
+          modal_x + modal_width - button_rect_size - button_padding + ((button_rect_size-x_width(font_size))/2),
+          # TODO calculate this nicely, no magic numbers!
+          modal_y + font_size + 5
+        },
+        fill: :red
+      )
+    end, id: :close_modal_button)
+  end
+
+  defp x_width(font_size) do
+    {:ok, font_metrics} =
+      TruetypeMetrics.load("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf")
+
+    FontMetrics.width("X", font_size, font_metrics)
+  end
+
 end

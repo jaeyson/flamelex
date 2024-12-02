@@ -23,7 +23,7 @@ defmodule Flamelex.GUI.Component.QlxWrap.State do
     font_size = 24
     font_name = :ibm_plex_mono
 
-    {:ok, font_metrics} = TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
+    {:ok, font_metrics} = TruetypeMetrics.load("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf")
 
     Quillex.Structs.BufState.Font.new(%{
       name: font_name,

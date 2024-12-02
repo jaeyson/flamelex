@@ -60,6 +60,36 @@ defmodule Flamelex.GUI.Layers.Layer3 do
 
     {:noreply, new_scene}
   end
+
+  def handle_input(
+        {:cursor_button, {:btn_left, 1, _, _}},
+        :close_modal_btn,
+        scene
+      ) do
+    # # Close the modal box
+    # new_state = %{scene.assigns.state | open_memex_popup_open?: false}
+    # new_graph = Layer3.Renderizer.render(scene.assigns.graph, scene, scene.assigns.frame, new_state)
+
+    # scene
+    # |> assign(state: new_state)
+    # |> assign(graph: new_graph)
+    # |> push_graph(new_graph)
+    # |> noreply()
+    IO.puts "CLICKED CANCEL"
+
+    Flamelex.Fluxus.action({:memex_aperi, :close})
+
+    {:noreply, scene}
+  end
+
+  def handle_input(
+        {:cursor_button, _btn},
+        :close_modal_btn,
+        scene
+      ) do
+    # ignoring any other clicks from this button
+    {:noreply, scene}
+  end
 end
 
 # defmodule Flamelex.GUI.Layers.Layer03 do

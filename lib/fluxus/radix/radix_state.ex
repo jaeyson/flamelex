@@ -71,7 +71,7 @@ defmodule Flamelex.Fluxus.RadixState do
   def fonts do
     # TruetypeMetrics.load("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf")
     {:ok, ibm_plex_mono_font_metrics} =
-      TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
+      TruetypeMetrics.load("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf")
 
     {:ok, noto_sans_font_metrics} =
       TruetypeMetrics.load("./assets/fonts/Noto_Sans/static/NotoSans-Regular.ttf")
@@ -169,7 +169,7 @@ end
 #     # TODO initialize the whole all with some default layer states
 
 #     {:ok, ibm_plex_mono_font_metrics} =
-#       TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
+#       TruetypeMetrics.load("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf")
 
 #     %{
 #       root: %{

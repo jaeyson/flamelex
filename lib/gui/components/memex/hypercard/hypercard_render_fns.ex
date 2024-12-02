@@ -411,7 +411,7 @@ defmodule Memelex.GUI.Components.HyperCard.Render do
 
     # TODO...
     {:ok, ibm_plex_mono_font_metrics} =
-      TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
+      TruetypeMetrics.load("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf")
 
     # TODO make this more efficient, pass it in same everywhere
     ascent = FontMetrics.ascent(36, ibm_plex_mono_font_metrics)
@@ -429,7 +429,7 @@ defmodule Memelex.GUI.Components.HyperCard.Render do
 
     # TODO...
     {:ok, ibm_plex_mono_font_metrics} =
-      TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
+      TruetypeMetrics.load("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf")
 
     # TODO make this more efficient, pass it in same everywhere
     ascent = FontMetrics.ascent(36, ibm_plex_mono_font_metrics)
@@ -515,7 +515,7 @@ end
 # #         width = frame.dimensions.width
 # #         textbox_width = width-@margin.left-@margin.right
 
-# #         {:ok, metrics} = TruetypeMetrics.load("./assets/fonts/IBMPlexMono-Regular.ttf")
+# #         {:ok, metrics} = TruetypeMetrics.load("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf")
 # #         wrapped_text = FontMetrics.wrap(unwrapped_text, textbox_width, @font_size, metrics)
 
 # #         #NOTE: This tells us, how long the body will be - because in Scenic

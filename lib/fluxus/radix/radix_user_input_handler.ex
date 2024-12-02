@@ -1,4 +1,4 @@
-defmodule Flamelex.Fluxus.UserInputHandler do
+defmodule Flamelex.Fluxus.Radix.UserInputHandler do
   @moduledoc """
   This is the highest-level input handler. All user-input gets routed
   through this module.
@@ -34,13 +34,18 @@ defmodule Flamelex.Fluxus.UserInputHandler do
   end
 
   # if we only have one app open then we can just pass the input to that app
-  def handle(
-        %{layers: %{one: %{active_apps: [app]}}} = rdx,
-        input
-      ) do
-    # raise "we shouldnt be doing this lol"
-    IO.puts("WARNING - App: #{inspect(app)} did not have a specific handler in #{__MODULE__}...")
-    Module.concat(app, UserInputHandler).handle(rdx, input)
+  # def handle(
+  #       %{layers: %{one: %{active_apps: [app]}}} = rdx,
+  #       input
+  #     ) do
+  #   # raise "we shouldnt be doing this lol"
+  #   IO.puts("WARNING - App: #{inspect(app)} did not have a specific handler in #{__MODULE__}...")
+  #   Module.concat(app, UserInputHandler).handle(rdx, input)
+  # end
+
+  def handle(rdx, input) do
+    Logger.warning "Ignoring input #{inspect input}..."
+    :ignore
   end
 end
 

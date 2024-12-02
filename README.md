@@ -652,7 +652,7 @@ when a user presses a key...
 -> `Flamelex.GUI.RootScene.handle_input/3` (root_scene.ex)
   -> `Flamelex.Fluxus.handle_user_input/1` (fluxus.ex)
     -> `Flamelex.FluxusRadix` receives `{:user_input, ii}` via `Genserver.cast` (fluxus_radix.ex)
-      -> calls `Flamelex.Fluxus.UserInputHandler.handle/2` (user_input_handler.ex)
+      -> calls `Flamelex.Fluxus.Radix.UserInputHandler.handle/2` (user_input_handler.ex)
         -> spins up a new `Task` process, executing
           `lookup_action_for_input_async/2` under `InputHandler.TaskSupervisor`
           -> that function will look in the key-mapping module, e.g.
@@ -724,3 +724,12 @@ show the community what I've done so far.`
 
 NEXT is MenuBar
 
+
+# next big TODOs
+
+- add ripgrep for fuzzy searching
+- git tree
+- hexdocs
+- LLM agent coding assistance
+- autocorrect / Elixir LSP / connect to runtime for real-time compilation
+- 
