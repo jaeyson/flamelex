@@ -53,7 +53,8 @@ defmodule Flamelex.GUI.Component.QlxWrap do
   end
 
   def handle_cast({:modal_save, filename}, scene) do
-    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, {:save_buffer, filename}})
+    # Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, {:save_buffer, filename}})
+    # TODO here broadcast using pubsub on the layer for this buffer!
     {:noreply, scene}
   end
 
@@ -89,7 +90,7 @@ defmodule Flamelex.GUI.Component.QlxWrap do
   #   # worth it for performance reasons
   #   # IO.inspect(new_state, label: "NEW STATE")
 
-  #   new_scene = Buffer.Render.re_render_scene(scene, new_state)
+  #   new_scene = Buffer.Renderizer.re_render_scene(scene, new_state)
 
   #   # TODO maybe this code below  will work to optimize not calling push_graph if we dont need to? Is this a significant saving?
   #   # if new_scene.assigns.graph != scene.assigns.graph do
@@ -146,7 +147,7 @@ defmodule Flamelex.GUI.Component.QlxWrap do
     # worth it for performance reasons
     # IO.inspect(new_state, label: "NEW STATE")
 
-    # new_scene = Buffer.Render.re_render(scene, new_state)
+    # new_scene = Buffer.Renderizer.re_render(scene, new_state)
 
     # TODO right now we should re-render but I'm just going to _actually_ re-render lol
 

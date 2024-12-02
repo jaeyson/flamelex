@@ -3,7 +3,7 @@ defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
     IO.puts("could do something here now we're REQUESTIN SAVE")
 
     # could arguably include some info that this is only input for the "req_save" mode...
-    # Quillex.Buffer.BufferManager.send_to_gui_component(
+    # Quillex.Buffer.BufferManager.cast_to_gui_component(
     #   buf_ref,
     #   {:user_input_fwd, input}
     # )
@@ -31,8 +31,8 @@ defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
 
     # case buf_ref.mode do
     #   {:vim, :insert} ->
-    Quillex.Buffer.BufferManager.send_to_gui_component(
-      buf_ref,
+    Quillex.Buffer.BufferManager.cast_to_gui_component(
+      # buf_ref,
       {:user_input_fwd, input}
     )
 

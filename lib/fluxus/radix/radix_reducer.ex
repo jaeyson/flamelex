@@ -42,6 +42,12 @@ defmodule Flamelex.Fluxus.RadixReducer do
   the "actions" channel - all the managers are able to react to this event.
   """
   alias Flamelex.Fluxus.RadixState
+  require Logger
+
+  def process(%{layers: %{three: %{open_memex_popup_open?: true}}} = rdx, action) do
+    Logger.warning "Ignoring action #{inspect action} cause we're in a popup state..."
+    rdx
+  end
 
   def process(rdx, {:load_memex, %Memelex.Environment{} = env}) do
     rdx
@@ -57,6 +63,11 @@ defmodule Flamelex.Fluxus.RadixReducer do
   # for now hard code this redirect because we know it's going to be applied at the component level
   def process(rdx, {Flamelex.GUI.Component.TODOdetails, action}) do
     Flamelex.GUI.Component.TODOdetails.Reducer.process(rdx, action)
+  end
+
+  def process(rdx, :memex_aperi) do
+    # %{rdx.layers.three.open_memex_popup_open? | true }
+    Flamelex.GUI.Layers.Layer3.Mutator.activate_popup(rdx)
   end
 
   def process(

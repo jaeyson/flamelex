@@ -1,11 +1,11 @@
 defmodule Flamelex.GUI.Components.HexDocs do
   use Scenic.Component
-  alias ScenicWidgets.Core.Structs.Frame
+  # alias ScenicWidgets.Core.Structs.Frame
   require Logger
 
   @elixir_location "/Users/luke/.asdf/installs/elixir/1.14.0"
 
-  def validate(%{frame: %Frame{} = _f, state: _state} = data) do
+  def validate(%{frame: %Widgex.Frame{} = _f, state: _state} = data) do
     # Logger.debug "#{__MODULE__} accepted params: #{inspect data}"
     {:ok, data}
   end

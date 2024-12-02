@@ -20,27 +20,28 @@ defmodule Flamelex.GUI.Menus.MainMenu do
   def flamelex_menu do
     {:sub_menu, "Flamelex",
      [
-       #  {:sub_menu, "Editor",
-       #   [
-       #     {"toggle line nums", fn -> raise "no" end},
-       #     {"toggle file tray", fn -> raise "no" end},
-       #     {"toggle tab bar", fn -> raise "no" end}
-       #     # font_sub_menu()
-       #   ]},
-       #  {:sub_menu, "Kommander",
-       #   [
-       #     {"show", &Flamelex.API.Kommander.show/0},
-       #     {"hide", &Flamelex.API.Kommander.hide/0}
-       #   ]},
-       #  {:sub_menu, "Widgex",
-       #   [
-       #     {"open wdg-wkb", fn -> raise "no" end}
-       #   ]},
        devtools(),
        api_menu(),
        quit()
      ]}
   end
+
+  #  {:sub_menu, "Editor",
+  #   [
+  #     {"toggle line nums", fn -> raise "no" end},
+  #     {"toggle file tray", fn -> raise "no" end},
+  #     {"toggle tab bar", fn -> raise "no" end}
+  #     # font_sub_menu()
+  #   ]},
+  #  {:sub_menu, "Kommander",
+  #   [
+  #     {"show", &Flamelex.API.Kommander.show/0},
+  #     {"hide", &Flamelex.API.Kommander.hide/0}
+  #   ]},
+  #  {:sub_menu, "Widgex",
+  #   [
+  #     {"open wdg-wkb", fn -> raise "no" end}
+  #   ]},
 
   def quillex_menu(radix_state) do
     {:sub_menu, "Quillex", do_quillex_menu(radix_state)}
@@ -96,12 +97,15 @@ defmodule Flamelex.GUI.Menus.MainMenu do
       |> maybe_add_open_my_modz_button(radix_state)
       |> maybe_add_custom_menu(radix_state)
 
-    {:sub_menu, "Memex", full_menu}
+    {:sub_menu, "Memelex", full_menu}
   end
 
   def memex_menu(_radix_state) do
     memex_menu = [
       {"novum memexi", fn -> raise "not yet" end},
+      {"memex aperi", fn ->
+            Flamelex.Fluxus.action(:memex_aperi)
+          end},
       {:sub_menu, "library",
        [
          {"flamelex README", fn -> Flamelex.API.Buffer.open("README.md") end},
@@ -115,7 +119,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
        ]}
     ]
 
-    {:sub_menu, "Memex", memex_menu}
+    {:sub_menu, "Memelex", memex_menu}
   end
 
   def encyclopedia do
@@ -164,7 +168,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
     # what I currently call :sub_menu should be renamed :node,
     # and these ones should have a tag like :leaf or :button
     [
-      {"new buffer", &Flamelex.API.Buffer.new/0}
+      {"neo solutio", &Flamelex.API.Buffer.new/0}
     ]
   end
 

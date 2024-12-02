@@ -59,19 +59,65 @@ defmodule Flamelex.Fluxus do
   #   # Fluxus, then it opens up the possibility of having things like Vim
   #   # keymaps that exist at a higher level than just a Scenic component)
 
+  ### how the gui gets updated
+
+  Inside fluxus we break the state down into component processes
+
 
   """
 
+  # defdelegate user_input(ii), to: Flamelex.Fluxus.Utils
+
+  #   #   @doc """
+#   #   This function is called to channel all user input, e.g. keypresses,
+#   #   through the FluxusRadix, where they can be converted into actions.
+
+#   #   This function handles user input. All input from the entire GUI gets
+#   #   routed through here (it gets sent here by Flamelex.GUI.RootScene.handle_input/3)
+
+#   #   We use the RadixState (which includes global variables such as which
+#   #   mode we are in, the input history [to allow chaining of keystrokes\] etc),
+#   #   as well as the input itself, to compute the new state.
+
+#   #   The effect of most user input will be either to ignore it, or to dispatch
+#   #   an action - this is achieved by sending a new msg to the FluxusRadix, which
+#   #   will in turn be handled by spinning up a new Task process to handle it.
+
+#   #     ##TODO it's simpler to route these different right now.
+#   #     # call Flamelex.Fluxus.UserInput.
+
+#   #     # This is an example of the "state-centered" approach - we keep
+#   #     # wanting to store things in the scene - maybe I should just put everything
+#   #     # in here lol
+
+#   #     # The whole idea of 'fluxus' is to seperate out the state of your
+#   #     # application, from the state of your Scenic GUI processes
+
+#   #     #TODO this is one area of quandary - either I spin up a new process
+#   #     # to handle everything (nice security), but then I have to wait here
+#   #     # for a callback. Or, if I don't wait, then I have to give up my
+#   #     # ability to mutate the scene here.
+
+#   #     # Maybe how this should work is - instead of messaging a GenServer
+#   #     # which holds the root state, we just start a process, which fetches
+#   #     # a copy of the root state inside itself?
+#   #   """
+
   defdelegate user_input(ii), to: Flamelex.Fluxus.Utils
-  defdelegate action(a), to: Flamelex.Fluxus.Utils
 
-  #   # declaring means we get the results back - this function also
-  #   # filters those results to just the ones from ActionListener
+  @actions :flx_actions
+  def action(a) do
+    EventBus.notify(%EventBus.Model.Event{
+      id: UUID.uuid4(),
+      topic: @actions,
+      data: a
+    })
+  end
 
-  #   # having to include this is starting to feel like a bad thing... not really though, the lib computes the result & throws it away !
+  # declaring means we get the results back - this function also
+  # filters those results to just the ones from ActionListener
+  # having to include this is starting to feel like a bad thing... not really though, the lib computes the result & throws it away !
   def declare(a) do
-    # with {:ok, results} <- do_declare(a) do
-    # with {:ok, results} <- do_declare(a) do
     case do_declare(a) do
       [{Flamelex.Fluxus.RadixStore, :ignore}] ->
         {:ok, :ignore}
@@ -79,12 +125,23 @@ defmodule Flamelex.Fluxus do
       [{Flamelex.Fluxus.RadixStore, {:ok, %Flamelex.Fluxus.RadixState{} = r}}] ->
         {:ok, r}
 
-      [{Flamelex.Fluxus.RadixStore, {:error, _reason}}] ->
-        # {:error, reason} ->
-        #   IO.inspect(reason, label: "reason")
-        #   # raise "Was not able to declare action successfully - #{reason}"
-        {:error, "Was not able to declare action `#{inspect(a)}` successfully."}
+      [{Flamelex.Fluxus.RadixStore, {:error, reason}}] ->
+        raise "Was not able to declare action `#{inspect(a)}` successfully - #{reason}"
+        {:error, "Failed to declare action."}
     end
+  end
+
+  defp do_declare(a) do
+    EventBus.declare(%EventBus.Model.Event{
+      id: UUID.uuid4(),
+      topic: @actions,
+      data: a
+    })
+  end
+end
+
+
+
 
     # IO.inspect(results)
     # NOTE - we replace this atom (the initial accumulator) in the successful case,
@@ -101,37 +158,7 @@ defmodule Flamelex.Fluxus do
 
     # {:ok, final_radix_state}
     # end
-  end
 
-  @actions :flx_actions
-  defp do_declare(a) do
-    # {:ok,
-    EventBus.declare(%EventBus.Model.Event{
-      id: UUID.uuid4(),
-      topic: @actions,
-      data: a
-    })
-  end
-end
-
-# defmodule ScenicWidgets.Fluxus do
-#   # use Supervisor
-
-#   # def start_link,
-#   #   do: Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
-
-#   # def init(:ok) do
-#   #   children = [
-#   #     # Add your child processes here
-#   #     # For example:
-#   #     # {FluxusSoup.Worker, arg1, arg2}
-#   #   ]
-
-#   #   supervise(children, strategy: :one_for_one)
-#   # end
-
-#   defdelegate start_link, to: ScenicWidgets.Fluxus.FluxusSoup
-# end
 
 # defmodule ScenicWidgets.Fluxus do
 #    @moduledoc """

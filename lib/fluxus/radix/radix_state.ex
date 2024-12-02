@@ -1,6 +1,6 @@
 defmodule Flamelex.Fluxus.RadixState do
   use StructAccess
-  alias Flamelex.GUI.Layers.Layer01
+  alias Flamelex.GUI.Layers.{Layer01, Layer3}
 
   alias Flamelex.GUI.Component.{
     QlxWrap,
@@ -11,20 +11,30 @@ defmodule Flamelex.Fluxus.RadixState do
     AgentHuddle
   }
 
+  # On the concept of breaking up Radix state
+  # If I do another iteration of RadixStore, I will have this process accept actions
+  # and have it contain a minimal, "top layer" state - changes to the top layer, may
+  # propagate down through various other layers, but we route actions down to the state
+  # process which consumes them. This process then fires off updates (potentially). So
+  # if I type a new letter and the active buffer gets it, processes the input and adds
+  # another character to the line - the fact that this update took place is broadcast
+
   # the argument for using radix struct is that I can pattern match on exactly a radix state
   # the argument against is that I might want to dynamically add keys to it...
   defstruct theme: nil,
             menubar: nil,
+            # popup_modal: nil,
             memex: nil,
             fonts: nil,
             layers: nil,
             apps: nil,
             gui: nil
 
-  def new(_args) do
+  def new() do
     %__MODULE__{
       layers: %{
-        one: Layer01.State.new()
+        one: Layer01.State.new(),
+        three: Layer3.State.new(),
       },
       apps: %{
         todo_list: TODOlist.State.new(),
@@ -36,14 +46,18 @@ defmodule Flamelex.Fluxus.RadixState do
       },
       memex: %{
         active?: false,
-        env: nil
+        env: nil,
+        open_memex_popup_open?: false
       },
-      theme: theme(),
+      # theme: theme(),
       #   # TODO move menubar to some other place in the radix state structure (should be under layer 2 probably)
       menubar: %{
         font: :ibm_plex_mono,
         height: 60
       },
+      # popup_modal: %{
+      #   active?: false
+      # },
       fonts: fonts()
       # gui: %{}
     }

@@ -1,32 +1,52 @@
 defmodule Flamelex.Fluxus.RadixStore do
-  # https://www.bounga.org/elixir/2020/02/29/genserver-supervision-tree-and-state-recovery-after-crash/
+  @moduledoc """
+  The Radix is the root-state of the entire Flamelex application. All events
+  & user input get routed through this level.
+
+  https://www.bounga.org/elixir/2020/02/29/genserver-supervision-tree-and-state-recovery-after-crash/
+
+  When state changes, we broadcast out those changes, and other parts of
+  the application e.g. the GUI, react to those changes. Although I did try it,
+  I decided not to go with using the event-bus for updating the GUI due to
+  a state change. The event-bus serves it's purpose by funneling all action
+  through one choke-point, and keeps track of them etc, but just pushing
+  updates to the GUI is simpler when done via a PubSub (no need to acknowledge
+  events as complete), and easier to implement, since the EventBus lib we're
+  using receives events in a separate process to the one where we actually
+  declared the function. We could forward the state updates on to each
+  Scenic c  omponent, but then we start to have problems of how to handle
+  addressing... the exact problem that PubSub is a perfect solution for.
+  """
+
   use GenServer
   require Logger
 
-  def start_link(args) do
-    GenServer.start_link(__MODULE__, args, name: __MODULE__)
+  def start_link(_args) do
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
+  # fetch the radix state
   def get do
+    #TODO eventually return the actual ok tuple
     {:ok, rdx_state} = GenServer.call(__MODULE__, :get_state)
     rdx_state
   end
 
-  def init(args) do
+  def init(_args) do
     # Use :continue to initialize state after normal GenServer startup
     # this prevents blocking the main app supervision tree's startup
     # since building the radix tree can take a while / might fail
-    {:ok, args, {:continue, :initialize}}
+    {:ok, [], {:continue, :initialize}}
   end
 
   # initialize state, off the main process tree bootup sequence
-  def handle_continue(:initialize, args) do
+  def handle_continue(:initialize, _args) do
     Logger.debug("#{__MODULE__} starting up...")
 
     # compute state changes in a task for safety
-    case Wormhole.capture(construct_init_radix_state_fn(args), crush_report: true) do
+    case Wormhole.capture(construct_init_radix_state_fn(), crush_report: true) do
       {:ok, init_radix_state} ->
-        subscribe_to_pubsub_topics()
+        subscribe_to_events()
         Logger.debug("#{__MODULE__} started successfully.")
         {:noreply, init_radix_state}
 
@@ -47,8 +67,10 @@ defmodule Flamelex.Fluxus.RadixStore do
     # we need to pass event_shadow all the way through so that we can ack
     # the event at the end of the processing
     e = EventBus.fetch_event(event_shadow)
-    # TODO make this a call?? Then the results can be returned to whoever sent the event,
+
+    # TODO make this a cast or a call?? Then the results can be returned to whoever sent the event,
     # and they can ack it, or use them e.g. make a new buffer - but will this lock up the RadixStore?
+
     # GenServer.cast(__MODULE__, {:event, e, event_shadow})
     GenServer.call(__MODULE__, {:event, e, event_shadow})
   end
@@ -70,8 +92,6 @@ defmodule Flamelex.Fluxus.RadixStore do
         EventBus.mark_as_completed({__MODULE__, e_shadow})
         {:reply, :ignore, radix_state}
 
-      # {:noreply, radix_state}
-
       {:ok, new_radix_state} ->
         # so for now, we're just going to double-down on this being the single channel
         # I have a big debate about this because I feel like this is going to be very expensive,
@@ -80,6 +100,9 @@ defmodule Flamelex.Fluxus.RadixStore do
         # really wrap my head around how I would do it otherwise... maybe I simply push the radix state
         # through a reducer which has side-effects of broadcasting out messages on specific channels?
         # that might make it possible to broadcast smaller state changes
+
+        # yeh I guess we could iterate just changes out instead of pushing entire changes to radixstate,
+        # then other things e.g. GUI components all need to be able to handle specific changes... it gets complicated
 
         # one idea would be to broadcast the action first to radix state, then radix state
         # has control and can broadcast (potentially modified) actions down to it's
@@ -93,6 +116,7 @@ defmodule Flamelex.Fluxus.RadixStore do
         # there's another idea which is, broadcast actions out to _all_ the stores, they decide individually if
         # they care about it, and if they do, then they might broadcast just their own state changes out on their own channel
         # to whatever GUI components are listening to those changes
+
         Flamelex.Lib.Utils.PubSub.broadcast(
           topic: :radix_state_change,
           msg: {:radix_state_change, new_radix_state}
@@ -121,6 +145,11 @@ defmodule Flamelex.Fluxus.RadixStore do
 
     case Wormhole.capture(handle_event_fn(radix_state, e), crush_report: crush_report?) do
       {:ok, :ignore} ->
+        EventBus.mark_as_completed({__MODULE__, e_shadow})
+        {:noreply, radix_state}
+
+      {:fwd_to_gui, msg} ->
+
         EventBus.mark_as_completed({__MODULE__, e_shadow})
         {:noreply, radix_state}
 
@@ -167,9 +196,9 @@ defmodule Flamelex.Fluxus.RadixStore do
     end
   end
 
-  defp construct_init_radix_state_fn(args) do
+  defp construct_init_radix_state_fn() do
     # have to return a zero arity function for Task.async
-    fn -> Flamelex.Fluxus.RadixState.new(args) end
+    fn -> Flamelex.Fluxus.RadixState.new() end
   end
 
   defp handle_event_fn(radix_state, %{topic: :flx_actions, data: action}) do
@@ -183,6 +212,8 @@ defmodule Flamelex.Fluxus.RadixStore do
         ^radix_state ->
           # EventBus.mark_as_completed({__MODULE__, e_shadow})
           :ignore
+
+        # cast to children ?? This might also involve a push down of new RadixState ??
 
         %Flamelex.Fluxus.RadixState{} = new_radix_state ->
           # EventBus.mark_as_completed({__MODULE__, e_shadow})
@@ -292,124 +323,18 @@ defmodule Flamelex.Fluxus.RadixStore do
     end
   end
 
-  defp subscribe_to_pubsub_topics do
+  defp subscribe_to_events do
     EventBus.subscribe(
       {__MODULE__,
        [
          to_string(:flx_actions),
-         to_string(:flx_user_input),
+        #  to_string(:flx_user_input),
          to_string(:memelex)
        ]}
     )
   end
 end
 
-# defmodule ScenicWidgets.Fluxus.RadixStore do
-#   @moduledoc """
-#   This module just stores the actual state itself - modifications are
-#   made elsewhere.
-
-#   https://www.bounga.org/elixir/2020/02/29/genserver-supervision-tree-and-state-recovery-after-crash/
-
-#   The GUI.Component and the Buffer.Component have a shared state, via an
-#   Agent process. They receive an action, they go fetch the state, they
-#   can lock it if needed (call), and they can process it. If the state changes,
-#   then act of changing it can publish a msg to other listeners (i.e. the
-#   GUI.Component) who will have to re-render their shit.
-
-#   Although I did try it, I decided not to go with using the event-bus for
-#   updating the GUI due to a state change. The event-bus serves it's purpose
-#   by funneling all action through one choke-point, and keeps track of
-#   them etc, but just pushing updates to the GUI is simpler when done via
-#   a PubSub (no need to acknowledge events as complete), and easier to
-#   implement, since the EventBus lib we're using receives events in a
-#   separate process to the one where we actually declared the function.
-#   We could forward the state updates on to each ScenicComponent, but then
-#   we start to have problems of how to handle addressing... the exact problem
-#   that PubSub is a perfect solution for.
-#   """
-
-#
-
-#   The GUI.Component and the Buffer.Component have a shared state, via an
-#   Agent process. They receive an action, they go fetch the state, they
-#   can lock it if needed (call), and they can process it. If the state changes,
-#   then act of changing it can publish a msg to other listeners (i.e. the
-#   GUI.Component) who will have to re-render their shit.
-
-#   Although I did try it, I decided not to go with using the event-bus for
-#   updating the GUI due to a state change. The event-bus serves it's purpose
-#   by funneling all action through one choke-point, and keeps track of
-#   them etc, but just pushing updates to the GUI is simpler when done via
-#   a PubSub (no need to acknowledge events as complete), and easier to
-#   implement, since the EventBus lib we're using receives events in a
-#   separate process to the one where we actually declared the function.
-#   We could forward the state updates on to each ScenicComponent, but then
-#   we start to have problems of how to handle addressing... the exact problem
-#   that PubSub is a perfect solution for.
-#   """
-#   use Agent
-#   require Logger
-
-#   # TODO make this a GenServer & do all edits in the context of the GenServer
-
-#   def start_link(radix_state) do
-#     # radix_state = Flamelex.Fluxus.Structs.RadixState.initialize()
-#     Agent.start_link(fn -> radix_state end, name: RadixStore)
-#   end
-
-#   def get do
-#     Agent.get(RadixStore, & &1)
-#   end
-
-#   # NOTE: Here we update, but don't broadcast the changes. For example,
-#   #      adding user-input to the input history, doesn't need to be broadcast.
-#   def put(new_state) do
-#     # Logger.debug("#{RadixStore} updating state...")
-#     Agent.update(RadixStore, fn _old -> new_state end)
-#   end
-
-#   def put_viewport(%Scenic.ViewPort{} = new_vp) do
-#     Agent.update(RadixStore, fn radix_state ->
-#       radix_state |> put_in([:gui, :viewport], new_vp)
-#     end)
-#   end
-
-#   # #NOTE: When `Flamelex.GUI.RootScene` boots, it calls this function.
-#   # #      We don't want to broadcast these changes out.
-#   # def put_root_graph(new_graph) do
-#   #   Agent.update(RadixStore, fn radix_state ->
-#   #     radix_state
-#   #     |> put_in([:root, :graph], new_graph)
-#   #   end)
-#   # end
-
-#   # update/1 also broadcasts changes to the rest of the app
-#   def update(new_state) do
-#     # Logger.debug("#{RadixStore} updating state & broadcasting new_state...")
-#     # Logger.debug("#{RadixStore} updating state & broadcasting new_state: #{inspect(new_state)}")
-
-#     Flamelex.Lib.Utils.PubSub.broadcast(
-#       topic: :radix_state_change,
-#       msg: {:radix_state_change, new_state}
-#     )
-
-#     Agent.update(RadixStore, fn _old -> new_state end)
-#   end
-
-#   def update_viewport(%Scenic.ViewPort{} = new_vp) do
-#     Agent.update(RadixStore, fn radix_state ->
-#       new_radix_state = radix_state |> put_in([:gui, :viewport], new_vp)
-
-#       Flamelex.Lib.Utils.PubSub.broadcast(
-#         topic: :radix_state_change,
-#         msg: {:radix_state_change, new_radix_state}
-#       )
-
-#       new_radix_state
-#     end)
-#   end
-# end
 
 # # defmodule Flamelex.Fluxus.MemexStore do
 # #   use Agent

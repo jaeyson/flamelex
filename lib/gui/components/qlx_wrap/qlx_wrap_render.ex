@@ -1,6 +1,6 @@
 defmodule Flamelex.GUI.Component.QlxWrap.Render do
   alias Flamelex.GUI.Component.QlxWrap
-  alias Quillex.GUI.Components.Buffer
+  alias Quillex.GUI.Components.BufferPane
 
   def go(%Widgex.Frame{} = frame, %QlxWrap.State{req_save: %{do?: true}} = state) do
     # TODO this is hacky but it works for now, eventually we should do something more sophisticated
