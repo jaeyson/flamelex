@@ -1,7 +1,7 @@
 defmodule Flamelex.App.MixProject do
   use Mix.Project
 
-  @version "0.4.4"
+  @version "0.4.6"
 
   def project do
     [
@@ -27,49 +27,24 @@ defmodule Flamelex.App.MixProject do
     @version
   end
 
-  # TODO use mix environments to figure out which memex to connect to?
-  # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      ## NOTE - these deps are all ones I have local copies of, so if you
-      #         happn to be reading this (hello Vacarsu) you'll need to
-      #         either clone them locally or switch back to the mix managed versions
-      #
-      #         I think you can just comment out memex for now, but, it might
-      #         also break stuff
-
-      # {:scenic, "~> 0.11.0-beta.0"},
-      {:scenic, git: "https://github.com/JediLuke/scenic", branch: "no_text_wrap", override: true},
-      {:scenic_driver_local, "~> 0.11.0-beta.0", override: true},
-      # {:memelex, git: "https://github.com/JediLuke/memelex"},
-      #      These are the imports for local dev
-      # {:scenic, path: "../scenic", override: true, runtime: false},
-      # {:scenic_driver_local, path: "../scenic_driver_local", override: true},
+      {:scenic, git: "https://github.com/JediLuke/scenic", branch: "update_deps_instructions_for_ubuntu_24", override: true},
+      {:scenic_driver_local, git: "https://github.com/JediLuke/scenic_driver_local", branch: "no_line_wrap"},
       {:scenic_widget_contrib, path: "../scenic-widget-contrib", override: true},
-      {:memelex, path: "../memelex", runtime: false},
       {:quillex, path: "../quillex", runtime: false},
-      # these deps should all be fine
-      # {:scenic_layout_o_matic, "~> 0.4.0"},
-      {:ecto_sql, "~> 3.0"},
+      {:memelex, path: "../memelex", runtime: false}, # TODO use same runtime false trick as above
       {:truetype_metrics, "~> 0.5"},
-      {:font_metrics, "~> 0.5", override: true},
-      # {:font_metrics, path: "../font_metrics", override: true},
+      {:font_metrics, "~> 0.5"},
       {:elixir_uuid, "~> 1.2"},
       {:wormhole, "~> 2.3"},
       {:jason, "~> 1.1"},
-      # {:gproc, "~> 0.5.0"}, #TODO remove gproc, use Registry
       {:tzdata, "~> 1.0.4"},
-      {:map_diff, "~> 1.3"},
-      # {:event_bus, "~> 1.6.2"},
       {:event_bus, git: "https://github.com/JediLuke/event_bus", override: true},
-      {:struct_access, "~> 1.1.2"},
-      {:ex_doc, "~> 0.23", only: :dev, runtime: false},
-      {:ice_cream, "~> 0.0.5", only: [:dev, :test]},
-      {:stream_data, "~> 0.5", only: :test}
+      {:struct_access, "~> 1.1.2"}
     ]
   end
 
@@ -83,3 +58,26 @@ defmodule Flamelex.App.MixProject do
     ]
   end
 end
+
+      # {:stream_data, "~> 0.5", only: :test}
+
+
+      # {:ex_doc, "~> 0.23", only: :dev, runtime: false},
+
+      # {:map_diff, "~> 1.3"},
+      # {:event_bus, "~> 1.6.2"},
+
+      # {:scenic_layout_o_matic, "~> 0.4.0"},
+      # {:ecto_sql, "~> 3.0"},
+
+      # {:scenic_driver_local,
+      #  git: "https://github.com/JediLuke/scenic_driver_local",
+      #  branch: "luke_working",
+      #  override: true},
+      # {:scenic_driver_local, path: "../scenic_driver_local", override: true},
+      # {:scenic_widget_contrib, path: "../scenic-widget-contrib", override: true},
+      # {:memelex, git: "https://github.com/JediLuke/memelex"},
+      # {:memelex, path: "../memelex"},
+      # Quillex boot is managed explicitely be Flamelex so that we can
+      # define certain environment variables before we try and boot the
+      # GUI, so dont boot at runtime
