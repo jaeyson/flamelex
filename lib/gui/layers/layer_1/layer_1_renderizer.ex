@@ -1,4 +1,4 @@
-defmodule Flamelex.GUI.Layers.Layer01.Render do
+defmodule Flamelex.GUI.Layers.Layer01.Renderizer do
   def render(frame, state) do
     Scenic.Graph.build()
     |> render(frame, state)

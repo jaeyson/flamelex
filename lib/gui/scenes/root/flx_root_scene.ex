@@ -2,20 +2,14 @@ defmodule Flamelex.GUI.RootScene do
   @moduledoc false
   use Scenic.Scene
   use ScenicWidgets.ScenicEventsDefinitions
-  import Scenic.Primitives
-  import Scenic.Components
-  alias ScenicWidgets.Core.Structs.Frame
-  alias ScenicWidgets.Core.Utils.FlexiFrame
-  alias Widgex.Structs.LayerCake
+  # import Scenic.Primitives
+  # import Scenic.Components
+  # alias ScenicWidgets.Core.Structs.Frame
+  # alias ScenicWidgets.Core.Utils.FlexiFrame
+  # alias Widgex.Structs.LayerCake
+  alias Flamelex.GUI.Layers.{Layer0, Layer01, NeoLayer02, Layer3}
   require Logger
 
-  alias Flamelex.GUI.Layers.Layer0
-  alias Flamelex.GUI.Layers.Layer01
-  alias Flamelex.GUI.Layers.NeoLayer02
-
-  # def re_render do
-  #   GenServer.cast(__MODULE__, :re_render)
-  # end
 
   # NOTE:
   # This Scenic.Scene contains the root graph. Re-drawing anything which
@@ -45,15 +39,22 @@ defmodule Flamelex.GUI.RootScene do
   # what I mean by this is, that "cast" is transmute, it means 'change the type' or to 'change the form'
 
   def init(scene, args, opts) do
-    # Logger.debug("#{__MODULE__} initializing...")
+    Logger.debug("#{__MODULE__} initializing...")
 
     # NOTE - due to the way Scenic works right now, it's not practical to pass in the RadixState from the highest level of the SUpervision tree
     # Maybe in the future this could change but for now just fetch this data when the Scenc boots... this is also kind of nice incase the GUI gets reset
 
-    # TODO we should return the radix_state here to save us from having to fetch it again in like 5 lines time
-    # Flamelex.Fluxus.RadixStore.put_viewport(init_scene.viewport)
-    # TODO put this in radix state? gui.theme?
-    # init_theme = ScenicWidgets.Utils.Theme.get_theme(opts)
+    # I think I am coming up on a final decision & that is that fetching state during init
+    # is absolutely the correct way to go as far as Elixir process management is concerned -
+    # the GUI tree has no real concept of state management, it pushes actions
+    # to another part of the system which process those changes, and it reacts to incoming
+    # updates about state, but by itself Scenic is completely decoupled from all state management
+    # now, as I go, there may come a point where this proves pretty inefficient, because
+    # I can forsee myself having to have state in the state processing part of the app,
+    # and the GUI, e.g. rendering a text buffer. However I'm just going to keep going this
+    # way until I hit a wall because after all the trial & error, this is just the most ELixir-y
+    # way to do it. Also I might just get some cool performance boosts e.g. Erlang doesnt deep copy
+    # large strings, we can try and use ETS, etc...
 
     rdx = Flamelex.Fluxus.RadixStore.get()
 
@@ -68,18 +69,6 @@ defmodule Flamelex.GUI.RootScene do
 
     {:ok, new_scene}
   end
-
-  # def handle_call(:get_viewport, _from, scene) do
-  #    {:reply, {:ok, scene.viewport}, scene}
-  # end
-
-  # def viewport do
-  #   GenServer.call(__MODULE__, :get_viewport)
-  # end
-
-  # def handle_call(:get_viewport, _from, scene) do
-  #   {:reply, {:ok, scene.viewport}, scene}
-  # end
 
   def handle_input({:viewport, {:enter, _coords}}, context, scene) do
     # Logger.debug "#{__MODULE__} ignoring `:viewport_enter`..."
@@ -140,10 +129,19 @@ defmodule Flamelex.GUI.RootScene do
 
   def handle_input(input, context, scene) do
     # Logger.debug("#{__MODULE__} recv'd some (non-ignored) input: #{inspect(input)}")
-    # this effectively sends it to the RadixStore
+
+    # this effectively sends it to Fluxus / the RadixStore,
+    # where it is reduced against the RadixState to generate actions
     Flamelex.Fluxus.user_input(input)
+    # Logger.warn "USER INPUT GETS PROCESSED GUI SIDE NOW"
+
     {:noreply, scene}
   end
+
+  # def handle_cast({:action, actions}, scene) do
+  #   # GUI actions ought to get processed by the RootScene Reducer to update the state of the GUI
+  #   {:noreply, scene}
+  # end
 
   # def handle_cast(:re_render, scene) do
   #   IO.puts("Re-rendering the root scene...")
@@ -159,27 +157,25 @@ defmodule Flamelex.GUI.RootScene do
   #   {:noreply, new_scene}
   # end
 
-  def render_layers(viewport, radix_state) do
+  def render_layers(%Scenic.ViewPort{} = viewport, radix_state) do
     full_window = Widgex.Frame.new(viewport)
+
+    # the app_frame is the frame of the app, minus the menubar
     app_frame = calc_app_frame(full_window, radix_state)
 
-    # TODO experiment with the idea of each layer fetching their own state from RadixState during init...
+    # I'm experimenting with the idea of each layer fetching their own state from RadixState during init...
+    # this way if layers reboots it fetches fresh state, and it feels like it would be more efficient rather
+    # than passing it in from the top like this?
     full_graph =
       Scenic.Graph.build()
-      |> Layer0.add_to_graph(%{
-        # we want the Renseijin to be centered within the app_frame
-        # (the app_frame is the frame of the app, minus the menubar)
-        frame: app_frame
-      })
-      |> Layer01.add_to_graph(%{
-        state: radix_state.layers.one,
-        frame: app_frame
-      })
+      |> Layer0.add_to_graph(%{frame: app_frame})
+      |> Layer01.add_to_graph(%{frame: app_frame})
       |> NeoLayer02.add_to_graph(%{
         id: :menubar,
         frame: full_window,
         state: NeoLayer02.cast_rdx_to_layer_state(radix_state)
       })
+      |> Layer3.add_to_graph(%{frame: app_frame})
 
     {:ok, full_graph}
   end

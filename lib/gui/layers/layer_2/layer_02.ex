@@ -1,4 +1,5 @@
 defmodule Flamelex.GUI.Layers.NeoLayer02 do
+  # TODO get this old gal off Widgex.Layer (??)
   use Widgex.Layer
 
   # def cast_rdx_to_layer_state(%{editor: e, menubar: m, theme: t}) do
