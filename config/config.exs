@@ -41,5 +41,3 @@ config :logger,
 #   # interrupts_topic: :flx_interrupts,
 #   radix_state: Flamelex.Fluxus.RadixState,
 #   radix_reducer: Flamelex.Fluxus.RadixReducer
-
-import_config "#{config_env()}.exs"
