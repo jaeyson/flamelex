@@ -12,15 +12,15 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     {:ok, data}
   end
 
-  def init(scene, %{frame: %Widgex.Frame{} = f}, opts) do
+  def init(scene, %{frame: %Widgex.Frame{} = frame}, opts) do
     state = RadixStore.get().apps.todo_details
 
-    {:ok, graph} = TODOdetails.Renderizer.render(f, state)
+    graph = TODOdetails.Renderizer.render(Scenic.Graph.build(), frame, state)
 
     init_scene =
       scene
       |> assign(graph: graph)
-      |> assign(frame: f)
+      |> assign(frame: frame)
       |> assign(state: state)
       |> push_graph(graph)
 
