@@ -26,7 +26,16 @@ defmodule Flamelex.GUI.Component.TODOlist.Reducer do
     rdx
     # TODO here, we should update something about the TODOlist state (??), so that the dropdown renders the correct filter
     |> TODOlist.Mutator.set_filter(filter: filter_by)
-    |> TODOlist.Mutator.refresh_todo_list(filter: filter_by)
+    |> TODOlist.Mutator.refresh_todo_list()
+  end
+
+  def process(rdx, {:refresh_tidbit, _t}) do
+    # IO.puts "$$$$$$$$$$$$$$$$$$$ refresh tidbit $$$$$$$$$$$$$$$$$$$"
+
+
+    rdx
+    # |> Flamelex.Fluxus.TODOsMutators.open_details(t)
+    |> TODOlist.Mutator.refresh_todo_list()
   end
 end
 

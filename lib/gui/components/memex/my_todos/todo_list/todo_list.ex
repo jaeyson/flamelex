@@ -196,7 +196,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
              #  {"Next month", :next_month},
              #  {"Most urgent", :most_urgent},
              {"Overdue", :overdue},
-             {"Top priority", {:top_priority, 20}},
+             {"Top priority", {:top_priority, 25}},
              {"Newest 20", {:newest, 20}},
              {"Oldest 20", {:oldest, 20}},
              {"Random 20", {:random, 20}},
