@@ -3,6 +3,7 @@ defmodule Flamelex.GUI.Component.TODOdetails.Reducer do
   alias Flamelex.GUI.Component.TODOdetails
 
   def process(%RadixState{} = rdx, {:refresh_tidbit, t}) do
+    # IO.puts "$$$$$$$$$$$$$$$$$$$ refresh tidbit $$$$$$$$$$$$$$$$$$$"
     rdx
     # |> Flamelex.Fluxus.TODOsMutators.open_details(t)
     |> TODOdetails.Mutator.open_details(t)

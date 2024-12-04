@@ -5,6 +5,90 @@ defmodule Flamelex.GUI.Component.TODOdetails.Renderizer do
 
   @background_color {:color_rgb, {255, 255, 153}} # Light yellow
 
+
+  # Life Admin Automations: repeated tasks
+
+#   Creating a comprehensive todo list app requires striking a balance between simplicity and functionality. Here’s a list of key features that can make your app both user-friendly and versatile:
+# Core Features
+
+#     Task Management:
+#         Create, edit, and delete tasks.
+#         Set due dates and times.
+#         Add task descriptions or notes.
+
+#     Organization:
+#         Categories, tags, or folders for grouping tasks.
+#         Priority levels (e.g., High, Medium, Low).
+#         Subtasks for breaking down larger tasks.
+
+#     Notifications and Reminders:
+#         Timely reminders for tasks.
+#         Recurring tasks with customizable schedules.
+
+#     Search and Filters:
+#         Search bar to quickly find tasks.
+#         Filters based on categories, priorities, or due dates.
+
+#     Progress Tracking:
+#         Mark tasks as completed.
+#         Visual indicators for progress (e.g., percentage bars, streaks).
+
+#     Custom Views:
+#         Daily, weekly, and monthly views.
+#         Kanban board or calendar integration.
+
+# Advanced Features
+
+#     Collaboration:
+#         Share lists or tasks with others.
+#         Assign tasks to specific users.
+
+#     Integration:
+#         Sync with calendars (Google, Outlook, etc.).
+#         Integration with tools like Slack, Trello, or Notion.
+
+#     Offline Access:
+#         Full functionality offline with data syncing when online.
+
+#     Cross-Platform Support:
+#         Availability on web, mobile (iOS/Android), and desktop.
+
+#     Smart Features:
+#         Natural language input (e.g., "Meet John on Friday at 3 PM").
+#         AI-based suggestions for task prioritization.
+
+#     Data Backup and Export:
+#         Cloud sync for data security.
+#         Export tasks in formats like CSV, PDF, or JSON.
+
+#     Customization:
+#         Dark mode and theme options.
+#         Customizable task fields or layouts.
+
+# Gamification and Motivation
+
+#     Streaks and Rewards:
+#         Gamify task completion with streaks, points, or badges.
+
+#     Daily Goals:
+#         Set and track daily goals to maintain focus.
+
+# Security
+
+#     Data Privacy:
+#         End-to-end encryption for user data.
+#         Authentication options (e.g., password, biometrics).
+
+# Monetization Options (if applicable)
+
+#     Freemium Model:
+#         Basic features free, with premium features like advanced analytics or team collaboration available as paid upgrades.
+
+#     Ad-Free Experience:
+#         Offer a paid tier for users to remove ads.
+
+
+
   def render(
     %Scenic.Graph{} = graph,
     %Widgex.Frame{} = frame,
@@ -108,6 +192,7 @@ defmodule Flamelex.GUI.Component.TODOdetails.Renderizer do
         graph
     end
   end
+
 
   # wraps everything in a vertical list for scrolling purposes
   @todo_component_list :todo_component_list
@@ -309,18 +394,27 @@ defmodule Flamelex.GUI.Component.TODOdetails.Renderizer do
         right_lower_middle_frame = Widgex.Frame.Grid.area_frame(grid, cell_frames, :right_lower_middle)
         right_bottom_frame = Widgex.Frame.Grid.area_frame(grid, cell_frames, :right_bottom)
 
+        # priority =
+        #   case Memelex.TidBit.priority(tidbit) do
+        #     nil ->
+        #       "not assigned"
+
+        #     x when is_integer(x) ->
+        #       Integer.to_string(x)
+        #   end
+
+
         graph
         # |> Scenic.Primitives.rect(
         #   top_left_frame.size.box,
         #   fill: :pink,
         #   translate: top_left_frame.pin.point
         # )
-
-        |> render_rounded_tile(left_box_frame, %{line1: "Data", line2: tidbit.status || "Unknown"})
+        |> render_data_section(left_box_frame, tidbit)
         |> render_rounded_tile(right_top_frame, %{line1: "Status", line2: tidbit.status || "Unknown"})
-        |> render_rounded_tile(right_upper_middle_frame, %{line1: "Planned date", line2: Memelex.TidBit.planned_date(tidbit) || "Unknown"})
-        |> render_rounded_tile(right_lower_middle_frame, %{line1: "Due date", line2: Memelex.TidBit.due_date(tidbit) || "Unknown"})
-        |> render_rounded_tile(right_bottom_frame, %{line1: "Priority", line2: Integer.to_string(Memelex.TidBit.priority(tidbit)) || "not assigned"})
+        |> render_rounded_tile(right_upper_middle_frame, %{line1: "Planned date", line2: Memelex.TidBit.planned_date(tidbit, as: String) || "Unknown"})
+        |> render_rounded_tile(right_lower_middle_frame, %{line1: "Due date", line2: Memelex.TidBit.due_date(tidbit, as: String) || "Unknown"})
+        |> render_priority(right_bottom_frame, tidbit)
 
 
         # |> render_rounded_tile(grid_frames[:left_box_frame], %{line1: "Status", line2: tidbit.status || "Unknown"})
@@ -353,6 +447,118 @@ defmodule Flamelex.GUI.Component.TODOdetails.Renderizer do
   #     Map.put(acc, area_name, Widgex.Frame.Grid.area_frame(grid, cell_frames, area_name))
   #   end)
   # end
+
+  defp render_priority(graph, frame, tidbit) do
+
+    p = Memelex.TidBit.priority(tidbit) |> IO.inspect(label: "PRIORITY")
+
+    margin =  10
+    radius =  10
+    fill_color = nil
+    text_color = :black
+    font_size = 16
+
+    # Calculate dimensions and positioning
+    inner_width = frame.size.width - (margin * 2)
+    inner_height = frame.size.height - (margin * 2)
+    inner_x = frame.pin.x + margin
+    inner_y = frame.pin.y + margin
+
+    # Center text in the middle of the tile
+    text_x = inner_x + (inner_width / 2)
+    text_y_line1 = inner_y + (inner_height / 2) - (font_size / 2)
+    text_y_line2 = inner_y + (inner_height / 2) + (font_size / 2)
+
+    # dont pass fill as an option if we don't want to fill it
+    rrect_opts =
+      if is_nil(fill_color) do
+        [stroke: {3, :black}, translate: {inner_x, inner_y}]
+      else
+        [stroke: {3, :black}, fill: fill_color, translate: {inner_x, inner_y}]
+      end
+
+    graph
+    |> Scenic.Primitives.rrect(
+      {inner_width, inner_height, radius},
+      rrect_opts
+    )
+    |> Scenic.Primitives.text("Priority",
+          font_size: 24,
+          fill: :black,
+          # translate: {frame.size.width / 2, frame.size.height / 2}
+          translate: {inner_x + 20, inner_y + 50}
+        )
+    |> ScenicWidgets.SpareParts.LukesDropDown.add_to_graph(
+          {[
+             {"Not assigned", :not_assigned},
+             {"0", 0}, # TODO remove this eventually
+             {"1", 1},
+             {"2", 2},
+             {"3", 3},
+             {"5", 5},
+             {"8", 8},
+             {"12", 12},
+             {"21", 21},
+             {"34", 34},
+             {"55", 55},
+             {"89", 89},
+             {"144", 144},
+             {"233", 233},
+             {"377", 377},
+             {"610", 610}
+            #  {"This month", :this_month},
+            #  #  {"Next month", :next_month},
+            #  #  {"Most urgent", :most_urgent},
+            #  {"Overdue", :overdue},
+            #  {"Newest 20", {:newest, 20}},
+            #  {"Oldest 20", {:oldest, 20}},
+            #  {"Random 20", {:random, 20}}
+             #  {"By Priority", :priority},
+             #  {"Top Ten", :top_ten},
+             #  {"Soonest deadline", :soonest},
+             #  {"Un-prioritized", :un_prioritized},
+             #  {"Done", :done},
+          ], default_priority(p)},
+          id: {:priority, tidbit.uuid},
+          translate: {inner_x + 120, inner_y + 20}
+        )
+  end
+
+  def default_priority(priority) do
+    case priority do
+      # 0 ->
+      #   IO.puts "GOT A PRIORITY OF ZERO I DONT LIKE IT"
+      #   1
+
+      p when is_integer(p) ->
+        p
+
+      aaa ->
+        IO.puts "GOT WEIRD PRIORITY #{inspect aaa}"
+        :not_assigned
+    end
+  end
+
+  # |> ScenicWidgets.SpareParts.LukesDropDown.add_to_graph(
+  #         {[
+  #            {"All", :all},
+  #            {"This week", :this_week},
+  #            {"This month", :this_month},
+  #            #  {"Next month", :next_month},
+  #            #  {"Most urgent", :most_urgent},
+  #            {"Overdue", :overdue},
+  #            {"Newest 20", {:newest, 20}},
+  #            {"Oldest 20", {:oldest, 20}},
+  #            {"Random 20", {:random, 20}}
+  #            #  {"By Priority", :priority},
+  #            #  {"Top Ten", :top_ten},
+  #            #  {"Soonest deadline", :soonest},
+  #            #  {"Un-prioritized", :un_prioritized},
+  #            #  {"Done", :done},
+  #          ], default},
+  #         id: :filter_select,
+  #         translate: {20, 20}
+  #       )
 
   defp render_due_date(graph, frame, tidbit) do
     %{meta: [meta_map]} = tidbit
@@ -439,6 +645,68 @@ defmodule Flamelex.GUI.Component.TODOdetails.Renderizer do
       translate: {text_x, text_y_line2},
       text_align: :center
     )
+  end
+
+  defp render_data_section(graph, frame, tidbit) do
+    # Extract parameters with defaults
+    # IO.inspect(params)
+
+    margin =  10
+    radius =  10
+    fill_color = nil
+    text_color = :black
+    font_size = 16
+
+    # Calculate dimensions and positioning
+    inner_width = frame.size.width - (margin * 2)
+    inner_height = frame.size.height - (margin * 2)
+    inner_x = frame.pin.x + margin
+    inner_y = frame.pin.y + margin
+
+    # Center text in the middle of the tile
+    text_x = inner_x + (inner_width / 2)
+    text_y_line1 = inner_y + (inner_height / 2) - (font_size / 2)
+    text_y_line2 = inner_y + (inner_height / 2) + (font_size / 2)
+
+    # dont pass fill as an option if we don't want to fill it
+    rrect_opts =
+      if is_nil(fill_color) do
+        [stroke: {3, :black}, translate: {inner_x, inner_y}]
+      else
+        [stroke: {3, :black}, fill: fill_color, translate: {inner_x, inner_y}]
+      end
+
+    text =
+      case tidbit.data do
+        nil ->
+          "No data"
+
+        "" ->
+          "No data"
+
+        d when is_binary(d) ->
+          d
+      end
+
+    graph
+    |> Scenic.Primitives.rrect(
+      {inner_width, inner_height, radius},
+      rrect_opts
+    )
+    |> Scenic.Primitives.text(
+      text,
+      font_size: font_size,
+      fill: text_color,
+      translate: {text_x, text_y_line1},
+      text_align: :center
+    )
+    # |> Scenic.Primitives.text(
+    #   line2,
+    #   font_size: font_size,
+    #   fill: text_color,
+    #   translate: {text_x, text_y_line2},
+    #   text_align: :center
+    # )
   end
 
   # def draw_data_fn do

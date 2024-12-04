@@ -33,26 +33,57 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   #   [{:reloaded_my_modz, env}]
   # end
 
-  def handle(rdx, {:tidbit_saved, t}) do
-    # IO.inspect(t)
-    # this is the situation where splitting the state up makes sense...
-    # it's more logical I think to want to broadcast out "this got saved, update if you have to"
-    # rather than knowing how to change the god state (maybe multiple apps get affected) to reflect the change
+  # def handle(rdx, {:tidbit_saved, t}) do
+  #   IO.puts "flamelex got alerted to a tidbit saved #{inspect t}"
+  #   # IO.inspect(t)
+  #   # this is the situation where splitting the state up makes sense...
+  #   # it's more logical I think to want to broadcast out "this got saved, update if you have to"
+  #   # rather than knowing how to change the god state (maybe multiple apps get affected) to reflect the change
 
-    # cool pseudocode though would be, for all the apps in :apps, get their component reducer fn,
-    # call it with this tidbit & event, and then update the state with the result
+  #   # cool pseudocode though would be, for all the apps in :apps, get their component reducer fn,
+  #   # call it with this tidbit & event, and then update the state with the result
 
+  #   [
+  #     # {TODOlist.Reducer, {:refresh_tidbit, t}},
+  #     # {TODOdetails.Reducer, {:set_mode, :view}},
+  #     # {TODOdetails.Reducer, {:refresh_tidbit, t}}
+  #     {__MODULE__, {:tidbit_saved, t}}
+  #     # {RapidSelector.Reducer, {:refresh_tidbit, t}}
+  #   ]
+  # end
+
+  def handle(_rdx, {:tidbit_saved, t}) do
+    # IO.puts "GOT TIDBIT SAVED AFTER ALL!!!!"
+    # IO.puts "Forwarding TIDBIT SAVED"
     [
-      # {TODOlist.Reducer, {:refresh_tidbit, t}},
-      {TODOdetails.Reducer, {:set_mode, :view}},
       {TODOdetails.Reducer, {:refresh_tidbit, t}}
-      # {RapidSelector.Reducer, {:refresh_tidbit, t}}
     ]
+
+    # call radix store, let that know -> this is basically same as throwing an action...
+
+    # here I'm gonna do something crazy & broadcast an event over a TidBit channel :D
+    # Flamelex.Lib.Utils.PubSub.broadcast(
+    #   topic: {:memelex, :tidbit, t.uuid},
+    #   msg: {:tidbit_saved, t}
+    # )
+
+
+    # :ignore
+    # [{__MODULE__, mmlx_event}]
+    # [mmlx_event]
+  end
+
+  def handle(_rdx, mmlx_event) do
+    # pass memelex events along to be treated as actions by Fluxus (cause we trust Memelex, right !>?)
+    Logger.warn "implicitely handling a MODUILE Memelex event as a Flamelex action..."
+    [{__MODULE__, mmlx_event}]
+    # [mmlx_event]
   end
 
   def handle(_rdx, mmlx_event) do
     # pass memelex events along to be treated as actions by Fluxus (cause we trust Memelex, right !>?)
     Logger.warn "implicitely handling a Memelex event as a Flamelex action..."
+    # [{__MODULE__, mmlx_event}]
     [mmlx_event]
   end
 end

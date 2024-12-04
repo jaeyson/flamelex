@@ -65,7 +65,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
   end
 
   # for now hard code this redirect because we know it's going to be applied at the component level
-  def process(rdx, {Flamelex.GUI.Component.TODOdetails, action}) do
+  def process(rdx, {Flamelex.GUI.Component.TODOdetails.Reducer, action}) do
     Flamelex.GUI.Component.TODOdetails.Reducer.process(rdx, action)
   end
 

@@ -43,10 +43,12 @@ defmodule Flamelex.GUI.Component.TODOlist do
     {:ok, init_scene}
   end
 
+  # TODO handlke frame change
+
   def handle_info(
         # state variables in pattern match are the same, therefore no state change occured
         {:radix_state_change, %{apps: %{todo_list: state}}},
-        %{assigns: %{frame: f, state: state}} = scene
+        %{assigns: %{frame: _f, state: state}} = scene
       ) do
     {:noreply, scene}
   end
@@ -61,8 +63,6 @@ defmodule Flamelex.GUI.Component.TODOlist do
     # dbg()
 
     # if old_state.list == new_state.list
-
-    IO.puts("GOT NERW TODO LIST STATE #{inspect(new_state.filter)}")
 
     # keep the old scroll
     new_state = put_in(new_state, [:scroll], old_state.scroll)
@@ -196,9 +196,11 @@ defmodule Flamelex.GUI.Component.TODOlist do
              #  {"Next month", :next_month},
              #  {"Most urgent", :most_urgent},
              {"Overdue", :overdue},
+             {"Top priority", {:top_priority, 20}},
              {"Newest 20", {:newest, 20}},
              {"Oldest 20", {:oldest, 20}},
-             {"Random 20", {:random, 20}}
+             {"Random 20", {:random, 20}},
+             {"Needs triage", :needs_triage},
              #  {"By Priority", :priority},
              #  {"Top Ten", :top_ten},
              #  {"Soonest deadline", :soonest},
@@ -215,8 +217,10 @@ defmodule Flamelex.GUI.Component.TODOlist do
              {"Cancelled", :cancelled}
            ], []},
           id: :status_select,
-          translate: {300, 20}
+          translate: {280, 20}
         )
+        |> Scenic.Components.button("Search.....", id: :new_todo, t: {500, 21})
+        |> Scenic.Components.button("New TODO", id: :new_todo, t: {800, 21})
       end,
       translate: frame.pin.point
       # scissor: frame.size.box

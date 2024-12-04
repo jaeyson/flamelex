@@ -11,7 +11,12 @@ defmodule Flamelex.GUI.Component.TODOdetails.State do
   end
 
   def new(%{tidbit: %Memelex.TidBit{} = t}) do
+    IO.puts "TODO rename this from new to update since we're updating the tidbit not making anything new"
     %__MODULE__{tidbit: t}
+  end
+
+  def update(%__MODULE__{} = state, %{tidbit: %Memelex.TidBit{} = t}) do
+    %{state|tidbit: t}
   end
 
   # def set_turbo(%RadixState{} = rdx, turbo?) when is_boolean(turbo?) do

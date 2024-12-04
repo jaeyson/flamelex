@@ -6,7 +6,9 @@ defmodule Flamelex.GUI.Component.TODOdetails.Mutator do
   alias Flamelex.GUI.Component.{TODOlist, TODOdetails}
 
   def open_details(%RadixState{} = rdx, %Memelex.TidBit{} = t) do
-    rdx |> put_in([:apps, :todo_details], TODOdetails.State.new(%{tidbit: t}))
+    new_todo_details = TODOdetails.State.update(rdx.apps.todo_details, %{tidbit: t})
+    # IO.inspect(new_todo_details, label: "THIS SHOULD HAVE PRIORITY")
+    rdx |> put_in([:apps, :todo_details], new_todo_details)
   end
 
   def close_details(%RadixState{} = rdx) do

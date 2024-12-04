@@ -25,6 +25,7 @@ defmodule Flamelex.GUI.Component.TODOdetails do
       |> push_graph(graph)
 
     Flamelex.Lib.Utils.PubSub.subscribe(topic: :radix_state_change)
+    Flamelex.Lib.Utils.PubSub.subscribe(topic: {:memelex, :tidbit, state.tidbit.uuid})
 
     {:ok, init_scene}
   end
@@ -38,12 +39,34 @@ defmodule Flamelex.GUI.Component.TODOdetails do
 
     new_state = scene.assigns.state |> put_in([:scroll], new_scroll)
 
-    cast_children(scene, {:set_scroll, new_scroll})
+    # cast_children(scene, {:set_scroll, new_scroll})
     {:noreply, scene |> assign(state: new_state)}
   end
 
   def handle_cast({:click, {:edit, tidbit_uuid}}, scene) do
     Flamelex.Fluxus.action({__MODULE__, {:edit_todo, tidbit_uuid}})
+    {:noreply, scene}
+  end
+
+
+  def handle_cast({:focus, _id}, scene) do
+    # this is a bit of a hack but basically when the dropdown
+    # drops it will msg the todo list (it's parent), we
+    # set the whole component into dropdown mode, and in dropdown
+    # mode we dont handle clicks from anything except the dropdown
+    # - this will hopefully fix the bug ("workaround") where clicking
+    # on a dropdown also clicks the item (usually a TODO) below it (in the z plane)
+    {:noreply, scene |> assign(dropdown_mode: true)}
+  end
+
+  def handle_event({:value_changed, {:priority, tidbit_uuid}, p}, _context, scene) do
+    # IO.puts "TIDBIT #{tidbit_uuid} changing with p: #{inspect p}"
+
+    r = Memelex.My.Wiki.get!(%{uuid: tidbit_uuid})
+    |> Memelex.My.TODOs.set_priority(p)
+
+    # IO.inspect(r, label: "AFTERMATH")
+
     {:noreply, scene}
   end
 
@@ -74,10 +97,29 @@ defmodule Flamelex.GUI.Component.TODOdetails do
   #   {:noreply, scene}
   # end
 
+  def handle_info({:tidbit_saved, new_tidbit}, scene) do
+
+    # IO.puts "GOT TIDBIT SAVED #{inspect new_tidbit}"
+    new_state = scene.assigns.state |> TODOdetails.State.update(%{tidbit: new_tidbit})
+
+    # IO.inspect(new_state, label: "NEW STATE")
+
+    new_graph = TODOdetails.Renderizer.render(Scenic.Graph.build(), scene.assigns.frame, new_state)
+
+    new_scene =
+      scene
+      |> assign(graph: new_graph)
+      |> assign(state: new_state)
+      |> push_graph(new_graph)
+
+    {:noreply, new_scene}
+  end
+
   def handle_info(
         {:radix_state_change, %{apps: %{todo_details: %TODOdetails.State{} = new_state}}},
         %{assigns: %{frame: f, state: old_state}} = scene
       ) do
+        # IO.puts "GETTING RADIX STATE CHANGE #{inspect new_state}"
     # if new_state.tidbit == old_state.tidbit do
     #   # tidbit didbn't change, do nothing...
     #   IO.puts("GOT MSG BUT SAME OLD TIDBIT!")
@@ -85,7 +127,8 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     # else
     # reset the scroll if we change the TidBit
     new_state = %{new_state | scroll: {0, 0}}
-    {:ok, new_graph} = TODOdetails.Renderizer.render(f, new_state)
+    # building a new graph here I guess, it's ok for now but not efficient
+    new_graph = TODOdetails.Renderizer.render(Scenic.Graph.build(), f, new_state)
 
     new_scene =
       scene
