@@ -70,6 +70,13 @@ defmodule Flamelex.GUI.Component.TODOdetails do
     {:noreply, scene}
   end
 
+  def handle_event({:value_changed, {:status, tidbit_uuid}, new_status}, _context, scene) do
+    t = Memelex.My.Wiki.get!(%{uuid: tidbit_uuid})
+    Memelex.My.TODOs.set_status(t, new_status)
+
+    {:noreply, scene}
+  end
+
   def handle_cast({:click, {:save, tidbit_uuid}}, scene) do
     IO.puts("SAVINGGG #{inspect(Map.keys(scene.assigns))}")
     # TODO here, we have a new description in the scene.assigns, we need to save it to the tidbit

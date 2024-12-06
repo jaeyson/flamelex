@@ -411,7 +411,8 @@ defmodule Flamelex.GUI.Component.TODOdetails.Renderizer do
         #   translate: top_left_frame.pin.point
         # )
         |> render_data_section(left_box_frame, tidbit)
-        |> render_rounded_tile(right_top_frame, %{line1: "Status", line2: tidbit.status || "Unknown"})
+        # |> render_rounded_tile(right_top_frame, %{line1: "Status", line2: tidbit.status || "Unknown"})
+        |> render_status(right_top_frame, tidbit)
         |> render_rounded_tile(right_upper_middle_frame, %{line1: "Planned date", line2: Memelex.TidBit.planned_date(tidbit, as: String) || "Unknown"})
         |> render_rounded_tile(right_lower_middle_frame, %{line1: "Due date", line2: Memelex.TidBit.due_date(tidbit, as: String) || "Unknown"})
         |> render_priority(right_bottom_frame, tidbit)
@@ -427,6 +428,62 @@ defmodule Flamelex.GUI.Component.TODOdetails.Renderizer do
         #   translate: grid_frames[:bottom_right].pin.point
         # )
     end
+  end
+
+  @in_progress "in_progress"
+  @blocked "blocked"
+  @done "done"
+  @cancelled "cancelled"
+  defp render_status(graph, frame, tidbit) do
+    margin =  10
+    radius =  10
+    fill_color = nil
+    text_color = :black
+    font_size = 16
+
+    # Calculate dimensions and positioning
+    inner_width = frame.size.width - (margin * 2)
+    inner_height = frame.size.height - (margin * 2)
+    inner_x = frame.pin.x + margin
+    inner_y = frame.pin.y + margin
+
+    # Center text in the middle of the tile
+    text_x = inner_x + (inner_width / 2)
+    text_y_line1 = inner_y + (inner_height / 2) - (font_size / 2)
+    text_y_line2 = inner_y + (inner_height / 2) + (font_size / 2)
+
+    # dont pass fill as an option if we don't want to fill it
+    rrect_opts =
+      if is_nil(fill_color) do
+        [stroke: {3, :black}, translate: {inner_x, inner_y}]
+      else
+        [stroke: {3, :black}, fill: fill_color, translate: {inner_x, inner_y}]
+      end
+
+    graph
+    |> Scenic.Primitives.rrect(
+      {inner_width, inner_height, radius},
+      rrect_opts
+    )
+    |> Scenic.Primitives.text("Status",
+          font_size: 24,
+          fill: :black,
+          # translate: {frame.size.width / 2, frame.size.height / 2}
+          translate: {inner_x + 20, inner_y + 50}
+        )
+    |> ScenicWidgets.SpareParts.LukesDropDown.add_to_graph(
+          {[
+             {"unknown", nil},
+             {@in_progress, @in_progress},
+             {"done", "done"}, # TODO remove this eventually
+            #  {"completed", "completed"},
+            {"blocked", "blocked"},
+             {"cancelled", "cancelled"}
+
+          ], tidbit.status},
+          id: {:status, tidbit.uuid},
+          translate: {inner_x + 120, inner_y + 20}
+        )
   end
 
   # defp calculate_grid_frames(frame, row_specs, column_specs, area_definitions) do
@@ -491,7 +548,7 @@ defmodule Flamelex.GUI.Component.TODOdetails.Renderizer do
     |> ScenicWidgets.SpareParts.LukesDropDown.add_to_graph(
           {[
              {"Not assigned", :not_assigned},
-             {"0", 0}, # TODO remove this eventually
+            #  {"0", 0}, # TODO remove this eventually
              {"1", 1},
              {"2", 2},
              {"3", 3},

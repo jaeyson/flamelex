@@ -175,7 +175,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
   # %Flamelex.GUI.Component.TODOlist.State{list: []}
   def render_tools(graph, frame, %State{} = s) do
     # the Scene state remembers what the dropdown filter is
-    default = s.filter || :all
+    default = s.filter || {:top_priority, 25} # :all
 
     # TODO this should not "re-render" every single time that I chnge the dropdown !!
     # the component ought to be steady, but we don't re-render, we simply push an update
@@ -190,17 +190,20 @@ defmodule Flamelex.GUI.Component.TODOlist do
         graph
         |> ScenicWidgets.SpareParts.LukesDropDown.add_to_graph(
           {[
+            {"Top priority", {:top_priority, 25}},
              {"All", :all},
              {"This week", :this_week},
              {"This month", :this_month},
              #  {"Next month", :next_month},
              #  {"Most urgent", :most_urgent},
              {"Overdue", :overdue},
-             {"Top priority", {:top_priority, 25}},
+
              {"Newest 20", {:newest, 20}},
              {"Oldest 20", {:oldest, 20}},
              {"Random 20", {:random, 20}},
              {"Needs triage", :needs_triage},
+             {"cancelled", :cancelled},
+             {"done", :done},
              #  {"By Priority", :priority},
              #  {"Top Ten", :top_ten},
              #  {"Soonest deadline", :soonest},
@@ -246,6 +249,10 @@ defmodule Flamelex.GUI.Component.TODOlist do
 
   @todo_height 60
   def render_todo_list(graph, frame, state) do
+    # NOTE: it seems tempting apply GUI filters here, but what's supposed to
+    # happen is that the radix-reducer is supposed to update the radix state,
+    # and we get notified of that, so we really need to remember our job,
+    # which is to be a graphical reflection of the radix-state
     todo_widgets =
       state.list
       |> Enum.with_index()

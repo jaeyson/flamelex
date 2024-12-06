@@ -4,10 +4,12 @@ defmodule Flamelex.GUI.Component.TODOlist.Mutator do
   """
   alias Flamelex.Fluxus.RadixState
 
+  @default_filter {:top_priority, 25}
+
   def refresh_todo_list(%RadixState{} = rdx) do
     todo_list =
       if is_nil(rdx.apps.todo_list.filter) do
-        Memelex.My.TODOs.all()
+        Memelex.My.TODOs.all(filter: @default_filter)
       else
         Memelex.My.TODOs.all(filter: rdx.apps.todo_list.filter)
       end
