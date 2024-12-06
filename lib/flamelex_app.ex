@@ -77,3 +77,10 @@ defmodule Flamelex.App do
     {Registry, keys: :duplicate, name: Flamelex.Fluxus.PubSub}
   end
 end
+
+
+# TODO apps
+
+# messenging app
+# gilbertex (paint / freehand drawing app)
+# graph visualizer / neural-net workbench
