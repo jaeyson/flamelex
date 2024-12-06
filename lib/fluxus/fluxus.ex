@@ -126,10 +126,19 @@ defmodule Flamelex.Fluxus do
   # having to include this is starting to feel like a bad thing... not really though, the lib computes the result & throws it away !
   def declare(a) do
     case do_declare(a) do
-      [{Flamelex.Fluxus.RadixStore, :ignore}] ->
+      # [{Flamelex.Fluxus.RadixStore, :ignore}] ->
+      :ignore ->
         {:ok, :ignore}
 
-      [{Flamelex.Fluxus.RadixStore, {:ok, %Flamelex.Fluxus.RadixState{} = r}}] ->
+      # add this to get out of a bunch of confusion about ok tuples, why do we even return this RadixStore from the DoDeclare? Maybe the framework automatically does that & we should strip it out?
+      # [{Flamelex.Fluxus.RadixStore, %Flamelex.Fluxus.RadixState{} = r}] ->
+        # %Flamelex.Fluxus.RadixState{} = r ->
+        #   {:ok, r}
+
+        # maybe figure out why we return this ok tuple sometimes, I think it's just what Radix.process returns? In which case maybe ok tuple is better
+        {:ok, %Flamelex.Fluxus.RadixState{} = r} ->
+          r
+      # [{Flamelex.Fluxus.RadixStore, {:ok, %Flamelex.Fluxus.RadixState{} = r}}] ->
         {:ok, r}
 
       [{Flamelex.Fluxus.RadixStore, {:error, reason}}] ->
@@ -139,11 +148,14 @@ defmodule Flamelex.Fluxus do
   end
 
   defp do_declare(a) do
-    EventBus.declare(%EventBus.Model.Event{
-      id: UUID.uuid4(),
-      topic: @flx_actions,
-      data: a
-    })
+    [{Flamelex.Fluxus.RadixStore, result}] =
+      EventBus.declare(%EventBus.Model.Event{
+        id: UUID.uuid4(),
+        topic: @flx_actions,
+        data: a
+      })
+
+    result
   end
 end
 
