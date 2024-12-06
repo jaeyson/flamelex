@@ -74,9 +74,16 @@ defmodule Flamelex.Fluxus.RadixStore do
     # GenServer.cast(__MODULE__, {:event, e, event_shadow})
 
     # go with call as it forces the event to process before the next event can be consumed
-    GenServer.call(__MODULE__, {:event, e})
+    ok_err_result_tuple = GenServer.call(__MODULE__, {:event, e})
 
     EventBus.mark_as_completed({__MODULE__, event_shadow})
+
+    # WHY we have to return an ok/error tuple here --
+    # because this function RadixStore.process is the one I defined to be the event handling one
+    # when we registered this module to handle events (it's a default defined by the event bus lib)
+    # and since do_declare, was added to that library by me, it expects an ok/err tuple to be returned
+    # from this - without that, do_declare fails, so plz ensure we always return the ok/err tuple here
+    ok_err_result_tuple
   end
 
   def handle_cast(_any_msg, :initialization_failure) do
@@ -255,8 +262,8 @@ defmodule Flamelex.Fluxus.RadixStore do
           actions when is_list(actions) ->
             actions
 
-      not_a_list ->
-        raise "Handler #{handler} needs to return a list of actions. Got: #{inspect not_a_list}"
+          not_a_list ->
+            raise "Handler #{handler} needs to return a list of actions. Got: #{inspect not_a_list}"
 
         # :re_routed ->
           #   :ignore
