@@ -109,6 +109,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
   end
 
   def process(rdx, {Flamelex.GUI.Component.QlxWrap, action}) do
+    # cant wrap {:action, a} here, it just gets too messy since not everything was notated this way
     Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, action)
   end
 
