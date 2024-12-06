@@ -7,6 +7,8 @@ defmodule Flamelex.GUI do
   # with size 24 font
   @terminal_80col {800, 600}
 
+  @artificial_manuscript {2145, 1218}
+
   @doc """
   This is the Scenic Viewport config, passed in to Scenic when
   we start the application (via the Supervision tree.)
@@ -14,7 +16,7 @@ defmodule Flamelex.GUI do
   def viewport_config do
     [
       name: :main_viewport,
-      size: @monitor_32inch_80pc,
+      size: @artificial_manuscript,
       default_scene: {Flamelex.GUI.RootScene, nil},
       drivers: [
         [

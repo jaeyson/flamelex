@@ -145,6 +145,9 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
   # Draw Background
   # ===========================================================================
 
+    @artificial_manuscript "images/artificial_manuscript.png"
+    @artificial_manuscript_dimens {2145, 1218}
+
   @background_images [
     # "images/jupiter.jpg",
     # "images/milky_way.jpg",
@@ -152,7 +155,8 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
     # "images/pexels_sunrise.jpg",
     # "images/uluru_sunrise.jpg"
     # "images/uluru-northern-territory-australia-139.jpg"
-    "images/burning_man_2016_temple_friday_sunrise.jpeg"
+    "images/burning_man_2016_temple_friday_sunrise.jpeg",
+    "images/artificial_manuscript.png"
   ]
 
   def draw_background(
@@ -164,13 +168,13 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
     |> Scenic.Primitives.rect(frame.size.box,
       # translate: Coordinates.point(frame.pin),
       translate: frame.pin.point,
-      fill: {:image, "images/burning_man_2016_temple_friday_sunrise.jpeg"}
+      fill: {:image, @artificial_manuscript}
 
       #TODO eventually this shouldn't happen cause we wouldn't be re-rendering Renseijin so much,
       # until then it just looks crazy
       # fill: {:image, Enum.random(@background_images)}
     )
-    |> draw_mask_with_gradient(frame, state)
+    # |> draw_mask_with_gradient(frame, state)
 
     # |> Scenic.Primitives.rect({100, 50},
     #   fill: {:linear, {50, 25, 10, 45, :blue, :yellow}},
