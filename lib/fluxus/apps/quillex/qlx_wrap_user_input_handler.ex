@@ -23,18 +23,28 @@ defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
   end
 
   def handle(rdx, input) do
+
+    # TODO use active_buf function
+    buf_ref = rdx.apps.qlx_wrap.buffers |> hd()
+
+    # stupid hack cause probably all handlers should just return a damn list lol
+    # get rid of list but now we're hacking the hax
+    action =
+      Quillex.GUI.Components.BufferPane.UserInputHandler.handle(%{buf_ref: buf_ref}, input)
+      # |> List.flatten()
+
     # %{buf: %{uuid: "47c1b778-1507-4926-bebc-4bca7313ded6"}, data: nil, do?: true}
     # IO.inspect(rdx.apps.qlx_wrap.req_save, label: "REQ_SAVE")
     # IO.inspect(input, label: "ININININININ")
     # # right now we hard-code we only ever edit the active buffer lol
-    buf_ref = rdx.apps.qlx_wrap.buffers |> List.first()
+    # buf_ref = rdx.apps.qlx_wrap.buffers |> List.first()
 
     # case buf_ref.mode do
     #   {:vim, :insert} ->
-    Quillex.Buffer.BufferManager.cast_to_gui_component(
-      # buf_ref,
-      {:user_input_fwd, input}
-    )
+    # Quillex.Buffer.BufferManager.cast_to_gui_component(
+    #   # buf_ref,
+    #   {:user_input_fwd, input}
+    # )
 
     #     :re_routed
 
@@ -42,7 +52,9 @@ defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
     #     # raise "cant handle any other mode yet"
     #     :ignore
     # end
-    :re_routed
+    # :re_routed
+
+    [{Flamelex.GUI.Component.QlxWrap, action}]
   end
 end
 

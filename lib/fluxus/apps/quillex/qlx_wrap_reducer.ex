@@ -116,10 +116,25 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
 
   def process(
         %RadixState{} = rdx,
-        buf_ref,
-        {:action, {:insert, _char, :at_cursor}} = a
+        # buf_ref,
+        {:insert, _char, :at_cursor} = a
       ) do
-    Quillex.Buffer.BufferManager.cast_to_buffer(buf_ref, a)
+    #TODO here, this is going to cause a fundamental problem
+    IO.puts "HERE WE ARE GONNA TRY CASTING TO BUFFER & HAVE FLAMELEX LISTEN TO THE QLX EVENT BACK I GUESS"
+    # if we re-use this reducer, then we need to
+    # be able to call directly into it & return a modified radix-state (if we call this from flamelex that is)
+
+    # this is where I think, we really ought to have the ability to *call* the buffer,
+    # because the whole point of this function "process" is that it returns an updated radix state
+    # now arguably I guess, we do ignore it on this level... but then the buffer really has to update & broadcast
+    # the state change out to the gui (could be on a buffer specific channel I guess)
+    # Quillex.Buffer.BufferManager.cast_to_buffer(buf_ref, a)
+
+    buf_ref = rdx.apps.qlx_wrap.buffers |> hd() #TODO use a real active buffer functionality here
+    # arguably this should be cast here, since it frees up the radix state, but honestly I want to lock it while we process this just to keep it sequential & simple
+    Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
+
+    # ignore on this level, buffer can update & broadcast out any changesk but no radix level changes will occur
     :ignore
   end
 
@@ -221,6 +236,10 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
 
   #   {:ok, new_radix_state}
   # end
+  def process(rdx, unmatched_action) do
+    IO.puts "ERERRERERERER - #{inspect unmatched_action}"
+    rdx
+  end
 end
 
 #   # @directions [:up, :down, :left, :right]

@@ -1,6 +1,6 @@
 defmodule Flamelex.GUI.Component.QlxWrap.Render do
   alias Flamelex.GUI.Component.QlxWrap
-  alias Quillex.GUI.Components.BufferPane
+  # alias Quillex.GUI.Components.BufferPane
 
   def go(%Widgex.Frame{} = frame, %QlxWrap.State{req_save: %{do?: true}} = state) do
     # TODO this is hacky but it works for now, eventually we should do something more sophisticated
@@ -33,7 +33,7 @@ defmodule Flamelex.GUI.Component.QlxWrap.Render do
       |> Scenic.Primitives.group(
         fn graph ->
           graph
-          |> Buffer.add_to_graph(%{frame: frame, buf_ref: buf_ref, font: state.font})
+          |> Quillex.GUI.Components.BufferPane.add_to_graph(%{frame: frame, buf_ref: buf_ref, font: state.font})
         end,
         translate: frame.pin.point
       )

@@ -13,7 +13,8 @@ defmodule Flamelex.GUI.Component.QlxWrap.State do
               buf: nil,
               data: nil
             },
-            font: nil
+            font: nil,
+            active_buf: nil
 
   def new do
     %__MODULE__{font: font()}
