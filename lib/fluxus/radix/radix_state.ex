@@ -91,7 +91,18 @@ defmodule Flamelex.Fluxus.RadixState do
       }
     }
   end
+
+  def mutate(%__MODULE__{}) do
+    raise "not yet but this is what we should have instead of mutators.ex (maybe)"
+  end
 end
+
+# defmodule Flamelex.Fluxus.RadixMutators do
+#   @moduledoc """
+#   A collection of functions that mutate the radix state.
+#   """
+# end
+
 
 # defmodule Flamelex.Fluxus.Structs.RadixState do
 #   @moduledoc """
