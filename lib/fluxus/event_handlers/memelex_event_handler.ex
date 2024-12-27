@@ -52,12 +52,9 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   #   ]
   # end
 
-  def handle(_rdx, {:tidbit_saved, t}) do
-    # IO.puts "GOT TIDBIT SAVED AFTER ALL!!!!"
-    # IO.puts "Forwarding TIDBIT SAVED"
-    [
-      {TODOdetails.Reducer, {:refresh_tidbit, t}}
-    ]
+  def handle(_rdx, {:tidbit_saved, %Memelex.TidBit{} = t} = a) do
+    # TODO/NOTE here it feels natural to broadcast out on a TidBit channel, rather than using actions?
+    # but then again, why bypass our beautiful centrally managed action system...
 
     # call radix store, let that know -> this is basically same as throwing an action...
 
@@ -71,18 +68,28 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
     # :ignore
     # [{__MODULE__, mmlx_event}]
     # [mmlx_event]
+
+    IO.puts "GOT MEMELEX ACTION TIDBIT SVED"
+
+    Logger.debug "Flamelex is handling a Memelex action: #{inspect a}"
+
+    [
+      {TODOdetails.Reducer, {:refresh_tidbit, t}},
+      {HighCouncil.Reducer, {:refresh_tidbit, t}},
+      {Flamelex.GUI.Component.AgentHuddle, {:refresh_tidbit, t}},
+    ]
   end
 
   def handle(_rdx, mmlx_event) do
     # pass memelex events along to be treated as actions by Fluxus (cause we trust Memelex, right !>?)
-    Logger.warn "implicitely handling a MODUILE Memelex event as a Flamelex action..."
+    Logger.warning "implicitely handling a MODUILE Memelex event as a Flamelex action..."
     [{__MODULE__, mmlx_event}]
     # [mmlx_event]
   end
 
   def handle(_rdx, mmlx_event) do
     # pass memelex events along to be treated as actions by Fluxus (cause we trust Memelex, right !>?)
-    Logger.warn "implicitely handling a Memelex event as a Flamelex action..."
+    Logger.warning "implicitely handling a Memelex event as a Flamelex action..."
     # [{__MODULE__, mmlx_event}]
     [mmlx_event]
   end

@@ -88,7 +88,7 @@ defmodule Memelex.Keymaps.UserInputHandler do
   #            [t = %{uuid: tidbit_uuid}] ->
   #                Flamelex.Fluxus.action({MemexReducer, {:save_tidbit, %{tidbit_uuid: tidbit_uuid}}})
   #            nil ->
-  #                Logger.warn "No open tidbits so we dont do anything"
+  #                Logger.warning "No open tidbits so we dont do anything"
   #                :ok
   #        end
   #    end
@@ -168,14 +168,14 @@ defmodule Memelex.Keymaps.UserInputHandler do
   #     # end
 
   #   #   def handle(radix_state, input) when input in @valid_text_input_characters do
-  #   #     Logger.warn "Unhandled input..."
+  #   #     Logger.warning "Unhandled input..."
   #   #     #REMINDER: We need to acknowledge the keystrokes in order to save
   #   #     # them into the keystroke history
   #   #     :ok
   #   # end
 
   # #   def handle(radix_state, input) do
-  # #       Logger.warn "#{__MODULE__} Unhandled input... #{inspect input}"
+  # #       Logger.warning "#{__MODULE__} Unhandled input... #{inspect input}"
   # #       #REMINDER: We need to acknowledge the keystrokes in order to save
   # #       # them into the keystroke history
   # #       :ok
@@ -201,7 +201,7 @@ end
 #                Flamelex.API.Buffer.modify(tidbit, %{activate: :body})
 #                :ok
 #            nil ->
-#                Logger.warn "No TidBits currently in edit mode."
+#                Logger.warning "No TidBits currently in edit mode."
 #                :ok
 #        end
 #    end
@@ -213,7 +213,7 @@ end
 #                Flamelex.API.Buffer.modify(tidbit, %{activate: :title})
 #                :ok
 #            nil ->
-#                Logger.warn "No open tidbits so we dont do anything"
+#                Logger.warning "No open tidbits so we dont do anything"
 #                :ok
 #        end
 #    end
@@ -235,7 +235,7 @@ end
 #                })
 #                :ok
 #            nil ->
-#                Logger.warn "No open tidbits so we dont do anything"
+#                Logger.warning "No open tidbits so we dont do anything"
 #                :ok
 #            # otherwise ->
 #            #     IO.inspect otherwise, label: "wtf??"
@@ -319,14 +319,14 @@ end
 #    # end
 
 #  #   def handle(radix_state, input) when input in @valid_text_input_characters do
-#  #     Logger.warn "Unhandled input..."
+#  #     Logger.warning "Unhandled input..."
 #  #     #REMINDER: We need to acknowledge the keystrokes in order to save
 #  #     # them into the keystroke history
 #  #     :ok
 #  # end
 
 # #   def handle(radix_state, input) do
-# #       Logger.warn "#{__MODULE__} Unhandled input... #{inspect input}"
+# #       Logger.warning "#{__MODULE__} Unhandled input... #{inspect input}"
 # #       #REMINDER: We need to acknowledge the keystrokes in order to save
 # #       # them into the keystroke history
 # #       :ok

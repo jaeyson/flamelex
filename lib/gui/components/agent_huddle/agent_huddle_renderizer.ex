@@ -113,6 +113,53 @@ defmodule Flamelex.GUI.Component.AgentHuddle.Render do
           text: agent_code
         })
     })
+    |> render_activate_deactivate_btn(frame, state)
+  end
+
+  def render_activate_deactivate_btn(graph, frame, %{tidbit: %{data: %{status: :active}}} = state) do
+    # delete it just in case
+    graph = Scenic.Graph.delete(graph, :activate_agent_btn)
+
+    case Scenic.Graph.get(graph, :deactivate_agent_btn) do
+      [] ->
+        graph
+        |> Scenic.Components.button(
+          "De-activate",
+          id: :deactivate_agent_btn,
+          width: 100,
+          # background: :green,
+          # fill: :green,
+          theme: :warning,
+          height: 30,
+          translate: {frame.pin.x + 120, frame.pin.y + frame.size.height - 130}
+        )
+
+      _primitive ->
+        graph
+    end
+  end
+
+  def render_activate_deactivate_btn(graph, frame, state) do
+    # delete it just in case
+    graph = Scenic.Graph.delete(graph, :deactivate_agent_btn)
+
+    case Scenic.Graph.get(graph, :activate_agent_btn) do
+      [] ->
+        graph
+        |> Scenic.Components.button(
+          "Activate",
+          id: :activate_agent_btn,
+          width: 100,
+          background: :green,
+          fill: :green,
+          theme: :success,
+          height: 30,
+          translate: {frame.pin.x + 120, frame.pin.y + frame.size.height - 130}
+        )
+
+      _primitive ->
+        graph
+    end
   end
 
   defp render_right_half(
@@ -139,6 +186,7 @@ defmodule Flamelex.GUI.Component.AgentHuddle.Render do
     |> render_right_half_button_bar(frame, state)
     |> render_chat(frame, state)
     |> render_agent_settings(frame, state)
+    |> render_agent_five_loop(frame, state)
 
     # IO.puts "========================"
     # IO.inspect g
@@ -229,6 +277,20 @@ defmodule Flamelex.GUI.Component.AgentHuddle.Render do
         width: 100,
         height: 30,
         translate: {frame.pin.x + 80, frame.pin.y + 10}
+      )
+      |> Scenic.Components.button(
+        "History Log",
+        id: :agent_settings_btn,
+        width: 120,
+        height: 30,
+        translate: {frame.pin.x + 200, frame.pin.y + 10}
+      )
+      |> Scenic.Components.button(
+        "FIVE loop",
+        id: :five_loop_btn,
+        width: 100,
+        height: 30,
+        translate: {frame.pin.x + 340, frame.pin.y + 10}
       )
 
 
@@ -365,6 +427,83 @@ defmodule Flamelex.GUI.Component.AgentHuddle.Render do
   #   # Example: Update state or call a function
   #   IO.puts("Button clicked: #{action}")
   #   state
+  # end
+
+
+  defp render_agent_five_loop(graph, frame, %{open_agent_five_loop?: false} = state) do
+    case Scenic.Graph.get(graph, :agent_five_loop) do
+      [] ->
+        # we're not supposed to show one and the graph doesn't have one :+1
+        graph
+
+      _primitive ->
+        # we're not supposed to show one but it's there so delete it!
+        graph
+        |> Scenic.Graph.delete(:agent_five_loop)
+    end
+  end
+
+  defp render_agent_five_loop(graph, frame, %{open_agent_five_loop?: true} = state) do
+    offset = 240
+
+    agent = state.tidbit.data
+
+    case Scenic.Graph.get(graph, :agent_five_loop) do
+      [] ->
+        graph
+        |> Scenic.Primitives.group(fn graph ->
+          graph
+          |> Scenic.Primitives.text("Status: #{inspect agent.status}, Phase: #{inspect agent.loop_phase}", id: :phase_status, translate: {frame.pin.x + 80, frame.pin.y + 120})
+          |> Scenic.Primitives.rect(
+            {900, 160},
+            id: :perceive,
+            fill: :turquoise,
+            translate: {frame.pin.x + 80, frame.pin.y + offset}
+          )
+          |> Scenic.Primitives.text("Percepts: #{inspect agent.percepts}", id: :percepts, fill: :black, translate: {frame.pin.x + 80 + 15, frame.pin.y + offset + 15 + 30})
+          |> Scenic.Primitives.rect(
+            {900, 160},
+            id: :deliberate,
+            fill: :light_blue,
+            translate: {frame.pin.x + 80, frame.pin.y + 180 + offset}
+          )
+          |> Scenic.Primitives.text("Plans: #{inspect agent.plans}", id: :plans, fill: :black, translate: {frame.pin.x + 80 + 15, frame.pin.y + offset + 180 + 15 + 30})
+          |> Scenic.Primitives.rect(
+            {900, 160},
+            id: :plan,
+            fill: :purple,
+            translate: {frame.pin.x + 80, frame.pin.y + 2*180 + offset}
+          )
+          |> Scenic.Primitives.text("Results: #{inspect agent.results}", id: :results,  fill: :black, translate: {frame.pin.x + 80 + 15, frame.pin.y + offset + 2*180 + 15 + 30})
+          |> Scenic.Primitives.rect(
+            {900, 160},
+            id: :execute,
+            fill: :orange,
+            translate: {frame.pin.x + 80, frame.pin.y + 3*180 + offset}
+          )
+          |> Scenic.Primitives.text("Evaluation: #{inspect agent.evaluation}", id: :evaluation, fill: :black, translate: {frame.pin.x + 80 + 15, frame.pin.y + offset + 3*180 + 15 + 30})
+          |> Scenic.Components.button(
+            "Nudge",
+            id: :nudge_agent_btn,
+            width: 120,
+            height: 30,
+            translate: {frame.pin.x + 220, frame.pin.y + 3*180 + offset + 300}
+          )
+        end, id: :agent_five_loop)
+
+      _primitive ->
+        # here we would modify an existing agent_five_loop if we wanted to
+        graph
+        |> Scenic.Graph.modify(:phase_status, &Scenic.Primitives.text(&1, "Status: #{inspect agent.status}, Phase: #{inspect agent.loop_phase}"))
+        |> Scenic.Graph.modify(:percepts, &Scenic.Primitives.text(&1, "Percepts: #{inspect agent.percepts}"))
+        |> Scenic.Graph.modify(:plans, &Scenic.Primitives.text(&1, "Plans: #{inspect agent.plans}"))
+        |> Scenic.Graph.modify(:results, &Scenic.Primitives.text(&1, "Results: #{inspect agent.results}"))
+        |> Scenic.Graph.modify(:evaluation, &Scenic.Primitives.text(&1, "Evaluation: #{inspect agent.evaluation}"))
+    end
+  end
+
+  # defp do_render_agent_five_loop(graph, frame, state) do
+
   # end
 
 end

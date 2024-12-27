@@ -61,6 +61,15 @@ defmodule Flamelex.GUI.Component.HighCouncil.Reducer do
     |> Mutator.set_new_agent_mode(false)
   end
 
+
+  def process(
+        %RadixState{} = rdx,
+        {:refresh_tidbit, %Memelex.TidBit{} = t}
+      ) do
+    rdx
+    |> Mutator.update_agents(t)
+  end
+
   # def process(state, action) do
   #   Logger.error("Unable to process action. #{inspect(action)}")
   #   IO.inspect(state)

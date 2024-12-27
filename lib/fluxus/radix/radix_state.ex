@@ -1,6 +1,6 @@
 defmodule Flamelex.Fluxus.RadixState do
   use StructAccess
-  alias Flamelex.GUI.Layers.{Layer01, Layer3}
+  alias Flamelex.GUI.Layers.{Layer01, Layer3, Layer4}
 
   alias Flamelex.GUI.Component.{
     QlxWrap,
@@ -35,6 +35,7 @@ defmodule Flamelex.Fluxus.RadixState do
       layers: %{
         one: Layer01.State.new(),
         three: Layer3.State.new(),
+        four: Layer4.State.new()
       },
       apps: %{
         todo_list: TODOlist.State.new(),

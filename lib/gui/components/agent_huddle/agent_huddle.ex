@@ -73,6 +73,27 @@ defmodule Flamelex.GUI.Component.AgentHuddle do
     {:noreply, scene}
   end
 
+
+  def handle_event({:click, :five_loop_btn}, _context, scene) do
+    Flamelex.Fluxus.action({__MODULE__, :open_agent_five_loop})
+    {:noreply, scene}
+  end
+
+  def handle_event({:click, :activate_agent_btn}, _context, scene) do
+    Flamelex.Fluxus.action({__MODULE__, {:activate_agent, scene.assigns.state.tidbit}})
+    {:noreply, scene}
+  end
+
+  def handle_event({:click, :deactivate_agent_btn}, _context, scene) do
+    Flamelex.Fluxus.action({__MODULE__, {:deactivate_agent, scene.assigns.state.tidbit}})
+    {:noreply, scene}
+  end
+
+  def handle_event({:click, :nudge_agent_btn}, _context, scene) do
+    Flamelex.Fluxus.action({__MODULE__, {:nudge_agent, scene.assigns.state.tidbit}})
+    {:noreply, scene}
+  end
+
   def handle_event(event, _context, scene) do
     IO.inspect(event, label: "GOT EEE")
     {:noreply, scene}

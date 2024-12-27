@@ -249,7 +249,7 @@ end
 #     # case key_mapping.lookup(radix_state, user_input.input) do #TODO this is not grat, probably need to ditch the rest first
 #     #   nil ->
 #     #       _details = %{radix_state: radix_state, key_mapping: key_mapping, user_input: user_input}
-#     #       # Logger.warn "no KeyMapping found for recv'd user_input. #{inspect details, pretty: true}"
+#     #       # Logger.warning "no KeyMapping found for recv'd user_input. #{inspect details, pretty: true}"
 #     #       :no_mapping_found
 #     #   :ok ->
 #     #       :ok
@@ -273,7 +273,7 @@ end
 
 #   def handle_lookup(nil, _radix_state) do
 #     # _details = %{radix_state: radix_state, key_mapping: key_mapping, user_input: user_input}
-#     # Logger.warn "no KeyMapping found for recv'd user_input. #{inspect details, pretty: true}"
+#     # Logger.warning "no KeyMapping found for recv'd user_input. #{inspect details, pretty: true}"
 #     :no_mapping_found
 #   end
 
@@ -302,7 +302,7 @@ end
 # #   case key_mapping.lookup(radix_state, user_input.input) do #TODO this is not grat, probably need to ditch the rest first
 # #   nil ->
 # #       _details = %{radix_state: radix_state, key_mapping: key_mapping, user_input: user_input}
-# #       # Logger.warn "no KeyMapping found for recv'd user_input. #{inspect details, pretty: true}"
+# #       # Logger.warning "no KeyMapping found for recv'd user_input. #{inspect details, pretty: true}"
 # #       :no_mapping_found
 # #   :ok ->
 # #       :ok

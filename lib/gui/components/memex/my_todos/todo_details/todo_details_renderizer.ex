@@ -92,7 +92,7 @@ defmodule Flamelex.GUI.Component.TODOdetails.Renderizer do
   def render(
     %Scenic.Graph{} = graph,
     %Widgex.Frame{} = frame,
-    %TODOdetails.State{tidbit: %Memelex.TidBit{} = t} = state
+    %TODOdetails.State{tidbit: %Memelex.TidBit{} = _t} = state
   ) do
 
 

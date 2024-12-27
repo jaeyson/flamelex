@@ -56,7 +56,7 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
       Scenic.Graph.build()
       |> Scenic.Primitives.group(fn graph ->
         graph
-        |> Flamelex.GUI.Utils.Draw.background(frame, :orange)
+        |> Flamelex.GUI.Utils.Draw.background(frame, :grey)
         |> render_title(banner_frame, %{})
         # |> render_agent_card(t3, hd(state.agents))
         |> render_agents(middle_frame, state)
@@ -164,7 +164,7 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
         } = tidbit
       ) do
     # Fetch the agent state
-    agent_state = agent_module.get_state()
+    # agent_state = agent_module.get_state()
 
     # Define the grid structure for title and status
     grid =
@@ -191,7 +191,7 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
       # Background rectangle, now clickable with :input
       graph
       |> Scenic.Primitives.rectangle(f.size.box,
-        fill: :blue,
+        fill: (if agent.status == :active, do: :blue, else: :orange),
         t: f.pin.point,
         id: {:agent_card, tidbit.uuid},
         input: :cursor_button
@@ -204,11 +204,11 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
         color: :white
       })
 
-      # Status section (agent's state)
-      |> Scenic.Primitives.text("Status: #{inspect(agent_state)}",
-        font_size: 14,
-        translate: {f.pin.x + 10, f.pin.y + 10}
-      )
+      # # Status section (agent's state)
+      # |> Scenic.Primitives.text("Status: #{inspect(agent_state)}",
+      #   font_size: 14,
+      #   translate: {f.pin.x + 10, f.pin.y + 10}
+      # )
     end)
   end
 
@@ -315,37 +315,4 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
       translate: {buttons_frame.pin.x + f.size.width / 2 + 10, buttons_frame.pin.y + 20}
     )
   end
-
-  # Example of adding input fields or buttons inside the modal
-  # defp render_input_fields(graph, modal_frame) do
-  #   graph
-  #   |> Scenic.Primitives.text("Name:",
-  #     font_size: 18,
-  #     translate: {modal_frame.pin.x + 20, modal_frame.pin.y + 80}
-  #   )
-  #   |> Scenic.Components.input_text("Enter name",
-  #     id: :agent_name,
-  #     translate: {modal_frame.pin.x + 20, modal_frame.pin.y + 100}
-  #   )
-  #   |> Scenic.Primitives.text("Role:",
-  #     font_size: 18,
-  #     translate: {modal_frame.pin.x + 20, modal_frame.pin.y + 140}
-  #   )
-  #   |> Scenic.Components.input_text("Enter role",
-  #     id: :agent_role,
-  #     translate: {modal_frame.pin.x + 20, modal_frame.pin.y + 160}
-  #   )
-
-  #   # Add Submit button
-  #   |> Scenic.Components.button("Submit",
-  #     id: :submit_agent,
-  #     translate: {modal_frame.pin.x + 20, modal_frame.pin.y + 220}
-  #   )
-
-  #   # Add Cancel button
-  #   |> Scenic.Components.button("Cancel",
-  #     id: :cancel_modal,
-  #     translate: {modal_frame.pin.x + 100, modal_frame.pin.y + 220}
-  #   )
-  # end
 end

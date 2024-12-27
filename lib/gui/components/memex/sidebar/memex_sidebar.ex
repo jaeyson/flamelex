@@ -230,7 +230,7 @@ defmodule Memelex.GUI.Component.Memex.SideBar do
 
   # def handle_info({:radix_state_change, %{memex: %{sidebar: new_sidebar_state}}}, %{assigns: %{state: current_state}} = scene)
   #     when current_state != new_sidebar_state do
-  #         Logger.warn "#{__MODULE__} updating due to a change in the Memex.SideBar state..."
+  #         Logger.warning "#{__MODULE__} updating due to a change in the Memex.SideBar state..."
   #         raise "cant do this yet"
   #         {:noreply, scene}
   # end

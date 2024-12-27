@@ -7,7 +7,7 @@ defmodule Flamelex.GUI.RootScene do
   # alias ScenicWidgets.Core.Structs.Frame
   # alias ScenicWidgets.Core.Utils.FlexiFrame
   # alias Widgex.Structs.LayerCake
-  alias Flamelex.GUI.Layers.{Layer0, Layer01, NeoLayer02, Layer3}
+  alias Flamelex.GUI.Layers.{Layer0, Layer01, NeoLayer02, Layer3, Layer4}
   require Logger
 
 
@@ -133,7 +133,7 @@ defmodule Flamelex.GUI.RootScene do
     # this effectively sends it to Fluxus / the RadixStore,
     # where it is reduced against the RadixState to generate actions
     Flamelex.Fluxus.user_input(input)
-    # Logger.warn "USER INPUT GETS PROCESSED GUI SIDE NOW"
+    # Logger.warning "USER INPUT GETS PROCESSED GUI SIDE NOW"
 
     {:noreply, scene}
   end
@@ -175,7 +175,10 @@ defmodule Flamelex.GUI.RootScene do
         frame: full_window,
         state: NeoLayer02.cast_rdx_to_layer_state(radix_state)
       })
+      # popups & modals
       |> Layer3.add_to_graph(%{frame: app_frame})
+      # Kommander
+      |> Layer4.add_to_graph(%{frame: app_frame})
 
     {:ok, full_graph}
   end

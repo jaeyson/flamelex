@@ -209,7 +209,7 @@ defmodule Memelex.GUI.Components.StoryRiver do
   #                     #  active_tidbits: [],
   #                      render_queue: [c|rest]}}}) do
   #     Logger.debug "Attempting to render an additional component in the LayoutList..."
-  #     # Logger.warn "IN THE RENDER LIST YES"
+  #     # Logger.warning "IN THE RENDER LIST YES"
 
   #     margin_buf = 2*@spacing_buffer # this is how much margin we render around each HyperCard
   #     {HyperCard, tidbit, opts} = c #TODO lol
@@ -666,7 +666,7 @@ end
 #     new_scene = scene
 #     |> assign(state: new_state)
 
-#     # Logger.warn "IN THE LAYOUT LIST YES"
+#     # Logger.warning "IN THE LAYOUT LIST YES"
 
 #     GenServer.cast(self(), :render_next_component)
 
@@ -675,7 +675,7 @@ end
 
 #   # def handle_call({:add_tidbit, tidbit}, _from, %{assigns: %{state: state}} = scene) do
 #   #   #TODO note - I cant handle adding more than  tidbit yet, so that's why the above matches on active_components: [], and this is a catchall
-#   #   Logger.warn "Trying to add tidbit, bad bad"
+#   #   Logger.warning "Trying to add tidbit, bad bad"
 #   #   {:reply, :ok, scene}
 #   # end
 

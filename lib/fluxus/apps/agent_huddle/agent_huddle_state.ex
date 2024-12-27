@@ -9,7 +9,8 @@ defmodule Flamelex.GUI.Component.AgentHuddle.State do
     # Define state fields here
     tidbit: nil,
     open_chat?: false,
-    open_agent_settings?: false
+    open_agent_settings?: false,
+    open_agent_five_loop?: false
   ]
 
   def new do

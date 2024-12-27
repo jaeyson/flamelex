@@ -8,6 +8,11 @@ defmodule Flamelex.GUI.Component.HighCouncil.Mutator do
     put_in(rdx, [:apps, :high_council, :agents], agents)
   end
 
+  def update_agents(%RadixState{} = rdx, %Memelex.TidBit{} = t) do
+    raise "see into #{inspect rdx.apps.high_council.agents}"
+    # put_in(rdx, [:apps, :high_council, :agents], agents)
+  end
+
   def set_new_agent_mode(%RadixState{} = rdx, new_agent_mode?) when is_boolean(new_agent_mode?) do
     put_in(rdx, [:apps, :high_council, :new_agent_mode?], new_agent_mode?)
   end

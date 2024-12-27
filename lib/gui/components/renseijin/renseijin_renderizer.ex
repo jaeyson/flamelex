@@ -14,22 +14,22 @@ defmodule Flamelex.GUI.Components.Renseijin.Rend do
   def er(%Widgex.Frame{} = frame, %Renseijin.State{} = state) do
     Scenic.Graph.build()
     |> Renseijin.Utils.draw_background(frame, state)
-    # |> Scenic.Primitives.group(
-    #   fn graph ->
-    #     graph
-    #     |> Renseijin.Utils.draw_circles(frame, state)
-    #     |> Renseijin.Utils.draw_triangles(frame, state)
-    #     |> draw_hexagons(frame, state)
-    #     |> draw_taijitu(frame, state)
+    |> Scenic.Primitives.group(
+      fn graph ->
+        graph
+        |> Renseijin.Utils.draw_circles(frame, state)
+        |> Renseijin.Utils.draw_triangles(frame, state)
+        |> draw_hexagons(frame, state)
+        |> draw_taijitu(frame, state)
 
-    #     # |> draw_symbols(frame, state)
+        # |> draw_symbols(frame, state)
 
-    #     # |> Utils.draw_squares(frame, state)
-    #     # |> Utils.draw_pyramids(frame, state)
-    #   end,
-    #   id: __MODULE__,
-    #   translate: Widgex.Frame.center(frame).point
-    # )
+        # |> Utils.draw_squares(frame, state)
+        # |> Utils.draw_pyramids(frame, state)
+      end,
+      id: __MODULE__,
+      translate: Widgex.Frame.center(frame).point
+    )
     |> Scenic.Graph.modify(:scissor, frame.size.box)
   end
 

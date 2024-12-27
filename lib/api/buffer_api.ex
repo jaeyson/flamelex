@@ -406,14 +406,14 @@ end
 
 # # #   def handle_cast(:close, %{unsaved_changes?: true} = state) do
 # # #     #TODO need to raise a bigger alarm here
-# # #     # Logger.warn "unable to save buffer: #{inspect state.rego_tag}, as it contains unsaved changes."
+# # #     # Logger.warning "unable to save buffer: #{inspect state.rego_tag}, as it contains unsaved changes."
 # # #     {:noreply, state}
 # # #   end
 
 # # #   def handle_cast(:close, %{unsaved_changes?: false} = state) do
 # # #     Logger.debug "#{__MODULE__} received msg: :close - process will stop normally."
 # # #     # {:buffer, source} = state.rego_tag
-# # #     # Logger.warn "Closing a buffer... #{inspect source}"
+# # #     # Logger.warning "Closing a buffer... #{inspect source}"
 # # #     # ModifyHelper.cast_gui_component(source, :close)
 # # #     IO.puts "#TODO need to actually close the buffer - close the FIle?"
 

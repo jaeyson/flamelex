@@ -113,8 +113,16 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.GUI.Component.HighCouncil.Reducer.process(rdx, :show_agents)
   end
 
+  # def process(rdx, {Flamelex.GUI.Component.AgentHuddle, action}) do
+  #   rdx
+  #   |> Flamelex.GUI.Component.AgentHuddle.Reducer.process(action)
+  #   |> Flamelex.GUI.Component.HighCouncil.Reducer.process(action)
+  # end
+
   def process(rdx, {Flamelex.GUI.Component.AgentHuddle, action}) do
-    Flamelex.GUI.Component.AgentHuddle.Reducer.process(rdx, action)
+    rdx
+    |> Flamelex.GUI.Component.AgentHuddle.Reducer.process(action)
+    # |> Flamelex.GUI.Component.HighCouncil.Reducer.process(action)
   end
 
   def process(rdx, {Flamelex.GUI.Component.QlxWrap, action}) do

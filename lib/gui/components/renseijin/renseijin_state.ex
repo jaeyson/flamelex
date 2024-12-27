@@ -75,7 +75,7 @@ defmodule Flamelex.GUI.Components.Renseijin.State do
               stroke_width: 2
             },
             rotation: @starting_rotation,
-            animate?: false,
+            # animate?: false,
             timer: nil,
             primary_stroke: 2,
             # primary_color: :dark_violet,
