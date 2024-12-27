@@ -62,7 +62,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
 
     base_menu = [
       # TODO if the current app is RapidSelector, it should be close, otherwise show open since basically this opens the RapidSelector even though it's called "memex"
-      {"open",
+      {"rapid selector",
        fn ->
          Flamelex.Fluxus.action({Flamelex.GUI.Component.RapidSelector.Reducer, :open_memex})
        end},
@@ -165,8 +165,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
   # TODO here, add save, maybe od a modal popup just to prove how cool we are!
   # Then implement ctrl+s as insert mode save (since I'm pretty sure it doesn't do anything in vim?)
   def do_quillex_menu(%{apps: %{qlx_wrap: %{buffers: []}}} = _radix_state) do
-    # what I currently call :sub_menu should be renamed :node,
-    # and these ones should have a tag like :leaf or :button
+
     [
       {"neo solutio", &Flamelex.API.Buffer.new/0}
     ]
@@ -174,6 +173,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
 
   def do_quillex_menu(radix_state) do
     [
+      {"neo solutio", &Flamelex.API.Buffer.new/0},
       # {"raise error", fn -> raise "nothing works :(" end}
       open_buffers_menu(radix_state),
       # {"new", &Flamelex.API.Buffer.new/0},
@@ -193,11 +193,11 @@ defmodule Flamelex.GUI.Menus.MainMenu do
     # TODO if the buffer is unsaved, put an * at the end of it
     open_bufs_sub_menu =
       open_buffers
-      |> Enum.map(fn %Quillex.Structs.BufState.BufRef{uuid: buf_uuid, name: name} ->
+      |> Enum.map(fn buf_ref ->
         # NOTE: Wrap this call in it's closure so it's a function of arity /0
-        # {name, fn -> Flamelex.API.Buffer.switch(buf_uuid) end}
+        {buf_ref.name, fn -> Flamelex.API.Buffer.switch(buf_ref) end}
         # {name, fn -> Quillex.API.Buffer.switch(buf_uuid) end}
-        {name, fn -> raise "NO - figure out what to do about quillex vs flamelex api buffer" end}
+        # {name, fn -> raise "NO - figure out what to do about quillex vs flamelex api buffer" end}
       end)
 
     {:sub_menu, "open buffers", open_bufs_sub_menu}
@@ -267,6 +267,8 @@ defmodule Flamelex.GUI.Menus.MainMenu do
       end
     end)
   end
+
+  # TODO my passwords !
 
   def maybe_add_open_my_modz_button(memex_sub_menu, %{
         memex: %{env: %{name: memex_name} = memex_env}

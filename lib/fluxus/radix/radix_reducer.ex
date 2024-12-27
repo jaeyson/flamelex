@@ -53,6 +53,11 @@ defmodule Flamelex.Fluxus.RadixReducer do
     rdx
   end
 
+  # def process(rdx, :show_agents) do
+  #   # Logger.warning "Ignoring action #{inspect action} cause we're in a popup state..."
+  #   rdx
+  # end
+
   def process(rdx, {:load_memex, %Memelex.Environment{} = env}) do
     rdx
     # TODO when I eventually go multi-env, this may be a problem...
@@ -106,6 +111,10 @@ defmodule Flamelex.Fluxus.RadixReducer do
 
   def process(rdx, :show_agents) do
     Flamelex.GUI.Component.HighCouncil.Reducer.process(rdx, :show_agents)
+  end
+
+  def process(rdx, {Flamelex.GUI.Component.AgentHuddle, action}) do
+    Flamelex.GUI.Component.AgentHuddle.Reducer.process(rdx, action)
   end
 
   def process(rdx, {Flamelex.GUI.Component.QlxWrap, action}) do

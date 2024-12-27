@@ -85,35 +85,40 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
     agents = state.agents
     total_agents = length(agents)
 
-    # Define a grid with 6 rows and 4 columns
-    grid =
-      Grid.new(f)
-      # 6 equal rows
-      |> Grid.rows(List.duplicate(1.0 / 6, 6))
-      # 4 equal columns
-      |> Grid.columns(List.duplicate(1.0 / 4, 4))
-      # Add row gap for spacing
-      |> Grid.row_gap(2)
-      # Add column gap for spacing
-      |> Grid.column_gap(2)
-      |> Grid.define_areas(
-        Enum.reduce(1..total_agents, %{}, fn idx, acc ->
-          # Dynamically define the grid areas for agents
-          Map.put(acc, :"agent#{idx}", {div(idx - 1, 4), rem(idx - 1, 4), 1, 1})
-        end)
-      )
+    if total_agents >= 1 do
+      IO.inspect(total_agents, label: "NUM SAGENTS")
+      # Define a grid with 6 rows and 4 columns
+      grid =
+        Grid.new(f)
+        # 6 equal rows
+        |> Grid.rows(List.duplicate(1.0 / 6, 6))
+        # 4 equal columns
+        |> Grid.columns(List.duplicate(1.0 / 4, 4))
+        # Add row gap for spacing
+        |> Grid.row_gap(2)
+        # Add column gap for spacing
+        |> Grid.column_gap(2)
+        |> Grid.define_areas(
+          Enum.reduce(1..total_agents, %{}, fn idx, acc ->
+            # Dynamically define the grid areas for agents
+            Map.put(acc, :"agent#{idx}", {div(idx - 1, 4), rem(idx - 1, 4), 1, 1})
+          end)
+        )
 
-    # Calculate the frames for the grid layout
-    agent_frames = Grid.calculate(grid)
+      # Calculate the frames for the grid layout
+      agent_frames = Grid.calculate(grid)
 
-    # Dynamically render each agent card
-    Enum.reduce(1..total_agents, graph, fn idx, graph_acc ->
-      area_name = :"agent#{idx}"
-      frame = Grid.area_frame(grid, agent_frames, area_name)
-      agent = Enum.at(agents, idx - 1)
+      # Dynamically render each agent card
+      Enum.reduce(1..total_agents, graph, fn idx, graph_acc ->
+        area_name = :"agent#{idx}"
+        frame = Grid.area_frame(grid, agent_frames, area_name)
+        agent = Enum.at(agents, idx - 1)
 
-      render_agent_card(graph_acc, frame, agent)
-    end)
+        render_agent_card(graph_acc, frame, agent)
+      end)
+    else
+      graph
+    end
   end
 
   # def render_agents(graph, %Widgex.Frame{} = f, %State{} = state) do
@@ -146,6 +151,10 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
   #   |> render_agent_card(agent2_frame, hd(tl(agents)))
   #   |> render_agent_card(agent3_frame, hd(tl(tl(agents))))
   # end
+
+  def render_agent_card(graph, _frame, nil) do
+    graph
+  end
 
   def render_agent_card(
         graph,
@@ -205,10 +214,11 @@ defmodule Flamelex.GUI.Component.HighCouncil.Render do
 
   def render_tools(graph, %Widgex.Frame{} = f) do
     graph
-    |> Flamelex.GUI.Utils.Draw.background(f, :grey)
+    # |> Flamelex.GUI.Utils.Draw.background(f, :grey, translate: f.pin.point)
     |> Scenic.Components.button("New agent",
       id: :new_agent,
-      translate: Widgex.Frame.center(f).point
+      translate: {f.pin.x + 10, f.pin.y + 10}
+      # translate: Widgex.Frame.center(f).point
     )
   end
 

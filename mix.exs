@@ -18,7 +18,7 @@ defmodule Flamelex.App.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :observer, :wx],
       mod: {Flamelex.App, []}
     ]
   end
@@ -32,7 +32,8 @@ defmodule Flamelex.App.MixProject do
 
   defp deps do
     [
-      {:scenic, git: "https://github.com/JediLuke/scenic", branch: "update_deps_instructions_for_ubuntu_24", override: true},
+      # {:scenic, git: "https://github.com/JediLuke/scenic", branch: "update_deps_instructions_for_ubuntu_24", override: true},
+      {:scenic, path: "../scenic", override: true},
       {:scenic_driver_local, git: "https://github.com/JediLuke/scenic_driver_local", branch: "no_line_wrap"},
       {:scenic_widget_contrib, path: "../scenic-widget-contrib", override: true},
       {:quillex, path: "../quillex", runtime: false},

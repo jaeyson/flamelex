@@ -123,6 +123,8 @@ defmodule Flamelex.GUI.Component.QlxWrap do
     #   # raise "cant handle buffer changes yet"
     #   # {:noreply, scene}
 
+    IO.inspect(new_state, label: "QL:C WRAP NEW STATE")
+
     new_graph = QlxWrap.Render.go(scene.assigns.frame, new_state)
 
     new_scene =

@@ -14,4 +14,16 @@ defmodule Flamelex.GUI.Component.AgentHuddle.Mutator do
     rdx
     |> put_in([:apps, :agent_huddle, :tidbit], t)
   end
+
+  def open_chat_window(rdx) do
+    rdx
+    |> put_in([:apps, :agent_huddle, :open_chat?], true)
+    |> put_in([:apps, :agent_huddle, :open_agent_settings?], false)
+  end
+
+  def open_agent_settings(rdx) do
+    rdx
+    |> put_in([:apps, :agent_huddle, :open_chat?], false)
+    |> put_in([:apps, :agent_huddle, :open_agent_settings?], true)
+  end
 end

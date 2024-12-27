@@ -1,26 +1,26 @@
 defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
-  def handle(%{apps: %{qlx_wrap: %{req_save: %{do?: true}, buffers: [b | _rest]}}}, input) do
-    IO.puts("could do something here now we're REQUESTIN SAVE")
+  # def handle(%{apps: %{qlx_wrap: %{req_save: %{do?: true}, buffers: [b | _rest]}}}, input) do
+  #   IO.puts("could do something here now we're REQUESTIN SAVE")
 
-    # could arguably include some info that this is only input for the "req_save" mode...
-    # Quillex.Buffer.BufferManager.cast_to_gui_component(
-    #   buf_ref,
-    #   {:user_input_fwd, input}
-    # )
+  #   # could arguably include some info that this is only input for the "req_save" mode...
+  #   # Quillex.Buffer.BufferManager.cast_to_gui_component(
+  #   #   buf_ref,
+  #   #   {:user_input_fwd, input}
+  #   # )
 
-    Registry.lookup(
-      Quillex.BufferRegistry,
-      {b.uuid, Flamelex.GUI.Component.InputModal}
-    )
-    |> case do
-      [{pid, _meta}] ->
-        send(pid, {:fwd_user_input, input})
-        :re_routed
+  #   Registry.lookup(
+  #     Quillex.BufferRegistry,
+  #     {b.uuid, Flamelex.GUI.Component.InputModal}
+  #   )
+  #   |> case do
+  #     [{pid, _meta}] ->
+  #       send(pid, {:fwd_user_input, input})
+  #       :re_routed
 
-      [] ->
-        raise "Could not find Buffer InputModal process, uuid: #{inspect(b.uuid)}"
-    end
-  end
+  #     [] ->
+  #       raise "Could not find Buffer InputModal process, uuid: #{inspect(b.uuid)}"
+  #   end
+  # end
 
   def handle(rdx, input) do
 

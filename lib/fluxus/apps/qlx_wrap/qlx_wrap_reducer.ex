@@ -59,6 +59,16 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     |> QlxWrap.Mutator.set_active_buf(buf_ref)
   end
 
+  def process(
+    %RadixState{} = rdx,
+    {:activate_buffer, %Quillex.Structs.BufState.BufRef{} = buf_ref}
+  ) do
+    IO.puts "ACTIVATE BUFFER GOT HERE #{inspect buf_ref}"
+
+    rdx
+    |> QlxWrap.Mutator.set_active_buf(buf_ref)
+  end
+
   # def process(
   #       %RadixState{} = rdx,
   #       {:move_cursor, direction, x}
@@ -70,27 +80,27 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   # |> QlxWrap.Mutator.set_active_buf(buf_ref)
   # end
 
-  def process(
-        %RadixState{} = rdx,
-        buf_ref,
-        {:set_mode, m}
-      ) do
-    # TODO idea, maybe we could PUT EVENTS "UP" the component chain instead?
+  # def process(
+  #       %RadixState{} = rdx,
+  #       buf_ref,
+  #       {:set_mode, m}
+  #     ) do
+  #   # TODO idea, maybe we could PUT EVENTS "UP" the component chain instead?
 
-    # TODO this should just go to the GUI process, the buffer doesn't really have "modes"
-    Quillex.Buffer.BufferManager.cast_to_buffer(
-      buf_ref,
-      {:action, {:set_mode, m}}
-    )
+  #   # TODO this should just go to the GUI process, the buffer doesn't really have "modes" - actually modes have to live in radix state, all state does...
+  #   Quillex.Buffer.BufferManager.cast_to_buffer(
+  #     buf_ref,
+  #     {:action, {:set_mode, m}}
+  #   )
 
-    rdx
-    |> QlxWrap.Mutator.set_buf_mode(buf_ref, m)
+  #   rdx
+  #   |> QlxWrap.Mutator.set_buf_mode(buf_ref, m)
 
-    # |> Layer01.Mutator.set_layout(:full_screen)
-    # |> Layer01.Mutator.set_active_apps([QlxWrap])
-    # |> QlxWrap.Mutator.add_open_buffer(buf_ref)
-    # |> QlxWrap.Mutator.set_active_buf(buf_ref)
-  end
+  #   # |> Layer01.Mutator.set_layout(:full_screen)
+  #   # |> Layer01.Mutator.set_active_apps([QlxWrap])
+  #   # |> QlxWrap.Mutator.add_open_buffer(buf_ref)
+  #   # |> QlxWrap.Mutator.set_active_buf(buf_ref)
+  # end
 
   # def process(
   #       %RadixState{} = rdx,

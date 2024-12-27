@@ -82,12 +82,19 @@ defmodule Flamelex.GUI.Component.HighCouncil do
     # TODO handle crashes, bad results here
     Memelex.My.Agents.new(scene.assigns.new_agent_name)
     Flamelex.Fluxus.action({__MODULE__, :cancel_new_agent_creation})
+    Flamelex.Fluxus.action({__MODULE__, :refresh_agents})
 
     {:noreply, scene |> assign(new_agent_name: "")}
+    # {:noreply, scene}
   end
 
   def handle_event({:value_changed, :agent_name, name}, _from, scene) do
     {:noreply, scene |> assign(new_agent_name: name)}
+    # {:noreply, scene}
+  end
+
+  def handle_event(_other_event, _from, scene) do
+    {:noreply, scene}
   end
 
   # this one is the downpress

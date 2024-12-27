@@ -53,6 +53,10 @@ defmodule Flamelex.API.Buffer do
     Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, {:save, buf_ref}})
   end
 
+  def fetch(%Quillex.Structs.BufState.BufRef{} = buf_ref) do
+    Quillex.Buffer.BufferManager.call_buffer(buf_ref, :get_state)
+  end
+
   def active_buf do
     Flamelex.Fluxus.RadixStore.get()
     |> active_buf()
@@ -65,6 +69,14 @@ defmodule Flamelex.API.Buffer do
 
     {:ok, buf} = Quillex.Buffer.BufferManager.call_buffer(buf_ref, :get_state)
     buf
+  end
+
+  def switch(n) when is_integer(n) do
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, {:activate_buffer, n}})
+  end
+
+  def switch(%Quillex.Structs.BufState.BufRef{} = buf_ref) do
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, {:activate_buffer, buf_ref}})
   end
 end
 

@@ -7,7 +7,9 @@ defmodule Flamelex.GUI.Component.AgentHuddle.State do
 
   defstruct [
     # Define state fields here
-    tidbit: nil
+    tidbit: nil,
+    open_chat?: false,
+    open_agent_settings?: false
   ]
 
   def new do

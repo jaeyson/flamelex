@@ -19,7 +19,7 @@ defmodule Flamelex.GUI.Component.AgentHuddle do
 
   def init(scene, %{frame: %Frame{} = frame}, _opts) do
     state = Flamelex.Fluxus.RadixStore.get().apps.agent_huddle
-    graph = Render.go(frame, state)
+    graph = AgentHuddle.Render.render(Scenic.Graph.build(), frame, state)
 
     init_scene =
       scene
@@ -33,10 +33,12 @@ defmodule Flamelex.GUI.Component.AgentHuddle do
     {:ok, init_scene}
   end
 
+  #TODO handle frame changes
+
   # Handle state changes where the state hasn't changed
   def handle_info(
         {:radix_state_change, %{apps: %{agent_huddle: state}}},
-        %{assigns: %{frame: frame, state: state}} = scene
+        %{assigns: %{state: state}} = scene
       ) do
     # State variables in pattern match are the same; no state change occurred
     {:noreply, scene}
@@ -47,8 +49,37 @@ defmodule Flamelex.GUI.Component.AgentHuddle do
         {:radix_state_change, %{apps: %{agent_huddle: new_state}}},
         %{assigns: %{frame: frame, state: old_state}} = scene
       ) do
-    # State has changed; raise an error as handling is app-specific
-    raise "State change handling not implemented in template"
+    IO.puts "GOT NEW AGENT HUDDLE STATE"
+
+    # new_graph = AgentHuddle.Render.render(Scenic.Graph.build(), frame, new_state)
+    new_graph = AgentHuddle.Render.render(scene.assigns.graph, frame, new_state)
+
+    new_scene =
+      scene
+      |> assign(graph: new_graph)
+      |> assign(state: new_state)
+      |> push_graph(new_graph)
+
+    {:noreply, new_scene}
+  end
+
+  def handle_event({:click, :chat_window_btn}, _context, scene) do
+    Flamelex.Fluxus.action({__MODULE__, :open_chat_window})
+    {:noreply, scene}
+  end
+
+  def handle_event({:click, :agent_settings_btn}, _context, scene) do
+    Flamelex.Fluxus.action({__MODULE__, :open_agent_settings})
+    {:noreply, scene}
+  end
+
+  def handle_event(event, _context, scene) do
+    IO.inspect(event, label: "GOT EEE")
+    {:noreply, scene}
+  end
+
+  def handle_info(msg, scene) do
+    IO.inspect(msg, label: "got msg")
     {:noreply, scene}
   end
 

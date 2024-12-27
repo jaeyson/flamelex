@@ -290,7 +290,6 @@ defmodule Flamelex.GUI.Component.TODOlist do
   # if we get 2 clicks in certain number of milliseconds, then we can assume it's a double click
   # this might solve the issue where clicking a menubar item which is hovering over something below it triggers both
   def handle_cast({:click, %Memelex.TidBit{} = t}, %{assigns: %{dropdown_mode: true}} = scene) do
-    # IO.puts("IGNOREING THE CLICK CSUE WE'RE IN DROPDOWN MODE")
     {:noreply, scene |> assign(dropdown_mode: false)}
   end
 
