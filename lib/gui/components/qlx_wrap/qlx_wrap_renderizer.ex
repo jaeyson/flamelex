@@ -1,44 +1,93 @@
 defmodule Flamelex.GUI.Component.QlxWrap.Render do
   alias Flamelex.GUI.Component.QlxWrap
-  # alias Quillex.GUI.Components.BufferPane
 
-  def go(%Widgex.Frame{} = frame, %QlxWrap.State{req_save: %{do?: true}} = state) do
-    # TODO this is hacky but it works for now, eventually we should do something more sophisticated
-    # buf_ref = hd(state.buffers)
-
-    graph =
-      Scenic.Graph.build()
-      |> Scenic.Primitives.group(
-        fn graph ->
-          graph
-          # |> Widgex.Frame.draw_guidewires(frame)
-          |> Flamelex.GUI.Component.InputModal.add_to_graph(%{
-            # frame: modal_frame(frame),
-            id: hd(state.buffers).uuid,
-            frame: frame,
-            # parent_pid: self(),
-            prompt: "Enter filename:"
-          })
-        end,
-        translate: frame.pin.point
-      )
+  def render(
+    %Scenic.Graph{} = graph,
+    %Scenic.Scene{} = scene,
+    %Widgex.Frame{} = frame,
+    #TODO handle multiple open bufs
+    %Flamelex.GUI.Component.QlxWrap.State{buffers: [%Quillex.Structs.BufState.BufRef{} = bf]} = state
+  ) do
+    graph
+    |> render_buffer_panes(scene, frame, state)
   end
 
-  def go(%Widgex.Frame{} = frame, %QlxWrap.State{} = state) do
-    # TODO this is hacky but it works for now, eventually we should do something more sophisticated
-    buf_ref = hd(state.buffers)
+  #TODO make this work for multiple open buffers
+  defp render_buffer_panes(
+    %Scenic.Graph{} = graph,
+    %Scenic.Scene{} = scene,
+    %Widgex.Frame{} = frame,
+    %Flamelex.GUI.Component.QlxWrap.State{buffers: [buf_ref]} = state
+  ) do
 
-    graph =
-      Scenic.Graph.build()
-      |> Scenic.Primitives.group(
-        fn graph ->
-          graph
-          |> Quillex.GUI.Components.BufferPane.add_to_graph(%{frame: frame, buf_ref: buf_ref, font: state.font})
-        end,
-        translate: frame.pin.point
-      )
+    case Scenic.Graph.get(graph, {:buffer_pane, buf_ref.uuid}) do
+      [] ->
+
+        graph
+        |> Quillex.GUI.Components.BufferPane.add_to_graph(%{
+          frame: frame,
+          buf_ref: buf_ref,
+          font: state.font
+        },
+          # Quillex.GUI.Components.BufferPane.State.new(%{}),
+          id: {:buffer_pane, buf_ref.uuid},
+          translate: frame.pin.point
+        )
+
+      _primitive ->
+
+        {:ok, [pid]} = Scenic.Scene.child(scene, {:buffer_pane, buf_ref.uuid})
+        GenServer.cast(pid, {:frame_change, frame})
+        GenServer.cast(pid, {:state_change, buf_ref})
+
+        graph
+    end
   end
 end
+
+
+
+  # alias Quillex.GUI.Components.BufferPane
+
+  # def go(%Widgex.Frame{} = frame, %QlxWrap.State{req_save: %{do?: true}} = state) do
+  #   # TODO this is hacky but it works for now, eventually we should do something more sophisticated
+  #   # buf_ref = hd(state.buffers)
+
+  #   graph =
+  #     Scenic.Graph.build()
+  #     |> Scenic.Primitives.group(
+  #       fn graph ->
+  #         graph
+  #         # |> Widgex.Frame.draw_guidewires(frame)
+  #         |> Flamelex.GUI.Component.InputModal.add_to_graph(%{
+  #           # frame: modal_frame(frame),
+  #           id: hd(state.buffers).uuid,
+  #           frame: frame,
+  #           # parent_pid: self(),
+  #           prompt: "Enter filename:"
+  #         })
+  #       end,
+  #       translate: frame.pin.point
+  #     )
+  # end
+
+  # def go(%Widgex.Frame{} = frame, %QlxWrap.State{} = state) do
+  #   # TODO this is hacky but it works for now, eventually we should do something more sophisticated
+  #   buf_ref = hd(state.buffers)
+
+  #   graph =
+  #     Scenic.Graph.build()
+  #     |> Scenic.Primitives.group(
+  #       fn graph ->
+  #         graph
+  #         |> Quillex.GUI.Components.BufferPane.add_to_graph(%{frame: frame, buf_ref: buf_ref, font: state.font})
+  #       end,
+  #       translate: frame.pin.point
+  #     )
+  # end
+
+
+
 
 #   #   # def handle_event({:tab_clicked, tab_label}, _from, %{assigns: %{app: app}} = scene) do
 #   #   #   # Flamelex.Fluxus.action({MemexReducer, :new_tidbit})

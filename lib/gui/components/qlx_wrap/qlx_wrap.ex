@@ -22,11 +22,9 @@ defmodule Flamelex.GUI.Component.QlxWrap do
   end
 
   def init(scene, %{frame: %Widgex.Frame{} = frame}, _opts) do
-    state = Flamelex.Fluxus.RadixStore.get().apps.qlx_wrap
 
-    # TODO this could also take a scene & a state...?
-    # by havibng the graph as nil, we would force a full rend from scratch
-    graph = QlxWrap.Render.go(frame, state)
+    state = Flamelex.Fluxus.RadixStore.get().apps.qlx_wrap
+    graph = QlxWrap.Render.render(Scenic.Graph.build(), scene, frame, state)
 
     init_scene =
       scene
@@ -40,39 +38,25 @@ defmodule Flamelex.GUI.Component.QlxWrap do
     {:ok, init_scene}
   end
 
-  # these are actions that bubble up from the Buffer GUI component
-  def handle_cast({:gui_action, buf_ref, actions}, scene) do
-    # this maps from the onl GUI component this process knows about,
-    # the Buffer GUI component, and casts it to wider flamelex via Fluxus
-    # in this manner the actions gets bubbled to the top level, after
-    # being generated from UI & interpreted down by the GUI component itself
-    # (after passing through filter layers from the top down, just
-    # in case we _did_ need to handle this input at a higher level !!)
-    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, buf_ref, {:action, actions}})
-    {:noreply, scene}
-  end
-
-  def handle_cast({:modal_save, filename}, scene) do
-    # Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, {:save_buffer, filename}})
-    # TODO here broadcast using pubsub on the layer for this buffer!
-    {:noreply, scene}
-  end
+  # def handle_cast({:modal_save, filename}, scene) do
+  #   # Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, {:save_buffer, filename}})
+  #   # TODO here broadcast using pubsub on the layer for this buffer!
+  #   {:noreply, scene}
+  # end
 
   def handle_cast(:modal_cancel, scene) do
     Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, :modal_cancel})
     {:noreply, scene}
   end
 
-  # def handle_info({:radix_state_change, %{apps: %{qlx_wrap: }}new_radix_state}, scene) do
-  #   # new_graph = QlxWrap.Render.go(scene.assigns.frame, new_radix_state)
-
-  #   # new_scene =
-  #   #   scene
-  #   #   |> assign(graph: new_graph)
-  #   #   |> push_graph(new_graph)
-
-  #   {:noreply, scene}
-  # end
+  # these are actions which "bubble up" from the BufferPane
+  def handle_cast(
+    {Quillex.GUI.Components.BufferPane, :action, buf_ref, [action]},
+    scene
+  ) when is_tuple(action) do
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, buf_ref, action})
+    {:noreply, scene}
+  end
 
   # Handle state changes where the state hasn't changed
   def handle_info(
@@ -83,49 +67,13 @@ defmodule Flamelex.GUI.Component.QlxWrap do
     {:noreply, scene}
   end
 
-  # def handle_info({:state_change, new_state}, %{assigns: %{state: old_state}} = scene) do
-  #   # when the Buffer process state changes, we update the GUI component
-  #   # we want to resist re-rendering all the time, instead we modify the graph
-  #   # to reflect the changes in the buffer state. It's a bit more work, but it's
-  #   # worth it for performance reasons
-  #   # IO.inspect(new_state, label: "NEW STATE")
-
-  #   new_scene = Buffer.Renderizer.re_render_scene(scene, new_state)
-
-  #   # TODO maybe this code below  will work to optimize not calling push_graph if we dont need to? Is this a significant saving?
-  #   # if new_scene.assigns.graph != scene.assigns.graph do
-  #   new_scene = push_graph(new_scene, new_scene.assigns.graph)
-
-  #   {:noreply, new_scene}
-  # end
-
   # Handle state changes where the state has changed
   def handle_info(
         {:radix_state_change, %{apps: %{qlx_wrap: new_state}}},
-        # %{assigns: %{state: old_state}} = scene
         scene
       ) do
-    # State has changed; raise an error as handling is app-specific
-    # raise "State change handling not implemented in template"
 
-    # todo NEED TO FIGURE OUT IF A BUFFER CLOSED
-
-    # IF A BUFFER DIDN'T CLOSE, THEN WE NEED TO RE-RENDER THE BUFFER, but we do it by casting messages not re-rendering from scratch
-
-    # NOTE - this is a perfect example right here, now I have to
-    # put in all this logic to figure out "how" the state changed and
-    # apply those changes, instead of just re-rendering (efficiently) based on the new state
-
-    # if length(new_state.buffers) != length(old_state.buffers) do
-    #   # A buffer was added
-    #   # IO.puts("QLX STATE CHANGED")
-    #   # IO.inspect({old_state, new_state})
-    #   # raise "cant handle buffer changes yet"
-    #   # {:noreply, scene}
-
-    IO.inspect(new_state, label: "QL:C WRAP NEW STATE")
-
-    new_graph = QlxWrap.Render.go(scene.assigns.frame, new_state)
+    new_graph = QlxWrap.Render.render(scene.assigns.graph, scene, scene.assigns.frame, new_state)
 
     new_scene =
       scene
@@ -134,6 +82,13 @@ defmodule Flamelex.GUI.Component.QlxWrap do
       |> push_graph(new_graph)
 
     {:noreply, new_scene}
+  end
+end
+
+    # NOTE - this is a perfect example right here, now I have to
+    # put in all this logic to figure out "how" the state changed and
+    # apply those changes, instead of just re-rendering (efficiently) based on the new state
+
     # else
     #   # cast_children(scene, {:state_change, new_state})
     #   # Enum.each(new_state.buffers, fn buf ->
@@ -159,8 +114,36 @@ defmodule Flamelex.GUI.Component.QlxWrap do
 
     # {:noreply, new_scene}
     # {:noreply, scene}
-  end
-end
+
+      # def handle_info({:state_change, new_state}, %{assigns: %{state: old_state}} = scene) do
+  #   # when the Buffer process state changes, we update the GUI component
+  #   # we want to resist re-rendering all the time, instead we modify the graph
+  #   # to reflect the changes in the buffer state. It's a bit more work, but it's
+  #   # worth it for performance reasons
+  #   # IO.inspect(new_state, label: "NEW STATE")
+
+  #   new_scene = Buffer.Renderizer.re_render_scene(scene, new_state)
+
+  #   # TODO maybe this code below  will work to optimize not calling push_graph if we dont need to? Is this a significant saving?
+  #   # if new_scene.assigns.graph != scene.assigns.graph do
+  #   new_scene = push_graph(new_scene, new_scene.assigns.graph)
+
+  #   {:noreply, new_scene}
+  # end
+
+
+  # # these are actions that bubble up from the Buffer GUI component
+  # def handle_cast({:gui_action, buf_ref, actions}, scene) do
+  #   # this maps from the onl GUI component this process knows about,
+  #   # the Buffer GUI component, and casts it to wider flamelex via Fluxus
+  #   # in this manner the actions gets bubbled to the top level, after
+  #   # being generated from UI & interpreted down by the GUI component itself
+  #   # (after passing through filter layers from the top down, just
+  #   # in case we _did_ need to handle this input at a higher level !!)
+  #   Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, buf_ref, {:action, actions}})
+  #   {:noreply, scene}
+  # end
+
 
 # defmodule Flamelex.GUI.Component.Editor do
 #   @moduledoc """

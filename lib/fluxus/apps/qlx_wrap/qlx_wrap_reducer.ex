@@ -50,7 +50,7 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
         %RadixState{} = rdx,
         {:open_buffer, %{filepath: filepath}}
       ) do
-    {:ok, buf_ref} = Quillex.Buffer.open(%{filepath: filepath})
+    {:ok, buf_ref} = Quillex.Buffer.open(%{filepath: filepath, mode: {:vim, :insert}})
 
     rdx
     |> Layer01.Mutator.set_layout(:full_screen)
@@ -63,8 +63,6 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     %RadixState{} = rdx,
     {:activate_buffer, %Quillex.Structs.BufState.BufRef{} = buf_ref}
   ) do
-    IO.puts "ACTIVATE BUFFER GOT HERE #{inspect buf_ref}"
-
     rdx
     |> QlxWrap.Mutator.set_active_buf(buf_ref)
   end
@@ -80,27 +78,14 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   # |> QlxWrap.Mutator.set_active_buf(buf_ref)
   # end
 
-  # def process(
-  #       %RadixState{} = rdx,
-  #       buf_ref,
-  #       {:set_mode, m}
-  #     ) do
-  #   # TODO idea, maybe we could PUT EVENTS "UP" the component chain instead?
-
-  #   # TODO this should just go to the GUI process, the buffer doesn't really have "modes" - actually modes have to live in radix state, all state does...
-  #   Quillex.Buffer.BufferManager.cast_to_buffer(
-  #     buf_ref,
-  #     {:action, {:set_mode, m}}
-  #   )
-
-  #   rdx
-  #   |> QlxWrap.Mutator.set_buf_mode(buf_ref, m)
-
-  #   # |> Layer01.Mutator.set_layout(:full_screen)
-  #   # |> Layer01.Mutator.set_active_apps([QlxWrap])
-  #   # |> QlxWrap.Mutator.add_open_buffer(buf_ref)
-  #   # |> QlxWrap.Mutator.set_active_buf(buf_ref)
-  # end
+  def process(
+        %RadixState{} = rdx,
+        {:set_mode, buf_ref, m}
+      ) do
+        IO.puts "DONT USE THIS SET MODE ANY MORE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    rdx
+    |> QlxWrap.Mutator.set_buf_mode(buf_ref, m)
+  end
 
   # def process(
   #       %RadixState{} = rdx,
@@ -125,12 +110,32 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   end
 
   def process(
+    %RadixState{} = rdx,
+    %Quillex.Structs.BufState.BufRef{} = buf_ref,
+    {:set_mode, m}
+  ) do
+    rdx
+    |> QlxWrap.Mutator.set_buf_mode(buf_ref, m)
+  end
+
+  # def process(
+  #   %RadixState{} = rdx,
+  #   %Quillex.Structs.BufState.BufRef{} = buf_ref,
+  #   actions
+  # ) when is_list(actions) do
+  #   # arguably this should be cast here, since it frees up the radix state, but honestly I want to lock it while we process this just to keep it sequential & simple
+  #   Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, actions})
+
+  #   # ignore on this level, buffer can update & broadcast out any changesk but no radix level changes will occur
+  #   :ignore
+  # end
+
+  def process(
         %RadixState{} = rdx,
-        # buf_ref,
+        buf_ref,
         {:insert, _char, :at_cursor} = a
       ) do
     #TODO here, this is going to cause a fundamental problem
-    IO.puts "HERE WE ARE GONNA TRY CASTING TO BUFFER & HAVE FLAMELEX LISTEN TO THE QLX EVENT BACK I GUESS"
     # if we re-use this reducer, then we need to
     # be able to call directly into it & return a modified radix-state (if we call this from flamelex that is)
 
@@ -140,7 +145,7 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     # the state change out to the gui (could be on a buffer specific channel I guess)
     # Quillex.Buffer.BufferManager.cast_to_buffer(buf_ref, a)
 
-    buf_ref = rdx.apps.qlx_wrap.buffers |> hd() #TODO use a real active buffer functionality here
+    # buf_ref = rdx.apps.qlx_wrap.buffers |> hd() #TODO use a real active buffer functionality here
     # arguably this should be cast here, since it frees up the radix state, but honestly I want to lock it while we process this just to keep it sequential & simple
     Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
 
@@ -246,9 +251,10 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
 
   #   {:ok, new_radix_state}
   # end
+
   def process(rdx, unmatched_action) do
-    IO.puts "ERERRERERERER - #{inspect unmatched_action}"
-    rdx
+    raise "#{__MODULE__} could not match action: #{inspect unmatched_action}"
+    # rdx
   end
 end
 

@@ -1,4 +1,29 @@
 defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
+
+  def handle(rdx, input) do
+
+    active_buf = rdx.apps.qlx_wrap.active_buf
+
+    # broadcast the input out to the specific buffers
+    Quillex.Utils.PubSub.broadcast(
+      topic: {:buffers, active_buf.uuid},
+      msg: {:user_input, input}
+    )
+
+    # buf_ref = rdx.apps.qlx_wrap.active_buf
+
+    # case Quillex.GUI.Components.BufferPane.UserInputHandler.handle(%{buf_ref: buf_ref}, input) do
+    #   :ignore ->
+    #     :ignore
+
+    #   action ->
+    #     [{Flamelex.GUI.Component.QlxWrap, action}]
+    # end
+
+    :ignore
+  end
+end
+
   # def handle(%{apps: %{qlx_wrap: %{req_save: %{do?: true}, buffers: [b | _rest]}}}, input) do
   #   IO.puts("could do something here now we're REQUESTIN SAVE")
 
@@ -22,17 +47,6 @@ defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
   #   end
   # end
 
-  def handle(rdx, input) do
-
-    # TODO use active_buf function
-    buf_ref = rdx.apps.qlx_wrap.buffers |> hd()
-
-    # stupid hack cause probably all handlers should just return a damn list lol
-    # get rid of list but now we're hacking the hax
-    action =
-      Quillex.GUI.Components.BufferPane.UserInputHandler.handle(%{buf_ref: buf_ref}, input)
-      # |> List.flatten()
-
     # %{buf: %{uuid: "47c1b778-1507-4926-bebc-4bca7313ded6"}, data: nil, do?: true}
     # IO.inspect(rdx.apps.qlx_wrap.req_save, label: "REQ_SAVE")
     # IO.inspect(input, label: "ININININININ")
@@ -54,9 +68,10 @@ defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
     # end
     # :re_routed
 
-    [{Flamelex.GUI.Component.QlxWrap, action}]
-  end
-end
+    # stupid hack cause probably all handlers should just return a damn list lol
+    # get rid of list but now we're hacking the hax
+
+
 
 # defmodule Flamelex.GUI.Component.Editor.UserInputHandler do
 #   @moduledoc """

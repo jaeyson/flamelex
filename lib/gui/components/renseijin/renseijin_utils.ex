@@ -168,7 +168,7 @@ defmodule Flamelex.GUI.Components.Renseijin.Utils do
     |> Scenic.Primitives.rect(frame.size.box,
       # translate: Coordinates.point(frame.pin),
       translate: frame.pin.point,
-      fill: {:image, "images/burning_man_2016_temple_friday_sunrise.jpeg"}
+      fill: {:image, "images/ngc_4535.jpg"}
 
       #TODO eventually this shouldn't happen cause we wouldn't be re-rendering Renseijin so much,
       # until then it just looks crazy

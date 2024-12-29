@@ -281,8 +281,6 @@ defmodule Flamelex.Fluxus.RadixStore do
           #   [a]
         end
 
-      IO.inspect(actions)
-
       # apply these actions in sequence to mutate the RadixState to the desired end state
       actions
       |> Enum.reduce(rdx, fn action, rdx_acc ->
