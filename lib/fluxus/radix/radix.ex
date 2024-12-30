@@ -17,47 +17,26 @@ defmodule Flamelex.Fluxus.RadixStore do
   Scenic c  omponent, but then we start to have problems of how to handle
   addressing... the exact problem that PubSub is a perfect solution for.
   """
-
   use GenServer
+  use ScenicWidgets.ScenicEventsDefinitions
   require Logger
+
+  @flx_user_input :flx_user_input
+  @flx_actions :flx_actions
+  @memelex :memelex
 
   def start_link(_args) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  # fetch the radix state
   def get do
-    #TODO eventually return the actual ok tuple
+    IO.puts "dont call get!!"
+    fetch()
+  end
+
+  def fetch do
     {:ok, rdx_state} = GenServer.call(__MODULE__, :get_state)
     rdx_state
-  end
-
-  def init(_args) do
-    # Use :continue to initialize state after normal GenServer startup
-    # this prevents blocking the main app supervision tree's startup
-    # since building the radix tree can take a while / might fail
-    {:ok, [], {:continue, :initialize}}
-  end
-
-  # initialize state, off the main process tree bootup sequence
-  def handle_continue(:initialize, _args) do
-    Logger.debug("#{__MODULE__} starting up...")
-
-    # compute state changes in a task for safety
-    case Wormhole.capture(construct_init_radix_state_fn(), crush_report: true) do
-      {:ok, init_radix_state} ->
-        subscribe_to_events()
-        Logger.debug("#{__MODULE__} started successfully.")
-        {:noreply, init_radix_state}
-
-      {:error, reason} ->
-        Logger.error("#{__MODULE__} failed to initialize. #{inspect(reason)}")
-        {:noreply, :initialization_failure}
-    end
-  end
-
-  def handle_call(:get_state, _from, state) do
-    {:reply, {:ok, state}, state}
   end
 
   # this function recieves events from the EventBus subscriptions
@@ -86,6 +65,102 @@ defmodule Flamelex.Fluxus.RadixStore do
     ok_err_result_tuple
   end
 
+  def init(_args) do
+    # Use :continue to initialize state after normal GenServer startup
+    # this prevents blocking the main app supervision tree's startup
+    # since building the radix tree can take a while / might fail
+    {:ok, [], {:continue, :initialize}}
+  end
+
+  # initialize state, off the main process tree bootup sequence
+  def handle_continue(:initialize, _args) do
+    Logger.debug("#{__MODULE__} starting up...")
+
+    # do this in Wormhole so that if it fails the whole app doesn't crash...
+    case Wormhole.capture(construct_init_radix_state_fn(), crush_report: true) do
+      {:ok, init_radix_state} ->
+        subscribe_to_events()
+        Logger.debug("#{__MODULE__} started successfully.")
+        {:noreply, init_radix_state}
+
+      {:error, reason} ->
+        Logger.error("#{__MODULE__} failed to initialize. #{inspect(reason)}")
+        {:noreply, :initialization_failure}
+    end
+  end
+
+  def handle_call(:get_state, _from, state) do
+    {:reply, {:ok, state}, state}
+  end
+
+  def handle_call({:event, %{topic: @flx_user_input, data: input}}, from, rdx) do
+    case Wormhole.capture(fn -> Flamelex.Fluxus.Radix.UserInputHandler.handle(rdx, input) end, crush_report: true) do
+      {:ok, :ignore} ->
+        rdx = rdx |> record_keystroke(input)
+        {:reply, {:ok, :ignore}, rdx}
+
+      {:ok, actions} when is_list(actions) ->
+        rdx = rdx |> record_keystroke(input)
+
+        # now process the actions that
+        handle_call({:event, %{topic: @flx_actions, data: actions}}, from, rdx)
+
+      {:error, res} ->
+        raise "Failed to process some input #{inspect input}! #{inspect res}"
+    end
+  end
+
+  def handle_call({:event, %{topic: @memelex, data: mmlx_event}}, from, rdx) do
+    case Wormhole.capture(fn -> Flamelex.Fluxus.Radix.UserInputHandler.handle(rdx, mmlx_event) end, crush_report: true) do
+      {:ok, :ignore} ->
+        {:reply, {:ok, :ignore}, rdx}
+
+      {:ok, actions} when is_list(actions) ->
+        # now process the actions that
+        handle_call({:event, %{topic: @flx_actions, data: actions}}, from, rdx)
+
+      {:error, res} ->
+        raise "Failed to process a mmlx event #{inspect mmlx_event}! #{inspect res}"
+    end
+  end
+
+  def handle_call({:event, %{topic: @flx_actions, data: actions}}, from, rdx) when is_list(actions) do
+
+    new_rdx =
+      actions
+      |> Enum.reduce(rdx, fn action, rdx_acc ->
+        case Wormhole.capture(fn -> Flamelex.Fluxus.RadixReducer.process(rdx_acc, action) end, crush_report: true) do
+          {:ok, :ignore} ->
+            rdx_acc
+
+          # this is same clause as below, probably not very efficient to check it all the time...
+          # {:ok, ^rdx_acc} ->
+          #   rdx_acc
+
+          {:ok, %Flamelex.Fluxus.RadixState{} = new_rdx_acc} ->
+            new_rdx_acc
+
+          {:error, res} ->
+            raise "couldnt process an action #{inspect res}"
+        end
+      end)
+
+    # probably I should put this outside the loop, wait until we've fully computed `new_rdx` however then I would need to compare new rdx to old rdx, that feels expensive
+    # I could try like if rdx == new_rdx dont broadcast, I dunno maybe just let components ignore it since most of em will be ignoring whatever update it is anyway
+    Flamelex.Lib.Utils.PubSub.broadcast(
+      topic: :radix_state_change,
+      msg: {:radix_state_change, new_rdx}
+    )
+
+    # we always return an ok/rdx tuple here because a) Fluxus.declare expects it and b) do we ever really care about knowing if an action was ignored? We can always look at the new rdx result!
+    {:reply, {:ok, new_rdx}, new_rdx}
+  end
+
+  def handle_call({:event, %{topic: @flx_actions, data: action}}, from, rdx) do
+    Logger.warning "GIT GIVEN A SINGLE ACTION!! USE LISTS!!"
+    handle_call({:event, %{topic: @flx_actions, data: [action]}}, from, rdx)
+  end
+
   def handle_cast(_any_msg, :initialization_failure) do
     Logger.warning(
       "#{__MODULE__} is in a failed state of `:initialization_failure`, events are being ignored."
@@ -94,84 +169,53 @@ defmodule Flamelex.Fluxus.RadixStore do
     {:noreply, :initialization_failure}
   end
 
-  def handle_call({:event, e}, _from, radix_state) do
-    # this can make a lot of noise, but sometimes I need to see it
-    crush_report? = true
-
-    case Wormhole.capture(handle_event_fn(radix_state, e), crush_report: crush_report?) do
-      {:ok, :ignore} ->
-        # EventBus.mark_as_completed({__MODULE__, e_shadow})
-        {:reply, {:ok, :ignore}, radix_state}
-
-      {:ok, new_radix_state} ->
-        # so for now, we're just going to double-down on this being the single channel
-        # I have a big debate about this because I feel like this is going to be very expensive,
-        # broadcasting out multiple copies of the RadixState! However, this is
-        # the simplest way to do it, and we can always optimize later. I am not able to
-        # really wrap my head around how I would do it otherwise... maybe I simply push the radix state
-        # through a reducer which has side-effects of broadcasting out messages on specific channels?
-        # that might make it possible to broadcast smaller state changes
-
-        # yeh I guess we could iterate just changes out instead of pushing entire changes to radixstate,
-        # then other things e.g. GUI components all need to be able to handle specific changes... it gets complicated
-
-        # one idea would be to broadcast the action first to radix state, then radix state
-        # has control and can broadcast (potentially modified) actions down to it's
-        # children (or just publish it on a channel), the child stores can then
-        # update their state and broadcast out their changes
-
-        # The problem becomes when we need to access different parts of the state tree, or if
-        # something deeply nested within the state tree ends up affecting decisions made early/high in the funnel,
-        # which maybe shouldn't happen but somehow it seems to all the time...
-
-        # there's another idea which is, broadcast actions out to _all_ the stores, they decide individually if
-        # they care about it, and if they do, then they might broadcast just their own state changes out on their own channel
-        # to whatever GUI components are listening to those changes
-
-        Flamelex.Lib.Utils.PubSub.broadcast(
-          topic: :radix_state_change,
-          msg: {:radix_state_change, new_radix_state}
-        )
-
-        # EventBus.mark_as_completed({__MODULE__, e_shadow})
-        {:reply, {:ok, new_radix_state}, new_radix_state}
-
-      {:error, _reason} ->
-        formatted_error = ~s|\n
-        id: #{e.id},
-        topic: #{e.topic},
-        event: #{inspect(e.data)}
-        |
-
-        Logger.error("#{__MODULE__} failed to process event.#{formatted_error}")
-
-        # EventBus.mark_as_completed({__MODULE__, e_shadow})
-        {:reply, {:error, "#{__MODULE__} failed to process event."}, radix_state}
-    end
+  defp construct_init_radix_state_fn() do
+    # have to return a zero arity function for Task.async
+    fn -> Flamelex.Fluxus.RadixState.new() end
   end
 
-  # def handle_cast({:event, e, e_shadow}, radix_state) do
-  #   # this can make a lot of noise, but sometimes I need to see it
-  #   crush_report? = true
+  defp record_keystroke(rdx, {:key, {key, @key_pressed, []}} = input)
+    when input in @valid_text_input_characters do
+      Logger.debug "-- Recording INPUT: #{inspect key}"
+      # NOTE: We store the latest keystroke at the front of the list, not the back
+      rdx
+      |> put_in([:history, :keystrokes], rdx.history.keystrokes |> List.insert_at(0, input))
+  end
 
-  #   case Wormhole.capture(handle_event_fn(radix_state, e), crush_report: crush_report?) do
-  #     {:ok, :ignore} ->
-  #       EventBus.mark_as_completed({__MODULE__, e_shadow})
-  #       {:noreply, radix_state}
+  defp record_keystroke(radix_state, input) do
+    # Logger.debug "NOT recording: #{inspect input} as input..."
+    radix_state
+  end
 
-  #     # {:fwd_to_gui, msg} ->
+  defp subscribe_to_events do
+    EventBus.subscribe(
+      {__MODULE__,
+       [
+         to_string(@flx_actions),
+         to_string(@flx_user_input),
+         to_string(@memelex)
+       ]}
+    )
+  end
+end
 
-  #     #   EventBus.mark_as_completed({__MODULE__, e_shadow})
-  #     #   {:noreply, radix_state}
 
-  #     {:ok, new_radix_state} ->
-  #       # so for now, we're just going to double-down on this being the single channel
+  #   # handlers should return a list of actions, not mutate the state directly, then we
+  #   # map those actions to a change in state - we could update state here and also broadcast the action out???
+  #   # broadcast the input out to components???
+
+  #   # for now though I wrote my handlers badly and they mutate the radix state
+
+#       # so for now, we're just going to double-down on this being the single channel
   #       # I have a big debate about this because I feel like this is going to be very expensive,
   #       # broadcasting out multiple copies of the RadixState! However, this is
   #       # the simplest way to do it, and we can always optimize later. I am not able to
   #       # really wrap my head around how I would do it otherwise... maybe I simply push the radix state
   #       # through a reducer which has side-effects of broadcasting out messages on specific channels?
   #       # that might make it possible to broadcast smaller state changes
+
+  #       # yeh I guess we could iterate just changes out instead of pushing entire changes to radixstate,
+  #       # then other things e.g. GUI components all need to be able to handle specific changes... it gets complicated
 
   #       # one idea would be to broadcast the action first to radix state, then radix state
   #       # has control and can broadcast (potentially modified) actions down to it's
@@ -186,196 +230,8 @@ defmodule Flamelex.Fluxus.RadixStore do
   #       # they care about it, and if they do, then they might broadcast just their own state changes out on their own channel
   #       # to whatever GUI components are listening to those changes
 
-  #       Flamelex.Lib.Utils.PubSub.broadcast(
-  #         topic: :radix_state_change,
-  #         msg: {:radix_state_change, new_radix_state}
-  #       )
-
-  #       EventBus.mark_as_completed({__MODULE__, e_shadow})
-  #       {:noreply, new_radix_state}
-
-  #     {:error, _reason} ->
-  #       formatted_error = ~s|\n
-  #       id: #{e.id},
-  #       topic: #{e.topic},
-  #       event: #{inspect(e.data)}
-  #       |
-
-  #       Logger.warn("#{__MODULE__} failed to process event.#{formatted_error}")
-
-  #       EventBus.mark_as_completed({__MODULE__, e_shadow})
-  #       {:noreply, radix_state}
-  #   end
-  # end
-
-  defp construct_init_radix_state_fn() do
-    # have to return a zero arity function for Task.async
-    fn -> Flamelex.Fluxus.RadixState.new() end
-  end
-
-  defp handle_event_fn(radix_state, %{topic: :flx_actions, data: action}) do
-    # have to return a zero arity function for Task.async
-    fn ->
-      case Flamelex.Fluxus.RadixReducer.process(radix_state, action) do
-        :ignore ->
-          # EventBus.mark_as_completed({__MODULE__, e_shadow})
-          :ignore
-
-        ^radix_state ->
-          # EventBus.mark_as_completed({__MODULE__, e_shadow})
-          :ignore
-
-        # cast to children ?? This might also involve a push down of new RadixState ??
-
-        %Flamelex.Fluxus.RadixState{} = new_radix_state ->
-          # EventBus.mark_as_completed({__MODULE__, e_shadow})
-          new_radix_state
-      end
-    end
-  end
-
-  # TODO expand this to potentially accept a list of events
-  defp handle_event_fn(rdx, %{topic: topic, data: event}) do
-    # handlers should return a list of actions, not mutate the state directly, then we
-    # map those actions to a change in state - we could update state here and also broadcast the action out???
-    # broadcast the input out to components???
-
-    # for now though I wrote my handlers badly and they mutate the radix state
-
-    # have to return a zero arity function for Task.async
 
 
-
-    fn ->
-      handler =
-        case topic do
-          :flx_user_input -> Flamelex.Fluxus.Radix.UserInputHandler
-          :memelex -> Flamelex.Fluxus.MemelexEventHandler
-        end
-
-      # convert the events to internal Flamelex actions
-      actions =
-        case handler.handle(rdx, event) do
-          :ignore ->
-            []
-
-          actions when is_list(actions) ->
-            actions
-
-          not_a_list ->
-            raise "Handler #{handler} needs to return a list of actions. Got: #{inspect not_a_list}"
-
-        # :re_routed ->
-          #   :ignore
-
-          # {:route_to, :first_buffer} ->
-          #   IO.puts("ROUTING TO FIRST BUFFER")
-          #   # this is a bit of a hack, but it's a way to route the event to a different store
-          #   # we could potentially have a list of stores to route to, and then we could
-          #   # broadcast the event to all of them, and they could all decide if they want to
-          #   # process it or not
-          #   :ignore
-
-          # a ->
-          #   # wrap it in a list so we can still return a "list" of actions
-          #   [a]
-        end
-
-      # apply these actions in sequence to mutate the RadixState to the desired end state
-      actions
-      |> Enum.reduce(rdx, fn action, rdx_acc ->
-        case Flamelex.Fluxus.RadixReducer.process(rdx_acc, action) do
-          :ignore ->
-            rdx_acc
-
-          new_rdx ->
-            new_rdx
-        end
-      end)
-    end
-  end
-
-            # apply actions to the radix state in sequence to determine the new state
-          # new_rdx =
-            # actions
-
-
-              # process_action_fn = fn ->
-              #   res = Flamelex.Fluxus.RadixReducer.process(rdx_acc, action)
-
-              #   if res == :ignore do
-              #     :ignore
-              #   else
-              #     res
-              #   end
-
-              #   # case Flamelex.Fluxus.RadixReducer.process(rdx_acc, action) do
-              #   #   :ignore ->
-              #   #     :ignore
-
-              #   #   new_rdx ->
-              #   #     new_rdx
-              #   # end
-              # end
-
-              # handle inner crashes here, even inside the outer wormhole!!
-              # Wormhole.capture process_action_fn do
-              #   {:ok, :ignore} ->
-              #     IO.puts("Ignoring the action #{inspect(action)} on purpose.")
-              #     # rdx_acc
-              #     :ignore
-
-              #   {:ok, new_rdx} ->
-              #     IO.puts("Applied action #{inspect(action)} and got a new rdx state")
-              #     new_rdx
-
-              #   {:error, reason} ->
-              #     IO.puts(
-              #       "Failed to apply action #{inspect(action)} to rdx state. Reason: #{inspect(reason)}"
-              #     )
-
-              #     # rdx_acc
-              #     :ignore
-              # end
-            # end)
-
-        # if new_rdx == rdx do
-        #   :ignore
-        # else
-        #   new_rdx
-        # end
-
-        # action ->
-        #   case Flamelex.Fluxus.RadixReducer.process(rdx_acc, action) do
-        #     :ignore ->
-        #       :ignore
-
-        #     new_rdx ->
-        #       new_rdx
-        #   end
-
-        # other ->
-        #   if not is_list(other) do
-        #     Logger.error("Handlers need to return a list. Got: #{inspect(other)}")
-        #     :ignore
-        #   else
-        #     Logger.error("Unrecognised handler return value: #{inspect(other)}")
-        #     :ignore
-        #   end
-      # end
-
-  defp subscribe_to_events do
-    EventBus.subscribe(
-      {__MODULE__,
-       [
-         to_string(:flx_actions),
-         to_string(:flx_user_input),
-        #  to_string(:mmlx_events)
-         to_string(:memelex)
-       ]}
-    )
-  end
-end
 
 
 # # defmodule Flamelex.Fluxus.MemexStore do

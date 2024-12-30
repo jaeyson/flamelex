@@ -46,7 +46,7 @@ defmodule Flamelex.GUI.Layers.Layer4 do
         scene
       ) do
 
-    new_graph = Layer4.Renderizer.render(scene.asssigns.graph, scene, scene.assigns.frame, new_l_state)
+    new_graph = Layer4.Renderizer.render(scene.assigns.graph, scene, scene.assigns.frame, new_l_state)
 
     new_scene =
       scene

@@ -31,7 +31,7 @@ defmodule Flamelex.API.Buffer do
         {Flamelex.GUI.Component.QlxWrap, {:open_buffer, %{filepath: filepath}}}
       )
 
-    radix_state.apps.qlx_wrap.buffers |> List.first()
+    radix_state.apps.qlx_wrap.active_buf
   end
 
   @doc """

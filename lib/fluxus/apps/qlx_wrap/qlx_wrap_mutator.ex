@@ -16,8 +16,14 @@ defmodule Flamelex.GUI.Component.QlxWrap.Mutator do
           buf
       end)
 
-    rdx
-    |> put_in([:apps, :qlx_wrap, :buffers], updated_bufs)
+    if rdx.apps.qlx_wrap.active_buf.uuid == buf_uuid do
+      rdx
+      |> put_in([:apps, :qlx_wrap, :active_buf], %{rdx.apps.qlx_wrap.active_buf|mode: mode})
+      |> put_in([:apps, :qlx_wrap, :buffers], updated_bufs)
+    else
+      rdx
+      |> put_in([:apps, :qlx_wrap, :buffers], updated_bufs)
+    end
   end
 
   def set_active_buf(rdx, %Quillex.Structs.BufState.BufRef{} = buf_ref) do

@@ -4,21 +4,7 @@ defmodule Flamelex.GUI.Layers.Layer4.Renderizer do
   require Logger
 
   @layer_4 :layer_4
-
-  # if the frame has changed, simply re-render everything from scratch
-  # we could, potentially, pass this down instead, but honestly this is good enough for 99%
-  # the weird edge cases might be processes which register with specific names might get conflicts
-  # def render(
-  #   %Scenic.Graph{} = graph,
-  #   %Scenic.Scene{assigns: %{state: %{frame: %Widgex.Frame{} = old_frame}}} = scene,
-  #   %Widgex.Frame{} = new_frame,
-  #   %Layer3.State{} = state
-  # ) when old_frame != new_frame do
-  #   # delete the old primitive to force a re-render from scratch
-  #   graph
-  #   |> Scenic.Graph.delete(@layer_4)
-  #   |> draw_layer_4(new_frame, state)
-  # end
+  @kommander :kommander
 
   def render(
     %Scenic.Graph{} = graph,
@@ -26,19 +12,43 @@ defmodule Flamelex.GUI.Layers.Layer4.Renderizer do
     %Widgex.Frame{} = frame,
     %Layer4.State{} = state
   ) do
-    IO.puts "WARNING re-drawing layer 4..."
-    # delete the old primitive to force a re-render from scratch
     graph
-    |> Scenic.Graph.delete(@layer_4)
-    |> draw_layer_4(frame, state)
+    |> render_kommander(frame, state)
   end
 
-  defp draw_layer_4(graph, frame, state) do
-    graph
-    |> Scenic.Primitives.group(fn graph ->
-      graph
-      # |> render_popup_modal(frame, state)
-    end, id: @layer_4)
+  defp render_kommander(graph, frame, state) do
+    case Scenic.Graph.get(graph, @kommander) do
+      [] ->
+
+        grid =
+          Widgex.Frame.Grid.new(frame)
+          |> Widgex.Frame.Grid.rows([0.9, 0.1])
+          |> Widgex.Frame.Grid.columns([1.0])
+          |> Widgex.Frame.Grid.define_areas(%{
+            bottom_row: {1, 0, 1, 1} # Bottom row (row 1, column 0, spanning 1 row and 1 column)
+          })
+
+        cell_frames = Widgex.Frame.Grid.calculate(grid)
+
+        kommander_frame = Widgex.Frame.Grid.area_frame(grid, cell_frames, :bottom_row)
+
+        graph
+        |> Scenic.Primitives.group(fn graph ->
+            graph
+            |> Scenic.Primitives.rect(kommander_frame.size.box, fill: :red, translate: kommander_frame.pin.point)
+          end,
+          id: @kommander,
+          hidden: not state.kommander_active?
+        )
+
+      _primitive ->
+
+        graph
+        |> Scenic.Graph.modify(
+          @kommander,
+          &Scenic.Primitives.update_opts(&1, hidden: not state.kommander_active?)
+        )
+    end
   end
 
 end

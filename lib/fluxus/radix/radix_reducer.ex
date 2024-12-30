@@ -53,10 +53,15 @@ defmodule Flamelex.Fluxus.RadixReducer do
     rdx
   end
 
-  # def process(rdx, :show_agents) do
-  #   # Logger.warning "Ignoring action #{inspect action} cause we're in a popup state..."
-  #   rdx
-  # end
+  def process(rdx, :open_kommander) do
+    rdx
+    |> Flamelex.GUI.Layers.Layer4.Mutator.open_kommander()
+  end
+
+  def process(rdx, :close_kommander) do
+    rdx
+    |> Flamelex.GUI.Layers.Layer4.Mutator.close_kommander()
+  end
 
   def process(rdx, {:load_memex, %Memelex.Environment{} = env}) do
     rdx

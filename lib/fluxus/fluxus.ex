@@ -125,30 +125,7 @@ defmodule Flamelex.Fluxus do
   # filters those results to just the ones from ActionListener
   # having to include this is starting to feel like a bad thing... not really though, the lib computes the result & throws it away !
   def declare(a) do
-    case do_declare(a) do
-      # [{Flamelex.Fluxus.RadixStore, :ignore}] ->
-      :ignore ->
-        {:ok, :ignore}
-
-      # add this to get out of a bunch of confusion about ok tuples, why do we even return this RadixStore from the DoDeclare? Maybe the framework automatically does that & we should strip it out?
-      # [{Flamelex.Fluxus.RadixStore, %Flamelex.Fluxus.RadixState{} = r}] ->
-        # %Flamelex.Fluxus.RadixState{} = r ->
-        #   {:ok, r}
-
-        # maybe figure out why we return this ok tuple sometimes, I think it's just what Radix.process returns? In which case maybe ok tuple is better
-        {:ok, %Flamelex.Fluxus.RadixState{} = r} ->
-          r
-      # [{Flamelex.Fluxus.RadixStore, {:ok, %Flamelex.Fluxus.RadixState{} = r}}] ->
-        {:ok, r}
-
-      [{Flamelex.Fluxus.RadixStore, {:error, reason}}] ->
-        raise "Was not able to declare action `#{inspect(a)}` successfully - #{reason}"
-        {:error, "Failed to declare action."}
-    end
-  end
-
-  defp do_declare(a) do
-    [{Flamelex.Fluxus.RadixStore, result}] =
+    [{Flamelex.Fluxus.RadixStore, {:ok, %Flamelex.Fluxus.RadixState{}} = result}] =
       EventBus.declare(%EventBus.Model.Event{
         id: UUID.uuid4(),
         topic: @flx_actions,
@@ -161,6 +138,40 @@ end
 
 
 
+    # case do_declare(a) do
+    #   # [{Flamelex.Fluxus.RadixStore, :ignore}] ->
+    #   :ignore ->
+    #     {:ok, :ignore}
+
+    #   # add this to get out of a bunch of confusion about ok tuples, why do we even return this RadixStore from the DoDeclare? Maybe the framework automatically does that & we should strip it out?
+    #   # [{Flamelex.Fluxus.RadixStore, %Flamelex.Fluxus.RadixState{} = r}] ->
+    #     # %Flamelex.Fluxus.RadixState{} = r ->
+    #     #   {:ok, r}
+
+    #     # maybe figure out why we return this ok tuple sometimes, I think it's just what Radix.process returns? In which case maybe ok tuple is better
+    #   {:ok, %Flamelex.Fluxus.RadixState{} = r} ->
+    #       r
+    #   # [{Flamelex.Fluxus.RadixStore, {:ok, %Flamelex.Fluxus.RadixState{} = r}}] ->
+    #     # {:ok, r}
+
+    #   # [{Flamelex.Fluxus.RadixStore, {:error, reason}}] ->
+    #   #   raise "Was not able to declare action `#{inspect(a)}` successfully - #{reason}"
+    #   #   {:error, "Failed to declare action."}
+    # end
+
+
+  # defp do_declare(a) do
+  #   # [{Flamelex.Fluxus.RadixStore, result}] =
+
+  #   [{Flamelex.Fluxus.RadixStore, {:ok, %Flamelex.Fluxus.RadixState{}} = result}] =
+  #     EventBus.declare(%EventBus.Model.Event{
+  #       id: UUID.uuid4(),
+  #       topic: @flx_actions,
+  #       data: a
+  #     })
+
+  #   result
+  # end
 
     # IO.inspect(results)
     # NOTE - we replace this atom (the initial accumulator) in the successful case,

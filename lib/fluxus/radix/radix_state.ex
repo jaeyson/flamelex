@@ -21,19 +21,22 @@ defmodule Flamelex.Fluxus.RadixState do
 
   # the argument for using radix struct is that I can pattern match on exactly a radix state
   # the argument against is that I might want to dynamically add keys to it...
-  defstruct theme: nil,
-            menubar: nil,
+  defstruct menubar: nil,
             # popup_modal: nil,
             memex: nil,
             fonts: nil,
             layers: nil,
             apps: nil,
-            gui: nil
+            # gui: nil,
+            history: %{
+              keystrokes: []
+            }
 
   def new() do
     %__MODULE__{
       layers: %{
         one: Layer01.State.new(),
+        two: nil,
         three: Layer3.State.new(),
         four: Layer4.State.new()
       },
@@ -50,24 +53,19 @@ defmodule Flamelex.Fluxus.RadixState do
         env: nil,
         open_memex_popup_open?: false
       },
-      # theme: theme(),
-      #   # TODO move menubar to some other place in the radix state structure (should be under layer 2 probably)
+      # TODO move menubar & fonts to some other place in the radix state structure (should be under layer 2  for menubar probably & maybe 'gui' for fonts?)
       menubar: %{
         font: :ibm_plex_mono,
         height: 60
       },
-      # popup_modal: %{
-      #   active?: false
-      # },
-      fonts: fonts()
-      # gui: %{}
+      fonts: fonts(),
     }
   end
 
-  def theme do
-    Scenic.Primitive.Style.Theme.preset(:light)
-    |> Scenic.Primitive.Style.Theme.normalize()
-  end
+  # def theme do
+  #   Scenic.Primitive.Style.Theme.preset(:light)
+  #   |> Scenic.Primitive.Style.Theme.normalize()
+  # end
 
   def fonts do
     # TruetypeMetrics.load("./assets/fonts/IBM_Plex_Mono/IBMPlexMono-Regular.ttf")
@@ -92,17 +90,8 @@ defmodule Flamelex.Fluxus.RadixState do
       }
     }
   end
-
-  def mutate(%__MODULE__{}) do
-    raise "not yet but this is what we should have instead of mutators.ex (maybe)"
-  end
 end
 
-# defmodule Flamelex.Fluxus.RadixMutators do
-#   @moduledoc """
-#   A collection of functions that mutate the radix state.
-#   """
-# end
 
 
 # defmodule Flamelex.Fluxus.Structs.RadixState do
