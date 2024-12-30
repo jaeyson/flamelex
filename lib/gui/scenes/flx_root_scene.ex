@@ -58,7 +58,7 @@ defmodule Flamelex.GUI.RootScene do
 
     rdx = Flamelex.Fluxus.RadixStore.get()
 
-    {:ok, graph} = render_layers(scene.viewport, rdx)
+    graph = render_layers(scene.viewport, rdx)
 
     new_scene =
       scene
@@ -166,21 +166,18 @@ defmodule Flamelex.GUI.RootScene do
     # I'm experimenting with the idea of each layer fetching their own state from RadixState during init...
     # this way if layers reboots it fetches fresh state, and it feels like it would be more efficient rather
     # than passing it in from the top like this?
-    full_graph =
-      Scenic.Graph.build()
-      |> Layer0.add_to_graph(%{frame: app_frame})
-      |> Layer01.add_to_graph(%{frame: app_frame})
-      |> NeoLayer02.add_to_graph(%{
-        id: :menubar,
-        frame: full_window,
-        state: NeoLayer02.cast_rdx_to_layer_state(radix_state)
-      })
-      # popups & modals
-      |> Layer3.add_to_graph(%{frame: app_frame})
-      # Kommander
-      |> Layer4.add_to_graph(%{frame: app_frame})
-
-    {:ok, full_graph}
+    Scenic.Graph.build()
+    |> Layer0.add_to_graph(%{frame: app_frame})
+    |> Layer01.add_to_graph(%{frame: app_frame})
+    |> NeoLayer02.add_to_graph(%{
+      id: :menubar,
+      frame: full_window,
+      state: NeoLayer02.cast_rdx_to_layer_state(radix_state)
+    })
+    # popups & modals
+    |> Layer3.add_to_graph(%{frame: app_frame})
+    # Kommander
+    |> Layer4.add_to_graph(%{frame: app_frame})
   end
 
   def calc_app_frame(full_window_frame, %{menubar: %{height: menubar_h}}) do

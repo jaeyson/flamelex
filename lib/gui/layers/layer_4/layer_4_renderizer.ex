@@ -6,6 +6,8 @@ defmodule Flamelex.GUI.Layers.Layer4.Renderizer do
   @layer_4 :layer_4
   @kommander :kommander
 
+  @kommander_height 50
+
   def render(
     %Scenic.Graph{} = graph,
     %Scenic.Scene{} = scene,
@@ -31,6 +33,13 @@ defmodule Flamelex.GUI.Layers.Layer4.Renderizer do
         cell_frames = Widgex.Frame.Grid.calculate(grid)
 
         kommander_frame = Widgex.Frame.Grid.area_frame(grid, cell_frames, :bottom_row)
+
+        #     kommander_frame =
+        #       ScenicWidgets.Core.Structs.Frame.new(
+        #         pin: {0, vp_height - @kommander_height},
+        #         # TODO why do we need this +1? Without it we see a think black stripe on the right-hand side
+        #         size: {vp_width + 1, @kommander_height}
+        #       )
 
         graph
         |> Scenic.Primitives.group(fn graph ->

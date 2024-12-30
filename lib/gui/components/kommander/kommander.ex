@@ -1,6 +1,5 @@
 defmodule Flamelex.GUI.Component.Kommander do
   use Scenic.Component
-  # alias ScenicWidgets.Core.Structs.Frame
   alias Widgex.Frame
   require Logger
 
@@ -10,19 +9,15 @@ defmodule Flamelex.GUI.Component.Kommander do
     margin: 12
   }
 
-  def validate(%{frame: %Frame{} = _f, radix_state: _radix_state} = data) do
+  def validate(%{frame: %Frame{} = _f} = data) do
     # Logger.debug "#{__MODULE__} accepted params: #{inspect data}"
     {:ok, data}
   end
 
   # args = %Widgex.Structs.LayerCake{}
-  def init(scene, args, opts) do
-    # IO.puts("KKKKKKKKKKKKK\n\n\n\n")
+  def init(scene, %{frame: %Frame{} = _f} = args, opts) do
 
-    # TODO just for demo, we do this incredible hack :D
-    radix_state = Flamelex.Fluxus.RadixStore.get()
-    init_state = radix_state.kommander
-
+    init_state = Flamelex.Fluxus.RadixStore.get().kommander
     init_graph = render(args.frame, init_state)
 
     init_scene =
