@@ -46,7 +46,8 @@ defmodule Flamelex.Fluxus.RadixState do
         rapid_selector: RapidSelector.State.new(),
         qlx_wrap: QlxWrap.State.new(),
         high_council: HighCouncil.State.new(query_memex?: false),
-        agent_huddle: AgentHuddle.State.new()
+        agent_huddle: AgentHuddle.State.new(),
+        kommander: %{}
       },
       memex: %{
         active?: false,

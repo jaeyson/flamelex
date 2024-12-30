@@ -177,7 +177,7 @@ defmodule Flamelex.GUI.RootScene do
     # popups & modals
     |> Layer3.add_to_graph(%{frame: app_frame})
     # Kommander
-    |> Layer4.add_to_graph(%{frame: app_frame})
+    |> Layer4.add_to_graph(%{frame: full_window})
   end
 
   def calc_app_frame(full_window_frame, %{menubar: %{height: menubar_h}}) do

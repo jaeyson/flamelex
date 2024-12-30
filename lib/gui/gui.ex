@@ -16,7 +16,7 @@ defmodule Flamelex.GUI do
   def viewport_config do
     [
       name: :main_viewport,
-      size: @monitor_32inch,
+      size: @monitor_32inch_80pc,
       default_scene: {Flamelex.GUI.RootScene, nil},
       drivers: [
         [

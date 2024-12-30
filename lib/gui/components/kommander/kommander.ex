@@ -17,7 +17,7 @@ defmodule Flamelex.GUI.Component.Kommander do
   # args = %Widgex.Structs.LayerCake{}
   def init(scene, %{frame: %Frame{} = _f} = args, opts) do
 
-    init_state = Flamelex.Fluxus.RadixStore.get().kommander
+    init_state = Flamelex.Fluxus.RadixStore.get().apps.kommander
     init_graph = render(args.frame, init_state)
 
     init_scene =
@@ -33,37 +33,46 @@ defmodule Flamelex.GUI.Component.Kommander do
   end
 
   # NOTE - in this pattern-match, note that `hidden?` is used twice, so we match here if the values are the same in both places, i.e. the status hasn't changed
-  def handle_info(
-        {:radix_state_change, %{kommander: kommander_state}},
-        %{assigns: %{state: kommander_state}} = scene
-      ) do
+  # def handle_info(
+  #       {:radix_state_change, %{kommander: kommander_state}},
+  #       %{assigns: %{state: kommander_state}} = scene
+  #     ) do
+  #   {:noreply, scene}
+  # end
+
+  def handle_info({:radix_state_change, %{apps: %{kommander: k_state}}}, %{assigns: %{state: k_state}} = scene) do
     {:noreply, scene}
   end
 
-  # If we hide/show the Kommander, handle it here
-  def handle_info(
-        {:radix_state_change, %{kommander: kommander_state = %{hidden?: now_hidden?}}},
-        %{assigns: %{state: %{hidden?: current_hidden_status?}}} = scene
-      )
-      when now_hidden? != current_hidden_status? do
-    new_graph =
-      scene.assigns.graph
-      |> Scenic.Graph.modify(:kommander, &Scenic.Primitives.update_opts(&1, hidden: now_hidden?))
-
-    new_scene =
-      scene
-      |> assign(state: %{kommander_state | hidden?: now_hidden?})
-      |> assign(graph: new_graph)
-      |> push_graph(new_graph)
-
-    {:noreply, new_scene}
+  def handle_info({:radix_state_change, %{apps: %{kommander: new_k_state}}}, %{assigns: %{state: k_state}} = scene) do
+    IO.puts "GOT NEW K STSATE #{inspect k_state}"
+    {:noreply, scene}
   end
 
-  def handle_info({:radix_state_change, %{kommander: %{buffer: k_buf} = kommander_state}}, scene) do
-    {:ok, [pid]} = child(scene, {:text_pad, Kommander})
-    GenServer.cast(pid, {:redraw, k_buf})
-    {:noreply, scene |> assign(state: %{kommander_state | buffer: k_buf})}
-  end
+  # # If we hide/show the Kommander, handle it here
+  # def handle_info(
+  #       {:radix_state_change, %{kommander: kommander_state = %{hidden?: now_hidden?}}},
+  #       %{assigns: %{state: %{hidden?: current_hidden_status?}}} = scene
+  #     )
+  #     when now_hidden? != current_hidden_status? do
+  #   new_graph =
+  #     scene.assigns.graph
+  #     |> Scenic.Graph.modify(:kommander, &Scenic.Primitives.update_opts(&1, hidden: now_hidden?))
+
+  #   new_scene =
+  #     scene
+  #     |> assign(state: %{kommander_state | hidden?: now_hidden?})
+  #     |> assign(graph: new_graph)
+  #     |> push_graph(new_graph)
+
+  #   {:noreply, new_scene}
+  # end
+
+  # def handle_info({:radix_state_change, %{kommander: %{buffer: k_buf} = kommander_state}}, scene) do
+  #   {:ok, [pid]} = child(scene, {:text_pad, Kommander})
+  #   GenServer.cast(pid, {:redraw, k_buf})
+  #   {:noreply, scene |> assign(state: %{kommander_state | buffer: k_buf})}
+  # end
 
   def handle_cast({:scroll_limits, _new_scroll_state}, scene) do
     IO.puts("Kommander ignoring scroll limits update...")
@@ -77,10 +86,10 @@ defmodule Flamelex.GUI.Component.Kommander do
         graph
         |> ScenicWidgets.FrameBox.draw(%{frame: frame, fill: :rebecca_purple})
         |> draw_command_prompt(frame)
-        |> draw_textbox(kommander_state, frame)
-      end,
-      id: :kommander,
-      hidden: kommander_state.hidden?
+        # |> draw_textbox(kommander_state, frame)
+      end
+      # id: :kommander
+      # hidden: kommander_state.hidden?
     )
   end
 
