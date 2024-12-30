@@ -11,11 +11,7 @@ defmodule Flamelex.Fluxus.Radix.UserInputHandler do
   """
   require Logger
   alias Flamelex.GUI.Component.{QlxWrap, TODOlist}
-
-  def handle(_rdx, {:key, {:key_leftalt, _up_or_down, _weird_list}}) do
-    Logger.debug("Ignoring key_leftalt...")
-    :ignore
-  end
+  use Flamelex.Keymaps.Editor.GlobalBindings
 
   # TODO one day might need a more sophisticated way of handling this... maybe send to both components?
   # maybe match on cases where one vs both is actually up?
@@ -27,11 +23,173 @@ defmodule Flamelex.Fluxus.Radix.UserInputHandler do
   end
 
   def handle(
-        %{layers: %{one: %{active_apps: [QlxWrap]}}} = rdx,
+        %{
+          layers: %{one: %{active_apps: [QlxWrap]}},
+          apps: %{qlx_wrap: %{active_buf: %{mode: {:vim, :insert}}}}
+         } = rdx,
         input
       ) do
     QlxWrap.UserInputHandler.handle(rdx, input)
   end
+
+  #TODo consider having just one history queue for both keystrokes and actions, then
+  # we solve the potential problem of where I press space in insert mode, use CLI to switch to normal mode
+  # then press some button and it treats it like I just pressed leader+k or whatever
+
+    # toggle kommander when no apps are open
+    def handle(
+      %{
+        layers: %{
+          four: %{kommander_active?: true}
+        }
+      } = rdx,
+      @escape_key
+    ) do
+  [:close_kommander]
+end
+
+
+  # toggle kommander when no apps are open
+  def handle(
+        %{
+          layers: %{
+            one: %{active_apps: []},
+            four: %{kommander_active?: false}
+          },
+          history: %{keystrokes: [@leader|_rest]}
+        } = rdx,
+        @lowercase_k
+      ) do
+    [:open_kommander]
+  end
+
+  def handle(
+        %{
+          layers: %{
+            one: %{active_apps: [QlxWrap]},
+            four: %{kommander_active?: false}
+          },
+          apps: %{qlx_wrap: %{active_buf: %{mode: {:vim, :normal}}}},
+          history: %{keystrokes: [@leader|_rest]}
+        } = rdx,
+        @lowercase_k
+      ) do
+    [:open_kommander]
+  end
+
+  def handle(
+        %{
+          layers: %{one: %{active_apps: [QlxWrap]}},
+          apps: %{qlx_wrap: %{active_buf: %{mode: {:vim, :normal}}}},
+          history: %{keystrokes: [@sub_leader|_rest]}
+        } = rdx,
+        @lowercase_s
+      ) do
+    # QlxWrap.UserInputHandler.handle(rdx, input)
+    IO.puts "LAST KEY WS SPACE!!! here we should split the buffer!"
+    :ignore
+  end
+
+  def handle(
+        %{
+          layers: %{one: %{active_apps: [QlxWrap]}},
+          apps: %{qlx_wrap: %{active_buf: %{mode: {:vim, :normal}}}}
+        } = rdx,
+        input
+      ) do
+    QlxWrap.UserInputHandler.handle(rdx, input)
+  end
+
+  def handle(rdx, input) do
+    Logger.warning "Ignoring input #{inspect input}..."
+    :ignore
+  end
+end
+
+
+
+
+# defmodule Flamelex.Keymaps.Desktop do
+#   use Flamelex.Keymaps.Editor.GlobalBindings
+#   require Logger
+
+#   @ignorable_keys [@shift_space, @meta, @left_ctrl, @left_alt]
+
+#   def process(_radix_state, @leader) do
+#     # Logger.debug " <<-- Leader key pressed -->>"
+#     :ok
+#   end
+
+#   def process(%{kommander: %{hidden?: false}}, @escape_key) do
+#     :ok = Flamelex.API.Kommander.hide()
+#   end
+
+#   def process(_radix_state, @escape_key) do
+#     :ignore
+#   end
+
+#   def process(_radix_state, @lowercase_k) do
+#     :ok = Flamelex.API.Kommander.show()
+#   end
+
+#   def process(_radix_state, key) when key in @ignorable_keys do
+#     :ignore
+#   end
+
+#   def process(_radix_state, {:cursor_button, _details}) do
+#     # NOTE - don't handle mouse events at this level, let lower components e.g. MenuBar handle mouse events
+#     :ignore
+#   end
+
+#   ## Leader-x keybindings
+#   ## --------------------
+
+#   # open the Kommander with keybinding <leader>k
+#   def process(%{history: %{keystrokes: [@leader | _rest]}} = radix_state, @lowercase_k) do
+#     # Logger.debug "Opening KommandBuffer..."
+#     :ok = Flamelex.API.Kommander.show()
+#   end
+
+#   def process(
+#         %{
+#           root: %{layers: %{one: %{explorer: %{active?: true}}}},
+#           history: %{keystrokes: [@sub_leader | _rest]}
+#         } = radix_state,
+#         @lowercase_e
+#       ) do
+#     Flamelex.API.Editor.hide_explorer()
+#   end
+
+#   def process(%{history: %{keystrokes: [@sub_leader | _rest]}} = radix_state, @lowercase_e) do
+#     Flamelex.API.Editor.show_explorer()
+#   end
+
+#   # NOTE - this has to go below the match where we record the history of pressing @leader
+#   def process(_radix_state, key) when key in @valid_text_input_characters do
+#     :ignore
+#   end
+
+#   def process(_radix_state, @left_shift) do
+#     :ignore
+#   end
+
+#   def process(radix_state, key) do
+#     raise "Unhandled key: #{inspect(key)}"
+#   end
+
+#   # open the Memex with keybinding <leader>h
+#   # def process(@lowercase_h, %{history: %{keystrokes: [@leader|_rest]}} = radix_state) do
+#   #    :ok = Flamelex.API.Diary.open()
+#   # end
+# end
+
+
+
+
+  # def handle(_rdx, {:key, {:key_leftalt, _up_or_down, _weird_list}}) do
+  #   Logger.debug("Ignoring key_leftalt...")
+  #   :ignore
+  # end
 
   # if we only have one app open then we can just pass the input to that app
   # def handle(
@@ -43,16 +201,6 @@ defmodule Flamelex.Fluxus.Radix.UserInputHandler do
   #   Module.concat(app, UserInputHandler).handle(rdx, input)
   # end
 
-  def handle(rdx, input) do
-    Logger.warning "Ignoring input #{inspect input}..."
-    :ignore
-  end
-end
-
-# def process(rdx, input) do
-#   # Logger.warn("#{__MODULE__} ignoring input: #{inspect(input)}")
-#   :ignore
-# end
 
 # def process(
 #       %{
@@ -370,17 +518,4 @@ end
 #     :error ->
 #       :error
 #   end
-# end
-
-# defp record_input(radix_state, {:key, {key, @key_pressed, []}} = input)
-#      when input in @valid_text_input_characters do
-#   # Logger.debug "-- Recording INPUT: #{inspect key}"
-#   # NOTE: We store the latest keystroke at the front of the list, not the back
-#   radix_state
-#   |> put_in([:history, :keystrokes], radix_state.history.keystrokes |> List.insert_at(0, input))
-# end
-
-# defp record_input(radix_state, input) do
-#   # Logger.debug "NOT recording: #{inspect input} as input..."
-#   radix_state
 # end
