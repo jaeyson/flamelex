@@ -63,6 +63,10 @@ defmodule Flamelex.Fluxus.RadixReducer do
     |> Flamelex.GUI.Layers.Layer4.Mutator.close_kommander()
   end
 
+  def process(rdx, {Flamelex.GUI.Component.Kommander, action}) do
+    Flamelex.GUI.Component.Kommander.Reducer.process(rdx, action)
+  end
+
   def process(rdx, {:load_memex, %Memelex.Environment{} = env}) do
     rdx
     # TODO when I eventually go multi-env, this may be a problem...

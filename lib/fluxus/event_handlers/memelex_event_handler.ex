@@ -322,11 +322,6 @@ end
 #   :ignore
 # end
 
-# def process(_radix_state, input) do
-#   Logger.warn("ignoring input: #{inspect(input)}")
-#   :ignore
-# end
-
 # # ------
 
 # defp process_with_rescue(reducer, radix_state, input) do

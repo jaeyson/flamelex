@@ -32,21 +32,22 @@ defmodule Flamelex.Fluxus.Radix.UserInputHandler do
     QlxWrap.UserInputHandler.handle(rdx, input)
   end
 
-  #TODo consider having just one history queue for both keystrokes and actions, then
+  #TODO consider having just one history queue for both keystrokes and actions, then
   # we solve the potential problem of where I press space in insert mode, use CLI to switch to normal mode
   # then press some button and it treats it like I just pressed leader+k or whatever
+  # alternatively, have multiple history queues and as we switch modes we save input into different queues - this
+  # might work better when we consider that e.g. Kommander might want a different history aswell, for same reasons
 
-    # toggle kommander when no apps are open
-    def handle(
-      %{
-        layers: %{
-          four: %{kommander_active?: true}
-        }
-      } = rdx,
-      @escape_key
-    ) do
-  [:close_kommander]
-end
+  def handle(
+    %{
+      layers: %{
+        four: %{kommander_active?: true}
+      }
+    } = rdx,
+    input
+  ) do
+    Flamelex.Keymaps.Kommander.handle(rdx, input)
+  end
 
 
   # toggle kommander when no apps are open

@@ -4,6 +4,33 @@ defmodule Flamelex.GUI.Component.QlxWrap.State do
   """
   use StructAccess
 
+#       editor: %{
+#         font:
+#           ScenicWidgets.TextPad.Structs.Font.new(%{
+#             name: :ibm_plex_mono,
+#             metrics: ibm_plex_mono_font_metrics,
+#             size: 24
+#           }),
+#         graph: nil,
+#         # A list of %Buffer{} structs
+#         buffers: [],
+#         active_buf: nil,
+#         config: %{
+#           keymap: Flamelex.KeyMappings.Vim,
+#           scroll: %{
+#             # invert: %{ # change the direction of scroll wheel
+#             #   horizontal?: true,
+#             #   vertical?: false
+#             # },
+#             # higher value means faster scrolling
+#             speed: %{
+#               horizontal: 5,
+#               vertical: 3
+#             }
+#           }
+#         }
+#       },
+
   defstruct buffers: [],
             # it's layers all the way down baby...
             # implement a layer system for the QlxWrap component

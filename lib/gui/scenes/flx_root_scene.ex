@@ -2,11 +2,6 @@ defmodule Flamelex.GUI.RootScene do
   @moduledoc false
   use Scenic.Scene
   use ScenicWidgets.ScenicEventsDefinitions
-  # import Scenic.Primitives
-  # import Scenic.Components
-  # alias ScenicWidgets.Core.Structs.Frame
-  # alias ScenicWidgets.Core.Utils.FlexiFrame
-  # alias Widgex.Structs.LayerCake
   alias Flamelex.GUI.Layers.{Layer0, Layer01, NeoLayer02, Layer3, Layer4}
   require Logger
 
@@ -38,8 +33,6 @@ defmodule Flamelex.GUI.RootScene do
   # cast is the real name of this (iot was above a transformation fn) function, we should use that, shoud blog about that...
   # what I mean by this is, that "cast" is transmute, it means 'change the type' or to 'change the form'
 
-  def init(scene, args, opts) do
-    Logger.debug("#{__MODULE__} initializing...")
 
     # NOTE - due to the way Scenic works right now, it's not practical to pass in the RadixState from the highest level of the SUpervision tree
     # Maybe in the future this could change but for now just fetch this data when the Scenc boots... this is also kind of nice incase the GUI gets reset
@@ -55,6 +48,9 @@ defmodule Flamelex.GUI.RootScene do
     # way until I hit a wall because after all the trial & error, this is just the most ELixir-y
     # way to do it. Also I might just get some cool performance boosts e.g. Erlang doesnt deep copy
     # large strings, we can try and use ETS, etc...
+
+  def init(scene, args, opts) do
+    Logger.debug("#{__MODULE__} initializing...")
 
     rdx = Flamelex.Fluxus.RadixStore.get()
 
@@ -128,20 +124,10 @@ defmodule Flamelex.GUI.RootScene do
   end
 
   def handle_input(input, context, scene) do
-    # Logger.debug("#{__MODULE__} recv'd some (non-ignored) input: #{inspect(input)}")
-
-    # this effectively sends it to Fluxus / the RadixStore,
-    # where it is reduced against the RadixState to generate actions
+    # forward user input to Fluxus.Radix where it shall be processed against the current state to find the correct action
     Flamelex.Fluxus.user_input(input)
-    # Logger.warning "USER INPUT GETS PROCESSED GUI SIDE NOW"
-
     {:noreply, scene}
   end
-
-  # def handle_cast({:action, actions}, scene) do
-  #   # GUI actions ought to get processed by the RootScene Reducer to update the state of the GUI
-  #   {:noreply, scene}
-  # end
 
   # def handle_cast(:re_render, scene) do
   #   IO.puts("Re-rendering the root scene...")
@@ -165,22 +151,22 @@ defmodule Flamelex.GUI.RootScene do
 
     # I'm experimenting with the idea of each layer fetching their own state from RadixState during init...
     # this way if layers reboots it fetches fresh state, and it feels like it would be more efficient rather
-    # than passing it in from the top like this?
+    # than passing it in from the top?
+
     Scenic.Graph.build()
+    # Renseijin
     |> Layer0.add_to_graph(%{frame: app_frame})
+    # the active apps layer
     |> Layer01.add_to_graph(%{frame: app_frame})
-    |> NeoLayer02.add_to_graph(%{
-      id: :menubar,
-      frame: full_window,
-      state: NeoLayer02.cast_rdx_to_layer_state(radix_state)
-    })
+    # Menubar
+    |> NeoLayer02.add_to_graph(%{frame: full_window})
     # popups & modals
     |> Layer3.add_to_graph(%{frame: app_frame})
     # Kommander
     |> Layer4.add_to_graph(%{frame: full_window})
   end
 
-  def calc_app_frame(full_window_frame, %{menubar: %{height: menubar_h}}) do
+  def calc_app_frame(full_window_frame, %{layers: %{two: %{menubar: %{height: menubar_h}}}}) do
     [_menubar_frame, app_frame] = Widgex.Frame.v_split(full_window_frame, px: menubar_h)
     app_frame
   end

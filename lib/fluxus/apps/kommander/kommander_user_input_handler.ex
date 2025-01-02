@@ -1,71 +1,81 @@
 defmodule Flamelex.Keymaps.Kommander do
   use ScenicWidgets.ScenicEventsDefinitions
+  require Logger
 
   @ignorable_keys [@shift_space, @left_shift, @meta, @left_ctrl]
 
-  # treat key repeats as a press
-  def process(radix_state, {:key, {key, @key_held, mods}}) do
-    process(radix_state, {:key, {key, @key_pressed, mods}})
-  end
-
   # ignore key-release inputs
-  def process(_radix_state, {:key, {_key, @key_released, _mods}}) do
+  def handle(_radix_state, {:key, {_key, @key_released, _mods}}) do
     :ignore
   end
 
-  def process(_radix_state, key) when key in @ignorable_keys do
+  def handle(_radix_state, key) when key in @ignorable_keys do
     :ignore
   end
 
-  def process(_radix_state, {:cursor_button, _details}) do
-    :ignore
+  # treat key repeats as a press
+  def handle(radix_state, {:key, {key, @key_held, mods}}) do
+    handle(radix_state, {:key, {key, @key_pressed, mods}})
   end
 
-  def process(_radix_state, @escape_key) do
-    Flamelex.API.Kommander.clear()
-    Flamelex.API.Kommander.hide()
+  def handle(_radix_state, @escape_key) do
+    # Flamelex.API.Kommander.clear()
+    # Flamelex.API.Kommander.hide()
+    [:close_kommander]
   end
 
-  def process(_radix_state, @enter_key) do
+  def handle(_radix_state, @enter_key) do
     # NOTE - `@enter_key` is a member of `@valid_text_input_characters` so we need to match here first
-    Flamelex.API.Kommander.execute()
-    Flamelex.API.Kommander.reset()
+    [:execute_kommander, :reset_kommander]
   end
 
-  def process(%{kommander: %{hidden?: false, buffer: %{mode: :edit} = k_buf}}, key)
-      when not is_nil(k_buf) and key in @valid_text_input_characters do
-    Flamelex.API.Kommander.modify({:insert, key |> key2string(), :at_cursor})
+  def handle(rdx, input) when input in @valid_text_input_characters do
+    Quillex.Utils.PubSub.broadcast(
+      topic: {:buffers, rdx.apps.kommander.buf_ref.uuid},
+      msg: {:user_input, input}
+    )
+
+    :ignore
   end
 
-  def process(_radix_state, @backspace_key) do
-    Flamelex.API.Kommander.modify({:backspace, 1, :at_cursor})
+  # def process(_radix_state, @backspace_key) do
+  #   Flamelex.API.Kommander.modify({:backspace, 1, :at_cursor})
+  # end
+
+  def handle(_rdx, input) do
+    Logger.warning "#{__MODULE__} Ignoring input #{inspect input}..."
+    :ignore
   end
 
-  def process(_radix_state, key) when key in @arrow_keys do
-    # REMINDER: these tuples are in the form `{line, col}`
-    delta =
-      case key do
-        @left_arrow ->
-          {0, -1}
-
-        @up_arrow ->
-          {-1, 0}
-
-        @right_arrow ->
-          {0, 1}
-
-        @down_arrow ->
-          {1, 0}
-      end
-
-    Flamelex.API.Kommander.move_cursor(delta)
-  end
-
-  def process(radix_state, key) do
-    IO.puts("#{__MODULE__} failed to process input: #{inspect(key)}")
-    :error
-  end
 end
+
+
+  # def process(_radix_state, key) when key in @arrow_keys do
+  #   # REMINDER: these tuples are in the form `{line, col}`
+  #   delta =
+  #     case key do
+  #       @left_arrow ->
+  #         {0, -1}
+
+  #       @up_arrow ->
+  #         {-1, 0}
+
+  #       @right_arrow ->
+  #         {0, 1}
+
+  #       @down_arrow ->
+  #         {1, 0}
+  #     end
+
+  #   Flamelex.API.Kommander.move_cursor(delta)
+  # end
+
+
+
+# def process(radix_state, key) do
+#   IO.puts("#{__MODULE__} failed to process input: #{inspect(key)}")
+#   :error
+# end
 
 #   def handle(%{} = state, input) when input in @valid_command_buffer_inputs do
 #     case KeyMapping.lookup(state, input) do
