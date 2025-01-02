@@ -53,14 +53,12 @@ defmodule Flamelex.Fluxus.RadixReducer do
     rdx
   end
 
-  def process(rdx, :open_kommander) do
-    rdx
-    |> Flamelex.GUI.Layers.Layer4.Mutator.open_kommander()
+  def process(rdx, :open_kommander = action) do
+    Flamelex.GUI.Component.Kommander.Reducer.process(rdx, action)
   end
 
-  def process(rdx, :close_kommander) do
-    rdx
-    |> Flamelex.GUI.Layers.Layer4.Mutator.close_kommander()
+  def process(rdx, :close_kommander = action) do
+    Flamelex.GUI.Component.Kommander.Reducer.process(rdx, action)
   end
 
   def process(rdx, {Flamelex.GUI.Component.Kommander, action}) do

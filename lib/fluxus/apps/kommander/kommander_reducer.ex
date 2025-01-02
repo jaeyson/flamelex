@@ -1,4 +1,16 @@
 defmodule Flamelex.GUI.Component.Kommander.Reducer do
+  alias Flamelex.GUI.Component.Kommander
+
+  def process(rdx, :open_kommander) do
+    rdx
+    |> Flamelex.GUI.Layers.Layer4.Mutator.open_kommander()
+  end
+
+  def process(rdx, :close_kommander) do
+    rdx
+    |> Flamelex.GUI.Layers.Layer4.Mutator.close_kommander()
+    |> Kommander.Mutator.reset_kommander()
+  end
 
   def process(rdx, {:insert, text, :at_cursor} = a) do
     Quillex.Buffer.BufferManager.call_buffer(rdx.apps.kommander.buf_ref, {:action, a})
