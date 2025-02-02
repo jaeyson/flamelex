@@ -26,7 +26,7 @@ defmodule Flamelex.Keymaps.Kommander do
 
   def handle(_radix_state, @enter_key) do
     # NOTE - `@enter_key` is a member of `@valid_text_input_characters` so we need to match here first
-    [:execute_kommander, :reset_kommander]
+    [:execute_kommander]
   end
 
   def handle(rdx, input) when input in @valid_text_input_characters do

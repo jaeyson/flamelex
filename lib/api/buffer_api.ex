@@ -39,7 +39,7 @@ defmodule Flamelex.API.Buffer do
   """
   def list do
     # todo this should call BufferManager to get the state
-    Flamelex.Fluxus.RadixStore.get().apps.qlx_wrap.buffers
+    Flamelex.Fluxus.RadixStore.fetch().apps.qlx_wrap.buffers
   end
 
   @doc """
@@ -58,15 +58,12 @@ defmodule Flamelex.API.Buffer do
   end
 
   def active_buf do
-    Flamelex.Fluxus.RadixStore.get()
+    Flamelex.Fluxus.RadixStore.fetch()
     |> active_buf()
   end
 
   def active_buf(%Flamelex.Fluxus.RadixState{} = rdx) do
-    buf_ref =
-      rdx
-      |> Flamelex.GUI.Component.QlxWrap.active_buf()
-
+    buf_ref = Flamelex.GUI.Component.QlxWrap.active_buf(rdx)
     {:ok, buf} = Quillex.Buffer.BufferManager.call_buffer(buf_ref, :get_state)
     buf
   end
@@ -78,6 +75,12 @@ defmodule Flamelex.API.Buffer do
   def switch(%Quillex.Structs.BufState.BufRef{} = buf_ref) do
     Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, {:activate_buffer, buf_ref}})
   end
+
+  def split do
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, :split_buffer_pane})
+  end
+
+  #TODO use split horizontal as my demo for how to add functionality
 end
 
 # # TODO delegate this all to quillex one day

@@ -7,7 +7,6 @@ defmodule Flamelex.Fluxus.RadixReducer do
   routed down to the sub-reducers, through this module. Every possible
   action, must also be declared inside this file.
 
-
   A reducer is a function that determines changes to an application's state.
 
   All the reducers in Flamelex.Fluxus (and this includes both action
@@ -61,6 +60,10 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.GUI.Component.Kommander.Reducer.process(rdx, action)
   end
 
+  def process(rdx, :execute_kommander = action) do
+    Flamelex.GUI.Component.Kommander.Reducer.process(rdx, action)
+  end
+
   def process(rdx, {Flamelex.GUI.Component.Kommander, action}) do
     Flamelex.GUI.Component.Kommander.Reducer.process(rdx, action)
   end
@@ -104,15 +107,11 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.GUI.Component.TODOlist.Reducer.process(rdx, action)
   end
 
-  # def process(rdx, {Flamelex.GUI.Component.Editor.Reducer, action}) do
-  #   Flamelex.GUI.Component.Editor.Reducer.process(rdx, action)
-  # end
-
   def process(rdx, {:open_tidbit, %Memelex.TidBit{} = _t} = action) do
     Flamelex.GUI.Component.RapidSelector.Reducer.process(rdx, action)
   end
 
-  def process(rdx, {Flamelex.GUI.Component.RapidSelector.Reducer, action}) do
+  def process(rdx, {Flamelex.GUI.Component.RapidSelector, action}) do
     Flamelex.GUI.Component.RapidSelector.Reducer.process(rdx, action)
   end
 
@@ -120,11 +119,6 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.GUI.Component.HighCouncil.Reducer.process(rdx, :show_agents)
   end
 
-  # def process(rdx, {Flamelex.GUI.Component.AgentHuddle, action}) do
-  #   rdx
-  #   |> Flamelex.GUI.Component.AgentHuddle.Reducer.process(action)
-  #   |> Flamelex.GUI.Component.HighCouncil.Reducer.process(action)
-  # end
 
   def process(rdx, {Flamelex.GUI.Component.AgentHuddle, action}) do
     rdx
@@ -137,10 +131,6 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, action)
   end
 
-  # def process(rdx, {Flamelex.GUI.Component.QlxWrap.Reducer, action}) do
-  #   Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, action)
-  # end
-
   def process(rdx, {Flamelex.GUI.Component.QlxWrap, buf, action}) do
     Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, buf, action)
   end
@@ -149,46 +139,39 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.Fluxus.Reducers.Projects.process(rdx, action)
   end
 
-  # def process(rdx, {component, action}) when is_module(component) do
-  #   # Flamelex.GUI.Component.TODOdetails.Reducer.process(rdx, action)
-  #   raise "somehow you hit this experimental clause... but I like it - uncomment this raise and lets see what happens"
-  #   Module.concat(component, Reducer).process(rdx, action)
-  # end
-
-  # todo use_module would be better but the compiler hates it
-  # This clause is here to make it easier to route actions straight to the appropriate reducer,
-  # for the situations when we know (when we fire the action) which reducer should handle it
-  # def process(radix_state, {reducer, action}) when is_atom(reducer) do
-  #   # Instead of try catch, look in the module, see if there's a function called that.
-
-  #   # That could be cool, if we make all actions an actual function in the processor?? (in the end, this is cool but ultimately just pointless complication...
-  #   # but the idea _is_ cool, we would call MFA.apply(reducer, action, args) or something like that, and it would look up the function in the module and call it
-
-  #   # If that fails/doesn't work, we want to look up custom keymaps in the my_modz.ex (???)
-
-  #   # try do
-  #   # rescue
-  #   #   e in FunctionClauseError ->
-  #   #     {:error,
-  #   #      "#{__MODULE__} -- Reducer `#{inspect(reducer)}` could not match action: #{inspect(action)}"}
-  #   # end
-  #   reducer.process(radix_state, action)
-  # end
-
-  # theoretically we dont need to handle things we dont know how to handle but it does make a lot of noise...
+  # theoretically we dont need to handle things we dont know how to handle (because Wormhole will prevent a crash)
+  # but it does make a lot of noise... sometimes it's nicer to just print the msg, but delete this before 1.0
   def process(rdx_state, action) do
-    # Logger.error("#{__MODULE__} unable to process action. #{inspect(action)}")
-    # IO.puts("#{__MODULE__} unable to process action. #{inspect(action)}")
-
-    IO.puts(
-      "\e[33m#{__MODULE__} === === ===\n\nunable to process action: #{inspect(action)}\e[0m\n"
-    )
-
-    # IO.inspect(rdx_state.layers.one.active_apps, label: "Active Apps")
-
+    Logger.error("#{__MODULE__} unable to process action. #{inspect(action)}")
     :ignore
   end
 end
+
+# def process(rdx, {component, action}) when is_module(component) do
+#   # Flamelex.GUI.Component.TODOdetails.Reducer.process(rdx, action)
+#   raise "somehow you hit this experimental clause... but I like it - uncomment this raise and lets see what happens"
+#   Module.concat(component, Reducer).process(rdx, action)
+# end
+
+# todo use_module would be better but the compiler hates it
+# This clause is here to make it easier to route actions straight to the appropriate reducer,
+# for the situations when we know (when we fire the action) which reducer should handle it
+# def process(radix_state, {reducer, action}) when is_atom(reducer) do
+#   # Instead of try catch, look in the module, see if there's a function called that.
+
+#   # That could be cool, if we make all actions an actual function in the processor?? (in the end, this is cool but ultimately just pointless complication...
+#   # but the idea _is_ cool, we would call MFA.apply(reducer, action, args) or something like that, and it would look up the function in the module and call it
+
+#   # If that fails/doesn't work, we want to look up custom keymaps in the my_modz.ex (???)
+
+#   # try do
+#   # rescue
+#   #   e in FunctionClauseError ->
+#   #     {:error,
+#   #      "#{__MODULE__} -- Reducer `#{inspect(reducer)}` could not match action: #{inspect(action)}"}
+#   # end
+#   reducer.process(radix_state, action)
+# end
 
 # If we try to open a TidBit and we're already in editor mode, don't switch to Memex mode
 # def process(%{root: %{active_app: active_app}} = radix_state, {

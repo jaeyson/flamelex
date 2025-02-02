@@ -43,6 +43,11 @@ defmodule Flamelex.GUI.Component.QlxWrap.Mutator do
     |> put_in([:apps, :qlx_wrap, :req_save], %{do?: false, data: nil})
   end
 
+  def set_layout(rdx, new_layout) do
+    rdx
+    |> put_in([:apps, :qlx_wrap, :layout], new_layout)
+  end
+
   def request_save_for_buffer(
         %{apps: %{qlx_wrap: %{req_save: %{do?: false, data: nil}}}} = rdx,
         buf_ref

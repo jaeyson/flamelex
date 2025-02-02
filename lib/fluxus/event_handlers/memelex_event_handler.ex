@@ -75,7 +75,7 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
 
     [
       {TODOdetails.Reducer, {:refresh_tidbit, t}},
-      {HighCouncil.Reducer, {:refresh_tidbit, t}},
+      # {HighCouncil.Reducer, {:refresh_tidbit, t}},
       {Flamelex.GUI.Component.AgentHuddle, {:refresh_tidbit, t}},
     ]
   end

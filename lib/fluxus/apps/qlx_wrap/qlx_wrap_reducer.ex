@@ -3,6 +3,7 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   alias Flamelex.Fluxus.RadixState
   alias Flamelex.GUI.Layers.Layer01
   alias Flamelex.GUI.Component.QlxWrap
+  require Logger
 
   def process(
         %RadixState{} = rdx,
@@ -85,6 +86,16 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
         IO.puts "DONT USE THIS SET MODE ANY MORE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     rdx
     |> QlxWrap.Mutator.set_buf_mode(buf_ref, m)
+  end
+
+  def process(%{layers: %{one: %{active_apps: [QlxWrap]}}} = rdx, :split_buffer_pane) do
+    {:ok, buf_ref} = Quillex.Buffer.open(%{mode: {:vim, :insert}})
+
+    rdx
+    # |> Layer01.Mutator.set_layout(:split_screen)
+    |> QlxWrap.Mutator.add_open_buffer(buf_ref)
+    |> QlxWrap.Mutator.set_active_buf(buf_ref)
+    |> QlxWrap.Mutator.set_layout(:split_frame)
   end
 
   # def process(
@@ -171,6 +182,23 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     :ignore
   end
 
+
+  def process(
+        %RadixState{} = rdx,
+        buf_ref,
+        {:newline, :at_cursor} = a
+      ) do
+    IO.inspect(a, label: "Fd UP")
+
+    # Quillex.Buffer.BufferManager.cast_to_buffer(buf_ref, {:action, a})
+    Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
+    :ignore
+
+    # rdx
+    # |> QlxWrap.Mutator.request_save_for_buffer(buf_ref)
+  end
+
+
   # @directions [:up, :down, :left, :right]
   # def process(
   #       %Editor.State{} = state,
@@ -241,6 +269,13 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   #   {:ok, new_radix_state}
   # end
 
+  def process(radix_state, buf_ref, {:delete, :before_cursor} = a) do
+    Logger.error "THIS IS ACTUALY CORRECT"
+    # Quillex.Buffer.BufferManager.cast_to_buffer(buf_ref, a)
+    Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
+    :ignore
+    # radix_state
+  end
   # def process(radix_state, :hide_explorer) do
   #   old_layout = radix_state.root.layers.one.layout
   #   new_layout = Map.merge(old_layout, %{explorer: %{active?: false}})
@@ -252,9 +287,13 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   #   {:ok, new_radix_state}
   # end
 
-  def process(rdx, unmatched_action) do
-    raise "#{__MODULE__} could not match action: #{inspect unmatched_action}"
-    # rdx
+  def process(
+        %RadixState{} = rdx,
+        buf_ref,
+        unmatched_action
+      ) do
+      Logger.error "QlxWrap could not process: #{inspect unmatched_action}"
+    rdx
   end
 end
 

@@ -19,16 +19,25 @@ defmodule Flamelex.GUI.Component.Kommander.Reducer do
     :ignore
   end
 
+  def process(rdx, :execute_kommander) do
+
+    #TODO eventually might need to handle multiple lines here...
+    {:ok, %{data: [kommander_text]}} = Quillex.Buffer.Process.fetch_buf(rdx.apps.kommander.buf_ref)
+
+    # do it in a task so it it crashes it doesnt matter
+    {:ok, _pid} =
+      Task.start(fn ->
+        _res = Code.eval_string(kommander_text, [], __ENV__)
+      end)
+
+    # {value, _binding} = Task.await(eval_task)
+    # IO.inspect value, label: "Kommander result"
+
+    rdx
+    |> process(:close_kommander)
+  end
+
 end
-
-
-#   @moduledoc false
-#   use Flamelex.Lib.ProjectAliases
-#   require Logger
-
-
-
-
 
 #   def process(
 #         %{kommander: %{buffer: %{cursors: [cursor]} = k_buf}} = radix_state,
@@ -56,28 +65,3 @@ end
 #       {:ok, new_radix_state}
 #     end
 #   end
-
-#   def process(radix_state, :execute) do
-#     # IO.inspect radix_state.kommander.buffer.data
-#     {:ok, _pid} =
-#       Task.start(fn ->
-#         res = Code.eval_string(radix_state.kommander.buffer.data, [], __ENV__)
-#       end)
-
-#     # {value, _binding} = Task.await(eval_task)
-#     # IO.inspect value, label: "Kommander result"
-
-#     :ok
-#   end
-
-#   def process(%{kommander: %{buffer: k_buf}} = radix_state, :clear) do
-#     new_radix_state = radix_state |> put_in([:kommander, :buffer], %{k_buf | data: ""})
-
-#     {:ok, new_radix_state}
-#   end
-
-#   def process(radix_state, action) do
-#     IO.puts("#{__MODULE__} failed to process action: #{inspect(action)}")
-#     raise "kommand raise"
-#   end
-# end
