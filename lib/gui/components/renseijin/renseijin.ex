@@ -166,7 +166,8 @@ defmodule Flamelex.GUI.Components.Renseijin do
 
     new_state =
       Renseijin.State.cast(state, %{
-        rotation: @starting_rotation
+        # here we reset the rotation simply because we dont want to keep going beyond 360, but it has nothing to do with the 'starting rotation', even if we start at 180 degrees we still rotate 360 and then need to set it back to zero
+        rotation: 0
       })
 
     handle_render(scene, new_state)
@@ -174,17 +175,10 @@ defmodule Flamelex.GUI.Components.Renseijin do
 
   def handle_info(:tick, %{assigns: %{state: %Renseijin.State{rotation: r} = state}} = scene)
       when r >= 0 and r <= 360 do
-    # Logger.debug("#{__MODULE__} received: :tick")
-
     new_state = Renseijin.State.cast(state, :tick)
-
-    # TODO don't re-render the whole scene here :( this is tragic!!
     handle_render(scene, new_state)
   end
 
-  # def handle_info(:taijitu_tick, scene) do
-  #   {:noreply, scene}
-  # end
 
   def handle_info(:taijitu_tick, %{assigns: assigns} = scene) do
     %{state: state, graph: graph} = assigns
@@ -198,6 +192,11 @@ defmodule Flamelex.GUI.Components.Renseijin do
         :taijitu_tail,
         &Scenic.Primitives.update_opts(&1, stroke: {state.taijitu.stroke_width, new_stroke_color})
       )
+      # this does text which requires fill, sending extra opts, either `stroke` or `fill`, to a text/rectangle, doesn't appear to cause an issue & is ignored, so overlad it who cares
+      # |> Scenic.Graph.modify(
+      #   :taijitu_tail,
+      #   &Scenic.Primitives.update_opts(&1, fill: new_stroke_color)
+      # )
       |> Scenic.Graph.modify(
         :taijitu_text,
         &Scenic.Primitives.update_opts(&1, fill: new_stroke_color)
@@ -222,7 +221,7 @@ defmodule Flamelex.GUI.Components.Renseijin do
   def handle_input({:cursor_pos, {x, y}}, _context, scene) do
     centerpoint = Frame.center(scene.assigns.frame)
     # Logger.debug "#{__MODULE__} handling cursor_pos - centerpoint: #{inspect centerpoint}"
-    if {x, y} |> Renseijin.Utils.within_box?(centerpoint, scene.assigns.state.cool_kid_radius) do
+    if {x, y} |> within_box?(centerpoint, scene.assigns.state.cool_kid_radius) do
       GenServer.cast(self(), :start_animation)
       {:noreply, scene}
     else
@@ -233,6 +232,7 @@ defmodule Flamelex.GUI.Components.Renseijin do
   end
 
   # a way of re-using a code-pattern inside this module, nothing more
+  # TODO don't re-render the whole scene here :( this is tragic!!
   defp handle_render(%Scenic.Scene{} = scene, %Renseijin.State{} = new_state) do
     new_graph = Renseijin.Rend.er(scene.assigns.frame, new_state)
 
@@ -243,5 +243,14 @@ defmodule Flamelex.GUI.Components.Renseijin do
       |> push_graph(new_graph)
 
     {:noreply, new_scene}
+  end
+
+  def within_box?({query_x, query_y}, %{x: base_x, y: base_y}, radius) do
+    low_x = base_x - radius
+    low_y = base_y - radius
+    high_x = base_x + radius
+    high_y = base_y + radius
+
+    low_x <= query_x and query_x <= high_x and low_y <= query_y and query_y <= high_y
   end
 end

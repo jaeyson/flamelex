@@ -64,7 +64,7 @@ defmodule Flamelex.GUI.Menus.MainMenu do
       # TODO if the current app is RapidSelector, it should be close, otherwise show open since basically this opens the RapidSelector even though it's called "memex"
       {"rapid selector",
        fn ->
-         Flamelex.Fluxus.action({Flamelex.GUI.Component.RapidSelector.Reducer, :open_memex})
+         Flamelex.Fluxus.action({Flamelex.GUI.Component.RapidSelector, :open_memex})
        end},
       # {"close", &Flamelex.API.Diary.close/0},
       {"my TODOs", &Memelex.My.TODOs.show/0},

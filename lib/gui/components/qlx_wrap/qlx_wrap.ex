@@ -73,7 +73,14 @@ defmodule Flamelex.GUI.Component.QlxWrap do
         scene
       ) do
 
-    new_graph = QlxWrap.Render.render(scene.assigns.graph, scene, scene.assigns.frame, new_state)
+    new_graph =
+      if new_state.layout == scene.assigns.state.layout do
+        # update existing graph
+        QlxWrap.Render.render(scene.assigns.graph, scene, scene.assigns.frame, new_state)
+      else
+        # redraw it
+        QlxWrap.Render.render(Scenic.Graph.build(), scene, scene.assigns.frame, new_state)
+      end
 
     new_scene =
       scene

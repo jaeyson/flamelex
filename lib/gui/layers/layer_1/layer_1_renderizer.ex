@@ -34,6 +34,18 @@ defmodule Flamelex.GUI.Layers.Layer01.Renderizer do
     end)
   end
 
+  def render(graph, frame, %{layout: :split_screen, active_apps: [app = Flamelex.GUI.Component.QlxWrap]}) do
+    [left_frame, right_frame] = Widgex.Frame.h_split(frame)
+
+    #TODO is this bad? just go fetch it from rdx??
+    #I need the info, it doesn't make sense to save it in layer 1.... so here we are
+    bufs = Flamelex.Fluxus.RadixStore.fetch().apps.qlx_wrap.buffers
+
+    graph
+    |> Flamelex.GUI.Component.QlxWrap.add_to_graph(%{frame: left_frame})
+    |> Flamelex.GUI.Component.QlxWrap.add_to_graph(%{frame: right_frame})
+  end
+
   def render(_f, state) do
     Logger.error("Unrecognised Layer State:\n\n#{prettify_map(state)}")
     {:error, "Unrecognised Layer State"}

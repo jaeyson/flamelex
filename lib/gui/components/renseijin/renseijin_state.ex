@@ -58,8 +58,9 @@ defmodule Flamelex.GUI.Components.Renseijin.State do
 
   # don't start at 0, the ying/yang looks vertical, it's cooler to
   # make it same as the hexagon (verticies meet)
-  @starting_rotation 30
+  @starting_rotation 60
 
+  @transparent_light_grey {:color_rgba, {211, 211, 211, 50}}
   defstruct inner_radius: %{
               scale: 0.97,
               offset_size: 17
@@ -79,8 +80,8 @@ defmodule Flamelex.GUI.Components.Renseijin.State do
             timer: nil,
             primary_stroke: 2,
             # primary_color: :dark_violet,
-            primary_color: {:color_rgba, {148, 0, 211, 97}},
-            relief_stroke: {1, :grey},
+            primary_color: {:color_rgba, {210, 90, 255, 150}},
+            relief_stroke: {1, @transparent_light_grey},
             animation_rate: 17,
             cool_kid_radius: 80,
             tick_rotation: 0.72,
