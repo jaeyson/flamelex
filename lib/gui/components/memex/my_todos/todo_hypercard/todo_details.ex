@@ -13,8 +13,7 @@ defmodule Flamelex.GUI.Component.TODOdetails do
   end
 
   def init(scene, %{frame: %Widgex.Frame{} = frame}, opts) do
-    state = RadixStore.get().apps.todo_details
-
+    state = RadixStore.fetch().apps.todo_details
     graph = TODOdetails.Renderizer.render(Scenic.Graph.build(), frame, state)
 
     init_scene =
