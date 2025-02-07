@@ -392,6 +392,11 @@ defmodule Flamelex.GUI.Component.TODOlist do
     {:noreply, scene}
   end
 
+  def handle_event({:btn_pressed, :new_todo}, _context, scene) do
+    Flamelex.Fluxus.action({TODOlist, :new_todo})
+    {:noreply, scene}
+  end
+
   # def handle_event(e, scene) do
   #   IO.inspect("#{inspect(e)}")
   #   {:noreply, scene}
