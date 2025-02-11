@@ -129,6 +129,15 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     |> QlxWrap.Mutator.set_buf_mode(buf_ref, m)
   end
 
+  def process(_rdx,
+    %Quillex.Structs.BufState.BufRef{} = buf_ref,
+    {:move_cursor, :next_word} = a
+  ) do
+    # ignore on this level, buffer can update & broadcast out any changesk but no radix level changes will occur
+    Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
+    :ignore
+  end
+
   # def process(
   #   %RadixState{} = rdx,
   #   %Quillex.Structs.BufState.BufRef{} = buf_ref,
@@ -199,39 +208,6 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   end
 
 
-  # @directions [:up, :down, :left, :right]
-  # def process(
-  #       %Editor.State{} = state,
-  #       {:move_cursor, direction, x}
-  #     )
-  #     when is_integer(x) and x > 0 and direction in @directions do
-  #   IO.puts("ALSO HITTING REDUCER")
-  #   # state
-  #   # |> Editor.Mutator.move_cursor({direction, x})
-  #   # Flamelex.Lib.Utils.PubSub.broadcast(
-  #   #   topic: {:buffers, hd(state.buffers).uuid},
-  #   #   msg: {:move_cursor, direction, x}
-  #   # )
-
-  #   Quillex.Buffer.BufferManager.send_to_buffer(
-  #     hd(state.buffers).uuid,
-  #     {:move_cursor, direction, x}
-  #   )
-
-  #   :re_routed
-  # end
-
-  # @directions [:up, :down, :left, :right]
-  # def process(
-  #       rdx,
-  #       {:move_cursor, direction, x}
-  #     )
-  #     when is_integer(x) and x > 0 and direction in @directions do
-  #   IO.puts()
-
-  #   rdx
-  #   |> Editor.Mutator.move_cursor({direction, x})
-  # end
 
   #   # IO.puts("HERE WE NEED TO ADD A NEW BUFFER")
   #   {new_rdx, new_buf} = Editor.Mutator.add_buffer(rdx, %{name: "New Buffer"})
@@ -274,7 +250,6 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     # Quillex.Buffer.BufferManager.cast_to_buffer(buf_ref, a)
     Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
     :ignore
-    # radix_state
   end
   # def process(radix_state, :hide_explorer) do
   #   old_layout = radix_state.root.layers.one.layout
@@ -286,6 +261,28 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
 
   #   {:ok, new_radix_state}
   # end
+
+  @directions [:up, :down, :left, :right]
+  def process(
+        %RadixState{} = rdx,
+        buf_ref,
+        {:move_cursor, direction, x} = a
+      )
+      when is_integer(x) and x > 0 and direction in @directions do
+        Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
+        :ignore
+  end
+
+  def process(_rdx, buf_ref, {:delete, :before_cursor} = a) do
+    Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
+    :ignore
+  end
+
+  def process(_rdx, buf_ref, a) do
+    IO.puts "THIS IS EXPERIMENTAL CALLING BUFR #{inspect a}"
+    Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
+    :ignore
+  end
 
   def process(
         %RadixState{} = rdx,

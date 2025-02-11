@@ -4,18 +4,17 @@ defmodule Flamelex.GUI.Component.RapidSelector.State do
   The state holds information about the current story river, sidebar, and history.
   """
   use StructAccess
+  alias Flamelex.GUI.Component.StoryRiver
 
-  defstruct story_river: %{
-              focussed_tidbit: nil,
-              open_tidbits: [],
-              scroll: {0, 0}
-            },
+  defstruct story_river: nil,
             sidebar: %{},
             history: %{keystrokes: []}
 
   # Initialize a new state using the struct
   def new do
-    %__MODULE__{}
+    %__MODULE__{
+      story_river: StoryRiver.State.new()
+    }
   end
 
   # # Update the focused tidbit in story_river

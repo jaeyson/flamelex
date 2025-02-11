@@ -36,12 +36,10 @@ defmodule Flamelex.GUI.Component.RapidSelector do
   end
 
   def init(scene, %{frame: %Widgex.Frame{} = frame}, opts) do
-    # state = Flamelex.Fluxus.RadixStore.get().apps.rapid_selector
-    #     # TODO here, we should fetch the memelex app radix_state & use that going forward, also using that topic
-    #     # dont worry about passing in memex state from above, in fact it wont exist at that level!!
 
-    state = RapidSelector.State.new()
-    graph = render(frame, state)
+    # TODO here, we should fetch the memelex app radix_state & use that going forwar
+    state = Flamelex.Fluxus.RadixStore.get().apps.rapid_selector
+    graph = RapidSelector.Renderizer.render(frame, state)
 
     init_scene =
       scene
@@ -59,7 +57,6 @@ defmodule Flamelex.GUI.Component.RapidSelector do
         {:radix_state_change, %{apps: %{rapid_selector: state}}},
         %{assigns: %{frame: f, state: state}} = scene
       ) do
-    IO.puts("GETTING MSG BUT STATE IS SAME")
     # state variables in pattern match are the same, therefore no state change occured
     {:noreply, scene}
   end
@@ -67,7 +64,7 @@ defmodule Flamelex.GUI.Component.RapidSelector do
   def handle_info(
         # {:radix_state_change, %{apps: %{rapid_selector: %RapidSelector.State{} = new_state}}},
         {:radix_state_change, %{apps: %{rapid_selector: new_state}}},
-        %{assigns: %{frame: f}} = scene
+        scene
       ) do
     # # TODO we shouldn't _always_ need to re-render.. should evaluate the changes first
     # diff = MapDiff.diff(scene.assigns.state, new_state)
@@ -78,9 +75,9 @@ defmodule Flamelex.GUI.Component.RapidSelector do
 
     # keep the old scroll
     # new_state = put_in(new_state, [:scroll], old_state.scroll)
-    IO.puts("GETTING THE MSG")
 
-    new_graph = render(f, new_state)
+    #TODO this is re-rendering entire thing the whole time!!! >.<
+    new_graph = RapidSelector.Renderizer.render(scene.assigns.frame, new_state)
 
     new_scene =
       scene
@@ -96,37 +93,5 @@ defmodule Flamelex.GUI.Component.RapidSelector do
     {:noreply, scene}
   end
 
-  def render(frame, %RapidSelector.State{} = state) do
-    [left, mid_l, _mid, _mid_r, right] = Widgex.Frame.col_split(frame, 5)
 
-    middle_three =
-      Widgex.Frame.new(%{
-        pin: mid_l.pin,
-        size: {3 * mid_l.size.width, mid_l.size.height}
-      })
-
-    Scenic.Graph.build()
-    |> Memelex.GUI.Components.CollectionsMantel.add_to_graph(%{
-      frame: left,
-      state: %{}
-    })
-    |> Memelex.GUI.Components.StoryRiver.add_to_graph(%{
-      frame: middle_three,
-      state: state.story_river
-    })
-    |> Memelex.GUI.Component.Memex.SideBar.add_to_graph(%{
-      frame: right,
-      state: state
-    })
-
-    # |> Scenic.Primitives.text("Memelex",
-    #    font: :ibm_plex_mono,
-    #    # font: args.font.name,
-    #    # font_size: args.font.size,
-    #    # fill: args.theme.text,
-    #    fill: :white,
-    #    # TODO this is what scenic does https://github.com/boydm/scenic/blob/master/lib/scenic/component/input/text_field.ex#L198
-    #    translate: {100, 100}
-    # )
-  end
 end

@@ -1,41 +1,40 @@
 defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
   @moduledoc false
-  alias Flamelex.GUI.Layers.Layer01.Mutator, as: Layer01
   alias Flamelex.GUI.Component.RapidSelector
+  alias Flamelex.GUI.Component.StoryRiver
+  alias Flamelex.GUI.Layers.Layer01
 
   def process(
-        %{
-          memex: %{
-            active?: true,
-            env: %Memelex.Environment{} = _mmx_env
-          }
-        } = rdx_state,
-        :open_memex
-      ) do
+    %{memex: %{active?: true, env: %Memelex.Environment{} = _mmx_env}} = rdx_state,
+    :open_memex
+  ) do
     rdx_state
-    |> Layer01.set_active_apps([RapidSelector])
-    |> Layer01.set_layout(:full_screen)
+    |> Layer01.Mutator.set_active_apps([RapidSelector])
+    |> Layer01.Mutator.set_layout(:full_screen)
   end
 
-  # def process(
-  #       rdx_state,
-  #       :open_memex
-  #     ) do
-  #   IO.puts("NOT OPENING MEMEX")
-  #   rdx_state
-  # end
+  alias Memelex.Lib.Structs.MemexConcepts.V01.Collection
+  def process(radix_state, :create_new_collection) do
+
+    IO.puts "GET TO HERE, NEED TO MUTATE STORY RIVER - make uninstantiated struct & open drft tidbit in river"
+    draft_t = Memelex.My.Collections.new_draft()
+
+    radix_state
+    |> StoryRiver.Mutator.open_tidbit(draft_t)
+  end
 
   def process(
-        %{
-          layers: %{
-            one: %{active_apps: [RapidSelector]}
-            # one: %{active_apps: [RapidSelector]}
-          }
-        } = radix_state,
-        {:open_tidbit, {:new, %{mode: :edit}}}
-      ) do
-    IO.puts("NOT OPENING IT YET BUT HOPEFULLY SOONONONON")
+    %{layers: %{one: %{active_apps: [RapidSelector]}}} = radix_state,
+    {:open_tidbit, {:new, %{mode: :edit}}}
+  ) do
+    # radix_state
+    # |> StoryRiver.Mutator.new_draft_tidbit()
+
+    draft_t = Memelex.My.Wiki.new()
+    # draft_t = Memelex.My.Wiki.new_draft()
+
     radix_state
+    # |> StoryRiver.Mutator.add_and_open_tidbit(draft_t)
   end
 
   def process(
@@ -53,20 +52,21 @@ defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
     case GenServer.call(Memelex.WikiServer, {:get, t}) do
       {:ok, tidbit} ->
         radix_state
-        |> Layer01.open_tidbit(
-          Map.merge(tidbit, %{
-            gui: %{
-              mode: :normal,
-              focus: :title,
-              cursors: %{
-                # TODO we need to ensure no titles contain newoine chars, or if we do, then we need to allow ourselves to handle it - probably we should be able to just say "put the cursor in final position" & let TextPad figure it out...
-                # we need the +1 because a string of length zero is still position 1 in our editor
-                title: %{line: 1, col: String.length(t.title) + 1},
-                body: %{line: 1, col: 1}
-              }
-            }
-          })
-        )
+        |> StoryRiver.Mutator.open_tidbit(tidbit)
+        # |> Layer01.Mutator.open_tidbit(
+        #   Map.merge(tidbit, %{
+        #     gui: %{
+        #       mode: :normal,
+        #       focus: :title,
+        #       cursors: %{
+        #         # TODO we need to ensure no titles contain newoine chars, or if we do, then we need to allow ourselves to handle it - probably we should be able to just say "put the cursor in final position" & let TextPad figure it out...
+        #         # we need the +1 because a string of length zero is still position 1 in our editor
+        #         title: %{line: 1, col: String.length(t.title) + 1},
+        #         body: %{line: 1, col: 1}
+        #       }
+        #     }
+        #   })
+        # )
 
       {:error, _msg} ->
         Logger.warning("Could not open the TidBit, no modification to radix_state was made.")
@@ -101,7 +101,7 @@ defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
         } = radix_state,
         {:close_tidbit, t}
       ) do
-    radix_state |> Layer01.close_tidbit(t)
+    radix_state |> Layer01.Mutator.close_tidbit(t)
   end
 end
 

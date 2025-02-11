@@ -27,20 +27,6 @@ defmodule Flamelex.GUI.Layers.Layer01.Mutator do
   #   )
   # end
 
-  # def close_tidbit(
-  #       %{layers: %{one: %{active_apps: [RapidSelector]}}} = rdx_state,
-  #       %{tidbit_uuid: tidbit_uuid}
-  #     ) do
-  #   update_in(
-  #     rdx_state[:apps][:rapid_selector],
-  #     fn state ->
-  #       state
-  #       |> update_in([:story_river, :open_tidbits], fn open_tidbits ->
-  #         Enum.reject(open_tidbits, &(&1.uuid == tidbit_uuid))
-  #       end)
-  #     end
-  #   )
-  # end
 
   def open_project(
         %Flamelex.Fluxus.RadixState{} = rdx,
