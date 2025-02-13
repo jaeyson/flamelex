@@ -1,5 +1,28 @@
 defmodule Memelex.GUI.Components.HyperCard.Renderizer do
 
+#   # alias ScenicWidgets.Core.Structs.Frame
+
+#   @margin 5
+
+#   @title_height 50
+#   # TODO customizable?
+#   @header_height 100
+#   @toolbar_width 150
+
+#   alias Memelex.GUI.Components.HyperCard
+
+#   # - work on body component displaying how we actually want it to work
+#   # wraps at correct width
+#   # renders infinitely long
+#   # only works for pure text, shows "NOT AVAILABLE" or whatever otherwise (centered ;)
+
+#   # TODO write a blog post about using matches to distinguish the case vs just for convenience (if for convenience, do it inside the function)
+
+#   # REMINDER: Because we render this from within the group
+#   # (which is already getting translated, we only need be
+#   # concerned here with the _relative_ offset from the group.
+#   # Or in other words, this is all referenced off the top-left
+#   # corner of the HyperCard, not the top-left corner of the screen.
 
 
   # def render(
@@ -15,13 +38,34 @@ defmodule Memelex.GUI.Components.HyperCard.Renderizer do
   #   # |> draw_layer_3(new_frame, state)
   # end
 
+  #   def hyper_card(args) do
+#     Scenic.Graph.build()
+#     |> Scenic.Primitives.group(
+#       fn graph ->
+#         graph
+#         |> render_background(args.frame, args.state)
+#         |> render_header(args.frame, args.state)
+#         |> render_body(args.frame, args.state)
+#       end,
+#       id: {:hypercard, args.state.uuid},
+#       translate: args.frame.pin.point
+#     )
+#   end
+
+
   def render(
     %Scenic.Graph{} = graph,
     %Scenic.Scene{} = scene,
     %Widgex.Frame{} = frame,
     %Memelex.TidBit{data: %Memelex.Lib.Structs.MemexConcepts.V01.Collection{}} = t = state) do
+
+      [f1, f2, f3, f4, f5, f6] = calc_frames(frame)
+
       base_graph(graph, group_id(t))
       |> render_background(scene, frame, state, %{bg: :medium_orchid})
+      |> render_toolbar(scene, f2, t)
+      |> render_title(scene, f3, t)
+      |> render_data(scene, f5, t)
   end
 
   def render(
@@ -29,25 +73,6 @@ defmodule Memelex.GUI.Components.HyperCard.Renderizer do
     %Scenic.Scene{} = scene,
     %Widgex.Frame{} = frame,
     {:draft, %Memelex.TidBit{data: %Memelex.Lib.Structs.MemexConcepts.V01.Collection{}} = t} = state) do
-
-
-    # base_graph =
-    #   case Scenic.Graph.get(graph, group_id(t)) do
-    #     [] ->
-    #       graph
-    #       # define a new group, since our `get` didn't find this group_id
-    #       |> Scenic.Primitives.group(
-    #         fn graph ->
-    #           graph
-    #         end,
-    #         id: group_id(t)
-    #         # translate: frame.pin.point
-    #       )
-
-    #     _primitive ->
-    #       # group already exists, no need to define it
-    #       graph
-    #   end
 
     [f1, f2, f3, f4, f5, f6] = calc_frames(frame)
 
@@ -89,6 +114,22 @@ defmodule Memelex.GUI.Components.HyperCard.Renderizer do
     #     |> render_cursor(scene, frame, state, buf)
     # end
   end
+
+  #   def render_header(graph, frame, tidbit) do
+#     graph
+#     |> Scenic.Primitives.group(
+#       fn graph ->
+#         graph
+#         |> render_header_background(frame, tidbit)
+#         |> render_title(frame, tidbit)
+#         |> render_toolbar(frame, tidbit)
+#         |> HyperCard.TagsBox.draw(tidbit.tags)
+#       end,
+#       id: {:hypercard, tidbit.uuid},
+#       translate: {@margin, @margin}
+#     )
+#   end
+
 
   def group_id(%Memelex.TidBit{uuid: t_uuid}) do
     {:hypercard, t_uuid}
@@ -150,6 +191,59 @@ defmodule Memelex.GUI.Components.HyperCard.Renderizer do
     [f1, f2, f3, f4, f5, f6]
   end
   # defp hypercard()
+
+  #   def render_title(graph, frame, %{gui: %{mode: :edit, focus: :body}} = tidbit) do
+#     graph
+#     |> ScenicWidgets.TextPad.add_to_graph(
+#       %{
+#         frame: title_frame(frame),
+#         state:
+#           ScenicWidgets.TextPad.new(%{
+#             mode: :read_only,
+#             text: tidbit.title || "",
+#             font: title_font()
+#           })
+#       },
+#       id: {:hypercard, :body, :text_pad, tidbit.uuid}
+#     )
+#   end
+
+#   def render_title(graph, frame, %{gui: %{mode: :normal}} = tidbit) do
+#     font = title_font()
+#     title_frame = title_frame(frame)
+
+#     graph
+#     |> Scenic.Primitives.group(fn graph ->
+#       graph
+#       |> Scenic.Primitives.rect(title_frame.size.box, fill: :red)
+#       |> Scenic.Primitives.text(tidbit.title,
+#         font: font.name,
+#         font_size: font.size,
+#         fill: :black,
+#         translate: {5, font.ascent}
+#       )
+#     end)
+#   end
+
+  defp render_title(graph, _scene, frame, tidbit) do
+    case Scenic.Graph.get(graph, :title) do
+      [] ->
+        graph
+        |> Scenic.Primitives.rect(frame.size.box,
+            id: :title,
+            fill: :beige,
+            translate: frame.pin.point
+        )
+        |> Scenic.Primitives.text(tidbit.title, font_size: 72, fill: :black, translate: {frame.pin.x+10+26,frame.pin.y+64})
+        # |> Scenic.Components.text_field("new Collection - #{tidbit.data.name}", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
+
+      _primitive ->
+        graph
+        # |> Scenic.Graph.modify(:background,
+        #   &Scenic.Primitives.update_opts(&1, fill: bg_color)
+        # )
+    end
+  end
 
   defp render_draft_title(graph, _scene, frame, tidbit) do
     case Scenic.Graph.get(graph, :title) do
@@ -233,6 +327,109 @@ defmodule Memelex.GUI.Components.HyperCard.Renderizer do
 #     )
 #   end
 
+#   def render_toolbar(graph, frame, %{uuid: tidbit_uuid} = tidbit) do
+#     graph
+#     |> Scenic.Primitives.group(
+#       fn graph ->
+#         graph
+#         |> Scenic.Primitives.rect({@toolbar_width, @title_height}, fill: :cyan)
+#         |> Memelex.GUI.Components.IconButton.add_to_graph(
+#           %{
+#             frame: Widgex.Frame.new(pin: {@toolbar_width - 150, 0}, size: {50, 50}),
+#             icon: "ionicons/black_32/chevron-down.png"
+#           },
+#           id: {:chevron_down, tidbit.uuid}
+#         )
+#         |> Memelex.GUI.Components.IconButton.add_to_graph(
+#           %{
+#             frame: Widgex.Frame.new(pin: {@toolbar_width - 100, 0}, size: {50, 50}),
+#             icon: "ionicons/black_32/edit.png"
+#           },
+#           id: {:edit, tidbit.uuid}
+#         )
+#         |> Memelex.GUI.Components.IconButton.add_to_graph(
+#           %{
+#             frame: Widgex.Frame.new(pin: {@toolbar_width - 50, 0}, size: {50, 50}),
+#             icon: "ionicons/black_32/close.png"
+#           },
+#           id: {:close, tidbit.uuid}
+#         )
+#       end,
+#       translate: {frame.size.width - 2 * @margin - @toolbar_width, 0}
+#     )
+#   end
+
+  #   def render_toolbar(graph, frame, %{gui: %{mode: :edit}} = tidbit) do
+#     graph
+#     |> Scenic.Primitives.group(
+#       fn graph ->
+#         graph
+#         |> Scenic.Primitives.rect({@toolbar_width, @title_height}, fill: :purple)
+#         |> Memelex.GUI.Components.IconButton.add_to_graph(
+#           %{
+#             frame: Widgex.Frame.new(pin: {@toolbar_width - 150, 0}, size: {50, 50}),
+#             icon: "ionicons/black_32/trash.png"
+#           },
+#           id: {:delete, tidbit.uuid}
+#         )
+#         |> Memelex.GUI.Components.IconButton.add_to_graph(
+#           %{
+#             frame: Widgex.Frame.new(pin: {@toolbar_width - 100, 0}, size: {50, 50}),
+#             icon: "ionicons/black_32/backspace.png"
+#           },
+#           id: {:discard_changes, tidbit.uuid}
+#         )
+#         |> Memelex.GUI.Components.IconButton.add_to_graph(
+#           %{
+#             frame: Widgex.Frame.new(pin: {@toolbar_width - 50, 0}, size: {50, 50}),
+#             icon: "ionicons/black_32/save.png"
+#           },
+#           id: {:save, tidbit.uuid}
+#         )
+#       end,
+#       translate: {frame.size.width - 2 * @margin - @toolbar_width, 0}
+#     )
+#   end
+
+defp render_toolbar(graph, _scene, frame, tidbit) do
+  case Scenic.Graph.get(graph, :toolbar) do
+    [] ->
+      graph
+      |> Scenic.Primitives.group(fn graph ->
+        graph
+        |> Scenic.Primitives.rect(frame.size.box,
+            id: :toolbar_bg,
+            fill: :dark_grey,
+            translate: frame.pin.point
+        )
+
+
+        |> Memelex.GUI.Components.IconButton.add_to_graph(
+        %{
+          frame: Widgex.Frame.new(pin: {frame.size.width - 50, 0}, size: {50, 50}),
+          icon: "ionicons/black_32/edit.png"
+        },
+        id: :edit_tidbit,
+        translate: frame.pin.point
+      )
+
+
+      end
+      # translate: {frame.size.width - 2 * @margin - @toolbar_width, 0}
+    )
+
+
+      # |> Scenic.Components.text_field("new Collection", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
+
+    _primitive ->
+      graph
+      # |> Scenic.Graph.modify(:background,
+      #   &Scenic.Primitives.update_opts(&1, fill: bg_color)
+      # )
+  end
+end
+
+
   defp render_draft_toolbar(graph, _scene, frame, tidbit) do
     case Scenic.Graph.get(graph, :toolbar) do
       [] ->
@@ -271,6 +468,88 @@ defmodule Memelex.GUI.Components.HyperCard.Renderizer do
     end
   end
 
+  #   def render_body(graph, frame, %{gui: %{mode: :edit, focus: :title}} = tidbit) do
+#     graph
+#     # TODO this could be cleaned up, why is it a single component inside a group??
+#     |> Scenic.Primitives.group(
+#       fn graph ->
+#         graph
+#         |> ScenicWidgets.TextPad.add_to_graph(
+#           %{
+#             frame: body_frame(frame),
+#             state:
+#               ScenicWidgets.TextPad.new(%{
+#                 mode: :read_only,
+#                 text: tidbit.data,
+#                 font: body_font()
+#               })
+#           },
+#           id: {:hypercard, :body, :text_pad, tidbit.uuid}
+#         )
+#       end,
+#       id: {:hypercard, :body, tidbit.uuid},
+#       translate: {@margin, @margin + @header_height}
+#     )
+#   end
+
+
+
+#   def render_body(graph, frame, %{gui: %{mode: :edit, focus: :body}} = tidbit) do
+#     IO.puts("RENDERING EDIT BODY #{inspect(tidbit.gui.cursors.body)}")
+
+#     graph
+#     |> Scenic.Primitives.group(
+#       fn graph ->
+#         graph
+#         |> ScenicWidgets.TextPad.add_to_graph(
+#           %{
+#             frame: body_frame(frame),
+#             state:
+#               ScenicWidgets.TextPad.new(%{
+#                 text: tidbit.data,
+#                 font: body_font(),
+#                 cursor: tidbit.gui.cursors.body
+#               })
+#           },
+#           id: {:hypercard, :body, :text_pad, tidbit.uuid}
+#         )
+#       end,
+#       id: {:hypercard, :body, tidbit.uuid},
+#       translate: {@margin, @margin + @header_height}
+#     )
+#   end
+
+  defp render_data(graph, _scene, frame, %Memelex.TidBit{data: %Memelex.Lib.Structs.MemexConcepts.V01.Collection{} = col} = state) do
+    case Scenic.Graph.get(graph, :data) do
+      [] ->
+        graph
+        |> Scenic.Primitives.rect(frame.size.box,
+            id: :data,
+            fill: :light_blue,
+            translate: frame.pin.point
+        )
+        |> Scenic.Primitives.text(
+            "Collection type: #{inspect col.type}",
+            fill: :white,
+            font_size: 20,
+            # Offset slightly inside the box
+            translate: {
+              (frame.pin.point |> elem(0)) + 10,
+              (frame.pin.point |> elem(1)) + 20
+            }
+          )
+
+        # |> Scenic.Components.text_field("new Collection", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
+
+      _primitive ->
+        graph
+        # |> Scenic.Graph.modify(:background,
+        #   &Scenic.Primitives.update_opts(&1, fill: bg_color)
+        # )
+    end
+  end
+
+
   defp render_draft_data(graph, _scene, frame, %Memelex.TidBit{data: %Memelex.Lib.Structs.MemexConcepts.V01.Collection{type: nil}} = state) do
     case Scenic.Graph.get(graph, :data) do
       [] ->
@@ -304,7 +583,16 @@ defmodule Memelex.GUI.Components.HyperCard.Renderizer do
 
 
 
+#   def render_background(graph, frame, %{gui: %{mode: m}}) when m in [:normal, :edit] do
+#     color =
+#       case m do
+#         :normal -> :antique_white
+#         :edit -> :yellow
+#       end
 
+#     graph
+#     |> Scenic.Primitives.rect(frame.size.box, fill: color, stroke: {2, :blue})
+#   end
 
   defp render_background(graph, _scene, frame, _state, %{bg: bg_color}) do
     case Scenic.Graph.get(graph, :background) do
