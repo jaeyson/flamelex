@@ -57,7 +57,7 @@ defmodule Memelex.GUI.Components.HyperCard.Renderizer do
     %Scenic.Graph{} = graph,
     %Scenic.Scene{} = scene,
     %Widgex.Frame{} = frame,
-    %Memelex.TidBit{data: %Memelex.Lib.Structs.MemexConcepts.V01.Collection{}} = t = state) do
+    %Memelex.TidBit{} = t = state) do
 
       [f1, f2, f3, f4, f5, f6] = calc_frames(frame)
 
@@ -72,7 +72,7 @@ defmodule Memelex.GUI.Components.HyperCard.Renderizer do
     %Scenic.Graph{} = graph,
     %Scenic.Scene{} = scene,
     %Widgex.Frame{} = frame,
-    {:draft, %Memelex.TidBit{data: %Memelex.Lib.Structs.MemexConcepts.V01.Collection{}} = t} = state) do
+    {:draft, %Memelex.TidBit{} = t} = state) do
 
     [f1, f2, f3, f4, f5, f6] = calc_frames(frame)
 
@@ -327,70 +327,20 @@ defmodule Memelex.GUI.Components.HyperCard.Renderizer do
 #     )
 #   end
 
+
+
+
 #   def render_toolbar(graph, frame, %{uuid: tidbit_uuid} = tidbit) do
 #     graph
 #     |> Scenic.Primitives.group(
 #       fn graph ->
 #         graph
 #         |> Scenic.Primitives.rect({@toolbar_width, @title_height}, fill: :cyan)
-#         |> Memelex.GUI.Components.IconButton.add_to_graph(
-#           %{
-#             frame: Widgex.Frame.new(pin: {@toolbar_width - 150, 0}, size: {50, 50}),
-#             icon: "ionicons/black_32/chevron-down.png"
-#           },
-#           id: {:chevron_down, tidbit.uuid}
-#         )
-#         |> Memelex.GUI.Components.IconButton.add_to_graph(
-#           %{
-#             frame: Widgex.Frame.new(pin: {@toolbar_width - 100, 0}, size: {50, 50}),
-#             icon: "ionicons/black_32/edit.png"
-#           },
-#           id: {:edit, tidbit.uuid}
-#         )
-#         |> Memelex.GUI.Components.IconButton.add_to_graph(
-#           %{
-#             frame: Widgex.Frame.new(pin: {@toolbar_width - 50, 0}, size: {50, 50}),
-#             icon: "ionicons/black_32/close.png"
-#           },
-#           id: {:close, tidbit.uuid}
-#         )
+
 #       end,
 #       translate: {frame.size.width - 2 * @margin - @toolbar_width, 0}
 #     )
 #   end
-
-  #   def render_toolbar(graph, frame, %{gui: %{mode: :edit}} = tidbit) do
-#     graph
-#     |> Scenic.Primitives.group(
-#       fn graph ->
-#         graph
-#         |> Scenic.Primitives.rect({@toolbar_width, @title_height}, fill: :purple)
-#         |> Memelex.GUI.Components.IconButton.add_to_graph(
-#           %{
-#             frame: Widgex.Frame.new(pin: {@toolbar_width - 150, 0}, size: {50, 50}),
-#             icon: "ionicons/black_32/trash.png"
-#           },
-#           id: {:delete, tidbit.uuid}
-#         )
-#         |> Memelex.GUI.Components.IconButton.add_to_graph(
-#           %{
-#             frame: Widgex.Frame.new(pin: {@toolbar_width - 100, 0}, size: {50, 50}),
-#             icon: "ionicons/black_32/backspace.png"
-#           },
-#           id: {:discard_changes, tidbit.uuid}
-#         )
-#         |> Memelex.GUI.Components.IconButton.add_to_graph(
-#           %{
-#             frame: Widgex.Frame.new(pin: {@toolbar_width - 50, 0}, size: {50, 50}),
-#             icon: "ionicons/black_32/save.png"
-#           },
-#           id: {:save, tidbit.uuid}
-#         )
-#       end,
-#       translate: {frame.size.width - 2 * @margin - @toolbar_width, 0}
-#     )
-#   end
-
 defp render_toolbar(graph, _scene, frame, tidbit) do
   case Scenic.Graph.get(graph, :toolbar) do
     [] ->
@@ -399,22 +349,33 @@ defp render_toolbar(graph, _scene, frame, tidbit) do
         graph
         |> Scenic.Primitives.rect(frame.size.box,
             id: :toolbar_bg,
-            fill: :dark_grey,
-            translate: frame.pin.point
+            fill: :dark_grey
+        )
+        |> Memelex.GUI.Components.IconButton.add_to_graph(
+          %{
+            frame: Widgex.Frame.new(pin: {frame.size.width - 150, 0}, size: {50, 50}),
+            icon: "ionicons/black_32/chevron-down.png"
+          },
+          id: {:chevron_down, tidbit.uuid}
+        )
+        |> Memelex.GUI.Components.IconButton.add_to_graph(
+          %{
+            frame: Widgex.Frame.new(pin: {frame.size.width - 100, 0}, size: {50, 50}),
+            icon: "ionicons/black_32/edit.png"
+          },
+          id: {:edit, tidbit.uuid}
+        )
+        |> Memelex.GUI.Components.IconButton.add_to_graph(
+          %{
+            frame: Widgex.Frame.new(pin: {frame.size.width - 50, 0}, size: {50, 50}),
+            icon: "ionicons/black_32/close.png"
+          },
+          id: {:close, tidbit.uuid}
         )
 
 
-        |> Memelex.GUI.Components.IconButton.add_to_graph(
-        %{
-          frame: Widgex.Frame.new(pin: {frame.size.width - 50, 0}, size: {50, 50}),
-          icon: "ionicons/black_32/edit.png"
-        },
-        id: :edit_tidbit,
-        translate: frame.pin.point
-      )
-
-
-      end
+      end,
+      translate: frame.pin.point
       # translate: {frame.size.width - 2 * @margin - @toolbar_width, 0}
     )
 
@@ -530,6 +491,36 @@ end
         )
         |> Scenic.Primitives.text(
             "Collection type: #{inspect col.type}",
+            fill: :white,
+            font_size: 20,
+            # Offset slightly inside the box
+            translate: {
+              (frame.pin.point |> elem(0)) + 10,
+              (frame.pin.point |> elem(1)) + 20
+            }
+          )
+
+        # |> Scenic.Components.text_field("new Collection", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
+
+      _primitive ->
+        graph
+        # |> Scenic.Graph.modify(:background,
+        #   &Scenic.Primitives.update_opts(&1, fill: bg_color)
+        # )
+    end
+  end
+
+  defp render_data(graph, _scene, frame, %Memelex.TidBit{data: data, type: ["text"]} = state) do
+    case Scenic.Graph.get(graph, :data) do
+      [] ->
+        graph
+        |> Scenic.Primitives.rect(frame.size.box,
+            id: :data,
+            fill: :light_blue,
+            translate: frame.pin.point
+        )
+        |> Scenic.Primitives.text(
+            data,
             fill: :white,
             font_size: 20,
             # Offset slightly inside the box
