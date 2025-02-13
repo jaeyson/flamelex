@@ -25,6 +25,13 @@ defmodule Flamelex.GUI.Component.CollectionsMantel.Mutator do
     )
   end
 
+  def refresh_tidbit(
+    _rdx_state,
+    _tidbit
+  ) do
+    :ignore
+  end
+
   def populate_collections(rdx) do
     collections =
       Memelex.My.Wiki.all()

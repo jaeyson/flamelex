@@ -142,14 +142,23 @@ defmodule Memelex.GUI.Components.CollectionsMantel do
 
     # TODO random selection
 
-    # TODO untagged
-    IO.inspect(state.collections, label: "HERHERHERHERHERH")
+    collections = Enum.map(state.collections, fn
+      %{data: %{items: []}} = c ->
+        {:leaf, c.title, [], fn -> Memelex.My.Wiki.open(c) end}
 
+      %{data: %{items: item_list}} = c ->
+        # only go 1 level deep for now
+        all_items =
+          Enum.map(item_list, fn i_leaf -> {:leaf, i_leaf["title"], [], fn -> Memelex.My.Wiki.open(%{"uuid" => i_leaf["uuid"]}) end} end)
+
+        {:open_node, c.title, [1], all_items}
+  end)
+
+    # TODO untagged
     [
       {:open_node, "all TidBits", [1], all_leaves}
       #   {:open_node, "tagged: `bepsi`", [2], bepsi_leaves}
-    ] ++ Enum.map(state.collections, fn c -> {:leaf, c.title, [], fn -> Memelex.My.Wiki.open(c) end} end)
-  end
+    ] ++ collections  end
 
   # def handle_info({:wiki_server, :memex_saved_to_disc}, scene) do
   #   # get child processes & cast update to SideNav
