@@ -1,4 +1,6 @@
 defmodule Flamelex.GUI.Components.Renseijin.State.RainbowColors do
+  @transparency 112
+
   def colors(steps \\ 360) do
     Enum.map(0..(steps - 1), fn i ->
       hue = i / steps
@@ -23,6 +25,6 @@ defmodule Flamelex.GUI.Components.Renseijin.State.RainbowColors do
         5 -> {v, p, q}
       end
 
-    {round(r * 255), round(g * 255), round(b * 255)}
+    {round(r * 255), round(g * 255), round(b * 255), @transparency}
   end
 end

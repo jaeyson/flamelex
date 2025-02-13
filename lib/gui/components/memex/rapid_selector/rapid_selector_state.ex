@@ -5,14 +5,17 @@ defmodule Flamelex.GUI.Component.RapidSelector.State do
   """
   use StructAccess
   alias Flamelex.GUI.Component.StoryRiver
+  # alias Memelex.GUI.Components.CollectionsMantel
 
-  defstruct story_river: nil,
+  defstruct collections_mantel: nil,
+            story_river: nil,
             sidebar: %{},
             history: %{keystrokes: []}
 
   # Initialize a new state using the struct
   def new do
     %__MODULE__{
+      collections_mantel: Flamelex.GUI.Component.CollectionsMantel.State.new(%{}),
       story_river: StoryRiver.State.new()
     }
   end

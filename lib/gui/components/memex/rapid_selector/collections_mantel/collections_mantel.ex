@@ -6,8 +6,9 @@ defmodule Memelex.GUI.Components.CollectionsMantel do
   alias Widgex.Frame
   # alias Flamelex.GUI.Component.Memex
   # alias Flamelex.GUI.Component.RapidSelector.Reducer, as: RootReducer
+  alias Flamelex.GUI.Component.CollectionsMantel
 
-  def validate(%{frame: %Frame{} = _f, state: _state} = data) do
+  def validate(%{frame: %Frame{} = _f, state: %CollectionsMantel.State{} = _state} = data) do
     Logger.debug("#{__MODULE__} accepted params: #{inspect(data)}")
     {:ok, data}
   end
@@ -21,15 +22,18 @@ defmodule Memelex.GUI.Components.CollectionsMantel do
       (opts[:theme] || Scenic.Primitive.Style.Theme.preset(:light))
       |> Scenic.Primitive.Style.Theme.normalize()
 
+    [title_frame, side_nav_frame] = Widgex.Frame.v_split(args.frame, px: 120)
+
     init_graph =
       Scenic.Graph.build()
       |> Scenic.Primitives.group(
         fn graph ->
           graph
+          |> render_collections_pane_title(title_frame)
           |> ScenicWidgets.SideNav.add_to_graph(
             %{
-              frame: args.frame,
-              state: construct_collections_nav_tree()
+              frame: side_nav_frame,
+              state: construct_collections_nav_tree(args.state)
             },
             id: {__MODULE__, :side_nav}
           )
@@ -93,7 +97,34 @@ defmodule Memelex.GUI.Components.CollectionsMantel do
     {:noreply, new_scene}
   end
 
-  def construct_collections_nav_tree do
+  @font_size 40
+  def render_collections_pane_title(graph, f) do
+    graph
+    # need to translate it down to account for the menubar height
+    |> Scenic.Primitives.rect(f.size.box, fill: :cornflower_blue, stroke: {1, :ghost_white}, t: {0, 60})
+    # |> ScenicWidgets.Markup.Header1.draw(frame, "Collections")
+    |> Scenic.Primitives.text("Collections",
+          font_size: @font_size,
+          # note we dont want to use Center here because that returns the centroid of the
+          # frame in _absolute_ coordinates (taking into account frame pins & such)
+          # whereas here we really just want to translate the text relative to the
+          # outer graph, and that outer graph is already translated to the frame pin
+          translate: {f.size.width / 2, (f.size.height - @font_size) / 2 + @font_size + 40}, # TODO magic number at thge end here
+          # translate: {Widgex.Frame.center(f).x, (f.size.height - @font_size) / 2 + @font_size},
+          text_align: :center,
+          fill: :white
+          # fill: Map.get(args, :color, @font_color)
+        )
+    |> Memelex.GUI.Components.IconButton.add_to_graph(
+      %{
+        frame: Frame.new(pin: {f.size.width / 2, f.size.height / 2 + 60 }, size: {22, 22}),
+        icon: "ionicons/black_32/add-circle.png"
+      },
+      id: :new_collection
+    )
+  end
+
+  def construct_collections_nav_tree(state) do
     # TODO note I don't think it can handle having more than one top-level right now....
 
     # TODO need to add indexes to each tidbit so we know what we clicked on (eventually)
@@ -112,11 +143,12 @@ defmodule Memelex.GUI.Components.CollectionsMantel do
     # TODO random selection
 
     # TODO untagged
+    IO.inspect(state.collections, label: "HERHERHERHERHERH")
 
     [
       {:open_node, "all TidBits", [1], all_leaves}
       #   {:open_node, "tagged: `bepsi`", [2], bepsi_leaves}
-    ]
+    ] ++ Enum.map(state.collections, fn c -> {:leaf, c.title, [], fn -> Memelex.My.Wiki.open(c) end} end)
   end
 
   # def handle_info({:wiki_server, :memex_saved_to_disc}, scene) do
@@ -129,6 +161,11 @@ defmodule Memelex.GUI.Components.CollectionsMantel do
 
   #   {:noreply, scene}
   # end
+
+  def handle_cast({:click, :new_collection}, scene) do
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.RapidSelector, :create_new_collection})
+    {:noreply, scene}
+  end
 
   def handle_info({:radix_state_change, _rx}, scene) do
     {:noreply, scene}

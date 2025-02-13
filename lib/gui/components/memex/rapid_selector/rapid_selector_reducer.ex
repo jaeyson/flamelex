@@ -38,35 +38,13 @@ defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
   end
 
   def process(
-        %{
-          layers: %{
-            one: %{active_apps: [RapidSelector]}
-            # one: %{active_apps: [RapidSelector]}
-          }
-        } = radix_state,
-        # radix_state,
+        %{layers: %{one: %{active_apps: [RapidSelector]}}} = radix_state,
         {:open_tidbit, %Memelex.TidBit{} = t}
       ) do
-    IO.puts("MAKING THE MUTATION")
-
     case GenServer.call(Memelex.WikiServer, {:get, t}) do
       {:ok, tidbit} ->
         radix_state
         |> StoryRiver.Mutator.open_tidbit(tidbit)
-        # |> Layer01.Mutator.open_tidbit(
-        #   Map.merge(tidbit, %{
-        #     gui: %{
-        #       mode: :normal,
-        #       focus: :title,
-        #       cursors: %{
-        #         # TODO we need to ensure no titles contain newoine chars, or if we do, then we need to allow ourselves to handle it - probably we should be able to just say "put the cursor in final position" & let TextPad figure it out...
-        #         # we need the +1 because a string of length zero is still position 1 in our editor
-        #         title: %{line: 1, col: String.length(t.title) + 1},
-        #         body: %{line: 1, col: 1}
-        #       }
-        #     }
-        #   })
-        # )
 
       {:error, _msg} ->
         Logger.warning("Could not open the TidBit, no modification to radix_state was made.")
@@ -91,6 +69,21 @@ defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
     # TODO maybe  |> put_in([:root, :active_apps], :desktop) ??
     radix_state
     |> Layer01.set_active_apps([])
+  end
+
+  def process(rdx, {:load_memex, %Memelex.Environment{} = env}) do
+    rdx
+    |> Flamelex.GUI.Component.CollectionsMantel.Mutator.populate_collections()
+  end
+
+  def process(%{
+    layers: %{
+      one: %{active_apps: [RapidSelector]}
+    }
+  } = radix_state, {:refresh_tidbit, t}) do
+    radix_state
+    |> StoryRiver.Mutator.refresh_tidbit(t)
+    |> Flamelex.GUI.Component.CollectionsMantel.Mutator.refresh_tidbit(t)
   end
 
   def process(

@@ -73,6 +73,7 @@ defmodule Flamelex.Fluxus.RadixReducer do
     # TODO when I eventually go multi-env, this may be a problem...
     |> put_in([:memex, :active?], true)
     |> put_in([:memex, :env], env)
+    |> Flamelex.GUI.Component.RapidSelector.Reducer.process({:load_memex, %Memelex.Environment{} = env})
   end
 
   def process(rdx, {Flamelex.GUI.Component.TODOlist, action}) do
@@ -136,6 +137,16 @@ defmodule Flamelex.Fluxus.RadixReducer do
 
   def process(rdx, {Flamelex.Fluxus.Reducers.Projects, action}) do
     Flamelex.Fluxus.Reducers.Projects.process(rdx, action)
+  end
+
+  # these are actions coming from the Memelex application
+  def process(rdx, {Flamelex.Fluxus.MemelexEventHandler, action}) do
+    # broadcast an action that this happened?
+    # IO.inspect(action, label: "this is the msg that bubbled up from memelex")
+
+    # here the idea is that we pass it through the "memex pipeline" - all the apps which might care about this action
+    rdx
+    |> Flamelex.GUI.Component.RapidSelector.Reducer.process(action)
   end
 
   # theoretically we dont need to handle things we dont know how to handle (because Wormhole will prevent a crash)

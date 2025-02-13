@@ -44,7 +44,6 @@ defmodule Flamelex.GUI.Component.AgentHuddle.Reducer do
   end
 
   def process(%RadixState{} = rdx, {:refresh_tidbit, %Memelex.TidBit{} = t}) do
-    IO.inspect(t, label: "REFRESIH WITH WHAT")
     # Logger.error "Cant activate an agent which is already active!! #{agent_t.data.name}"
     rdx
     |> AgentHuddle.Mutator.refresh_tidbit(t)

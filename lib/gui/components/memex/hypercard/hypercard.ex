@@ -17,9 +17,21 @@ defmodule Memelex.GUI.Components.HyperCard do
   # REMINDER: Here we call back to the outer-component with out size, since
   # 		     HyperCards are flexible in size
 
+  #TODo ok now we're here! EXCITING!!
   def validate(%{
     frame: %Widgex.Frame{} = frame,
     state: %Memelex.TidBit{} = state
+  } = data) do
+    {:ok, %{
+      frame: frame,
+      state: state
+    }}
+  end
+
+  # accept drafts too
+  def validate(%{
+    frame: %Widgex.Frame{} = frame,
+    state: {:draft, %Memelex.TidBit{}} = state
   } = data) do
     {:ok, %{
       frame: frame,
@@ -31,25 +43,56 @@ defmodule Memelex.GUI.Components.HyperCard do
     %Scenic.Scene{} = scene,
     %{
       frame: %Widgex.Frame{} = frame,
-      state: %Memelex.TidBit{} = state
+      state: state
     },
     opts
   ) do
-
-    # init_graph = Memelex.GUI.Components.HyperCard.Render.hyper_card(args)
-
-    # graph = Scenic.Graph.build()
     graph = HyperCard.Renderizer.render(Scenic.Graph.build(), scene, frame, state)
 
     init_scene =
       scene
       |> assign(graph: graph)
+      |> assign(state: state)
       |> push_graph(graph)
 
     # Memelex.Utils.PubSub.subscribe()
 
     {:ok, init_scene}
   end
+
+  # def handle_event({:value_changed, :title, new_title}, _context, {:draft, draft_state} = scene) do
+    def handle_event({:value_changed, :title, new_title}, _context, %{assigns: %{state: {:draft, dft_tidbit}}} = scene) do
+    # ignore it for now, the way this component work sit will keep track of it until we go to save (??)
+    # {:draft, %Memelex.TidBit{title: d_title} = d_state} = scene.assigns.state
+
+    IO.puts new_title
+    # {:noreply, {:draft, %{draft_state|title: new_title}}}
+
+    #TODO name the actual collection, call the TidBit Collection `whatever`
+    {:noreply, scene |> assign(state: {:draft, %{dft_tidbit|title: new_title}})}
+  end
+
+  def handle_event(_e, _context, scene) do
+    IO.inspect(scene.assigns.state)
+    # ignore it for now, the way this component work sit will keep track of it until we go to save (??)
+    {:noreply, scene}
+  end
+
+  def handle_cast({:click, :save_tidbit}, %{assigns: %{state: {:draft, dft_tidbit}}} = scene) do
+    IO.puts "SAVING #{inspect dft_tidbit}"
+
+    # here we would attempt to save, if it fails then show an error
+    {:ok, saved_tidbit} = Memelex.My.Wiki.save(dft_tidbit) # this then in turn will eventually throw some kind of action back `tidbit_opened`
+
+    {:noreply, scene |> assign(state: saved_tidbit)}
+  end
+
+  def handle_cast(msg, scene) do
+    IO.puts "got msg #{inspect msg} #{inspect scene.assigns.state}"
+    {:noreply, scene}
+  end
+
+end
 
   # 	def handle_continue(:publish_bounds, scene) do
   #         bounds = Scenic.Graph.bounds(scene.assigns.graph)
@@ -113,4 +156,3 @@ defmodule Memelex.GUI.Components.HyperCard do
   #   # get child processes & cast update to SideNav
   #   {:noreply, scene}
   # end
-end

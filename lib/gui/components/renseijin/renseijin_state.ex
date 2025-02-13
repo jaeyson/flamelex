@@ -80,7 +80,7 @@ defmodule Flamelex.GUI.Components.Renseijin.State do
             timer: nil,
             primary_stroke: 2,
             # primary_color: :dark_violet,
-            primary_color: {:color_rgba, {210, 90, 255, 150}},
+            primary_color: {:color_rgba, {210, 90, 255, 72}},
             relief_stroke: {1, @transparent_light_grey},
             animation_rate: 17,
             cool_kid_radius: 80,

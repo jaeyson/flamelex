@@ -1,41 +1,58 @@
 defmodule Flamelex.GUI.Component.QlxWrap.Render do
   alias Flamelex.GUI.Component.QlxWrap
+  require Logger
 
   def render(
     %Scenic.Graph{} = graph,
     %Scenic.Scene{} = scene,
     %Widgex.Frame{} = frame,
-    #TODO handle multiple open bufs
-    %Flamelex.GUI.Component.QlxWrap.State{buffers: [%Quillex.Structs.BufState.BufRef{} = bf]} = state
+    %Flamelex.GUI.Component.QlxWrap.State{} = state
   ) do
     graph
-    |> render_buffer_panes(scene, frame, state)
+    |> render_buffers(scene, frame, state)
   end
 
-  #TODO make this work for multiple open buffers
-  defp render_buffer_panes(
+  defp render_buffers(
     %Scenic.Graph{} = graph,
     %Scenic.Scene{} = scene,
     %Widgex.Frame{} = frame,
-    %Flamelex.GUI.Component.QlxWrap.State{buffers: [buf_ref]} = state
+    %Flamelex.GUI.Component.QlxWrap.State{buffers: buffers, layout: layout} = state
   ) do
+    case {layout, buffers} do
+      # Single buffer taking the whole frame
+      {:whole_frame, [buf_ref]} ->
+        render_buffer_pane(graph, scene, frame, buf_ref, state)
 
+      # Split frame layout with two buffers
+      {:split_frame, [buf_ref1, buf_ref2]} ->
+        [left_frame, right_frame] = Widgex.Frame.h_split(frame)
+
+        graph
+        |> render_buffer_pane(scene, left_frame, buf_ref1, state)
+        |> render_buffer_pane(scene, right_frame, buf_ref2, state)
+
+      # Unsupported layouts or buffer configurations
+      _ ->
+        Logger.error "Unsupported layout or buffer configuration: #{inspect(layout)}, #{inspect(buffers)}"
+        graph
+        # raise "Unsupported layout or buffer configuration: #{inspect(layout)}, #{inspect(buffers)}"
+    end
+  end
+
+  defp render_buffer_pane(graph, scene, frame, buf_ref, state) do
     case Scenic.Graph.get(graph, {:buffer_pane, buf_ref.uuid}) do
       [] ->
-
         graph
         |> Quillex.GUI.Components.BufferPane.add_to_graph(%{
           frame: frame,
           buf_ref: buf_ref,
           font: state.font
         },
-          # Quillex.GUI.Components.BufferPane.State.new(%{}),
           id: {:buffer_pane, buf_ref.uuid},
           translate: frame.pin.point
         )
 
       _primitive ->
-
         {:ok, [pid]} = Scenic.Scene.child(scene, {:buffer_pane, buf_ref.uuid})
         GenServer.cast(pid, {:frame_change, frame})
         GenServer.cast(pid, {:state_change, buf_ref})

@@ -78,4 +78,29 @@ defmodule Flamelex.GUI.Component.StoryRiver.Mutator do
     )
   end
 
+  def refresh_tidbit(
+    %{layers: %{one: %{active_apps: [RapidSelector]}}} = rdx_state,
+    %Memelex.TidBit{uuid: t_uuid} = t
+  ) do
+    update_in(
+      rdx_state[:apps][:rapid_selector],
+      fn state ->
+
+        new_open_tidbits =
+          state.story_river.open_tidbits
+          |> Enum.map(fn
+            %{uuid: ^t_uuid} ->
+              t
+            {:draft, %{uuid: ^t_uuid}} ->
+              # no longer a draft!
+              t
+            other_t ->
+              other_t
+          end)
+
+        put_in(state, [:story_river, :open_tidbits], new_open_tidbits)
+      end
+    )
+  end
+
 end

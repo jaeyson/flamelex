@@ -13,7 +13,7 @@ defmodule Flamelex.GUI.Component.RapidSelector.Renderizer do
     Scenic.Graph.build()
     |> Memelex.GUI.Components.CollectionsMantel.add_to_graph(%{
       frame: left,
-      state: %{}
+      state: state.collections_mantel
     })
     |> Memelex.GUI.Components.StoryRiver.add_to_graph(%{
       frame: middle_three

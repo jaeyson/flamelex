@@ -64,6 +64,8 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
     #   msg: {:tidbit_saved, t}
     # )
 
+    # my instinct here is still to broadcast... then the components have to handle it?
+    # this way I can just force a refresh anyway? but like what if it's a new
 
     # :ignore
     # [{__MODULE__, mmlx_event}]
@@ -76,8 +78,13 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
     [
       {TODOdetails.Reducer, {:refresh_tidbit, t}},
       # {HighCouncil.Reducer, {:refresh_tidbit, t}},
+      {Flamelex.GUI.Component.RapidSelector, {:refresh_tidbit, t}},
       {Flamelex.GUI.Component.AgentHuddle, {:refresh_tidbit, t}},
     ]
+  end
+
+  def handle(_rdx, {:reloaded_my_modz, _memex}) do
+    :ignore
   end
 
   def handle(_rdx, mmlx_event) do
@@ -87,12 +94,12 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
     # [mmlx_event]
   end
 
-  def handle(_rdx, mmlx_event) do
-    # pass memelex events along to be treated as actions by Fluxus (cause we trust Memelex, right !>?)
-    Logger.warning "implicitely handling a Memelex event as a Flamelex action..."
-    # [{__MODULE__, mmlx_event}]
-    [mmlx_event]
-  end
+  # def handle(_rdx, mmlx_event) do
+  #   # pass memelex events along to be treated as actions by Fluxus (cause we trust Memelex, right !>?)
+  #   Logger.warning "implicitely handling a Memelex event as a Flamelex action..."
+  #   # [{__MODULE__, mmlx_event}]
+  #   [mmlx_event]
+  # end
 end
 
 # def process(radix_state, {:loaded_memex, new_memex_env}) do
@@ -100,7 +107,6 @@ end
 #   # TODO when I eventually go multi-env, this may be a problem...
 #   |> put_in([:memex, :active?], true)
 #   |> put_in([:memex, :env], new_memex_env)
-
 #   # |> Flamelex.Fluxus.Structs.RadixState.calc_menu_map()
 # end
 
