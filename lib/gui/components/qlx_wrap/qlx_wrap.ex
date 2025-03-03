@@ -50,13 +50,24 @@ defmodule Flamelex.GUI.Component.QlxWrap do
   end
 
   # these are actions which "bubble up" from the BufferPane
-  def handle_cast(
-    {Quillex.GUI.Components.BufferPane, :action, buf_ref, [action]},
-    scene
-  ) when is_tuple(action) do
-    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, buf_ref, action})
-    {:noreply, scene}
-  end
+  # def handle_cast(
+  #   {Quillex.GUI.Components.BufferPane, :action, buf_ref, [action]},
+  #   scene
+  # ) when is_tuple(action) do
+  #   Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, buf_ref, action})
+  #   {:noreply, scene}
+  # end
+
+  # these are actions which "bubble up" from the BufferPane
+  # def handle_cast(
+  #   {Quillex.GUI.Components.BufferPane, :action, buf_ref, actions},
+  #   scene
+  # ) when is_list(actions) do
+  #   Enum.each(actions, fn action ->
+  #     Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, buf_ref, action})
+  #   end)
+  #   {:noreply, scene}
+  # end
 
   # Handle state changes where the state hasn't changed
   def handle_info(

@@ -102,7 +102,7 @@ defmodule Flamelex.Fluxus.Radix.UserInputHandler do
   end
 
   def handle(rdx, input) do
-    Logger.warning "Ignoring input #{inspect input}..."
+    Logger.warning "#{__MODULE__} Ignoring input #{inspect input}..."
     :ignore
   end
 end

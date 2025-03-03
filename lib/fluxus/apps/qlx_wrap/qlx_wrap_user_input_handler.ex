@@ -5,10 +5,13 @@ defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
     active_buf = rdx.apps.qlx_wrap.active_buf
 
     # broadcast the input out to the specific buffers
-    Quillex.Utils.PubSub.broadcast(
-      topic: {:buffers, active_buf.uuid},
-      msg: {:user_input, input}
-    )
+    # Quillex.Utils.PubSub.broadcast(
+    #   topic: {:buffers, active_buf.uuid},
+    #   msg: {:user_input, input}
+    # )
+
+    # actions =
+
 
     # buf_ref = rdx.apps.qlx_wrap.active_buf
 
@@ -20,7 +23,15 @@ defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
     #     [{Flamelex.GUI.Component.QlxWrap, action}]
     # end
 
-    :ignore
+    # :ignore
+
+    case Quillex.GUI.Components.BufferPane.UserInputHandler.handle(%{buf_ref: active_buf}, input) do
+      :ignore ->
+        :ignore
+
+      actions ->
+        [{Flamelex.GUI.Component.QlxWrap, active_buf, actions}]
+    end
   end
 end
 

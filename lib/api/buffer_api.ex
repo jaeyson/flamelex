@@ -8,10 +8,27 @@ defmodule Flamelex.API.Buffer do
     # events back up to flamelex for GUI responsiveness... but today is not that day
     # Quillex.Fluxus.declare(rdx, q_action)
 
+
+  # def new(data) when is_bitstring(data) do
+  #   {:ok, radix_state} =
+  #     Flamelex.Fluxus.declare(
+  #       # {QuillExBufrReducer, {:open_buffer, %{data: data, mode: {:vim, :normal}}}}
+  #       :new_buffer
+  #     )
+
+  #   radix_state.apps.editor.active_buf
+  # end
+
     # use declare here so that we can return the new buffer to the
     # caller of this function, providing a nice API
     {:ok, radix_state} = Flamelex.Fluxus.declare({Flamelex.GUI.Component.QlxWrap, :new_buffer})
     radix_state.apps.qlx_wrap.buffers |> List.first()
+  end
+
+  def get(args) do
+    # returns a buffer, if it's live
+    {:ok, buf} = Quillex.Buffer.BufferManager.get_live_buffer(args)
+    buf
   end
 
   @doc """
@@ -51,6 +68,10 @@ defmodule Flamelex.API.Buffer do
 
   def save(%Quillex.Structs.BufState.BufRef{} = buf_ref) do
     Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, {:save, buf_ref}})
+  end
+
+  def save_as(%Quillex.Structs.BufState.BufRef{} = buf_ref, file_path) when is_binary(file_path) do
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, {:save_as, buf_ref, file_path}})
   end
 
   def fetch(%Quillex.Structs.BufState.BufRef{} = buf_ref) do
@@ -93,15 +114,6 @@ end
 #   # alias Flamelex.BufferManager
 #   # alias Flamelex.Fluxus.RadixStore
 
-#   # def new(data) when is_bitstring(data) do
-#   #   {:ok, radix_state} =
-#   #     Flamelex.Fluxus.declare(
-#   #       # {QuillExBufrReducer, {:open_buffer, %{data: data, mode: {:vim, :normal}}}}
-#   #       :new_buffer
-#   #     )
-
-#   #   radix_state.apps.editor.active_buf
-#   # end
 
 #   # this is just for convenience
 #   # def open({:buffer, _id} = buf), do: switch(buf)

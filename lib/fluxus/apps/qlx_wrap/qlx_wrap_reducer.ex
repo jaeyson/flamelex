@@ -5,6 +5,12 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   alias Flamelex.GUI.Component.QlxWrap
   require Logger
 
+  # this... is where it gets complicated
+  # sometimes we need to change state if it updates the display, but many buffer state changes have
+  # to go through BufferManager, and then they in turn get broadcast out...
+  # perhaps we ought to have this one token go through all the pipeline & at the end, process it,
+  # and we just pass that token to BufferManager to get what we need done (with side-effects dont at the end of the pipeline !?!? no?$?)
+
   def process(
         %RadixState{} = rdx,
         :new_buffer
@@ -26,26 +32,73 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     |> QlxWrap.Mutator.cancel_modal()
   end
 
+  # def process(
+  #       %RadixState{} = rdx,
+  #       {:save_buffer, filename}
+  #     )
+  #     when is_binary(filename) do
+  #   # TODO in reality we need to marry this mnodalkk up to a buiffer, need to know if this is a new vs existing filename etc
+  #   # but this will work for now and prove the plumbing is in place
+
+  #   # TODO if we have a memex loaded, we could save this as in the memex, even instead of the filesystem !!
+
+  #   {:ok, cwd} = File.cwd()
+
+  #   buf = Flamelex.API.Buffer.active_buf(rdx)
+  #   text = Enum.join(buf.data, "\n")
+
+  #   File.write!("#{cwd}/#{filename}.txt", text)
+
+  #   rdx
+  #   |> QlxWrap.Mutator.cancel_modal()
+  # end
+
+  def process(
+    %RadixState{} = rdx,
+    {:save, %Quillex.Structs.BufState.BufRef{} = buf_ref}
+  ) do
+    case Quillex.Buffer.Process.fetch_buf(buf_ref) do
+      {:ok, %{source: %{filepath: fp}}} ->
+        {:ok, _saved_buf_state} = Quillex.Buffer.Process.save_as(buf_ref, fp)
+
+        rdx
+        |> QlxWrap.Mutator.save_buffer(buf_ref, %{source: %{filepath: fp}})
+
+      {:ok, other_buf} ->
+        IO.inspect(other_buf)
+        raise "can't save a buffer without a filename for a source"
+    end
+  end
+
   def process(
         %RadixState{} = rdx,
-        {:save_buffer, filename}
+        {:save_as, %Quillex.Structs.BufState.BufRef{} = buf_ref, file_path}
       )
-      when is_binary(filename) do
+      when is_binary(file_path) and file_path != "" do
     # TODO in reality we need to marry this mnodalkk up to a buiffer, need to know if this is a new vs existing filename etc
     # but this will work for now and prove the plumbing is in place
 
     # TODO if we have a memex loaded, we could save this as in the memex, even instead of the filesystem !!
 
-    {:ok, cwd} = File.cwd()
+    # # {:ok, cwd} = File.cwd()
+    # {:ok, buf} = Quillex.Buffer.Process.fetch_buf(buf_ref)
 
-    buf = Flamelex.API.Buffer.active_buf(rdx)
-    text = Enum.join(buf.data, "\n")
+    # # buf = Flamelex.API.Buffer.active_buf(rdx)
+    # text = Enum.join(buf.data, "\n")
 
-    File.write!("#{cwd}/#{filename}.txt", text)
+    # # File.write!(filename, text)
+
+    # Memelex.Utils.FileIO.write(file_path, text)
+
+    {:ok, _saved_buf_state} = Quillex.Buffer.Process.save_as(buf_ref, file_path)
+
+    # IO.inspect(rdx.apps.qlx_wrap.buffers)
 
     rdx
-    |> QlxWrap.Mutator.cancel_modal()
+    |> QlxWrap.Mutator.save_buffer(buf_ref, %{source: %{filepath: file_path}})
+    # |> QlxWrap.Mutator.cancel_modal()
   end
+
 
   def process(
         %RadixState{} = rdx,
@@ -68,6 +121,16 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     |> QlxWrap.Mutator.set_active_buf(buf_ref)
   end
 
+  def process(
+    %RadixState{} = rdx,
+    {:activate_buffer, n}
+  ) when is_integer(n) do
+    buf_ref = Enum.at(rdx.apps.qlx_wrap.buffers, n-1)
+
+    rdx
+    |> QlxWrap.Mutator.set_active_buf(buf_ref)
+  end
+
   # def process(
   #       %RadixState{} = rdx,
   #       {:move_cursor, direction, x}
@@ -78,15 +141,6 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   # |> QlxWrap.Mutator.add_open_buffer(buf_ref)
   # |> QlxWrap.Mutator.set_active_buf(buf_ref)
   # end
-
-  def process(
-        %RadixState{} = rdx,
-        {:set_mode, buf_ref, m}
-      ) do
-        IO.puts "DONT USE THIS SET MODE ANY MORE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    rdx
-    |> QlxWrap.Mutator.set_buf_mode(buf_ref, m)
-  end
 
   def process(%{layers: %{one: %{active_apps: [QlxWrap]}}} = rdx, :split_buffer_pane) do
     {:ok, buf_ref} = Quillex.Buffer.open(%{mode: {:vim, :insert}})
@@ -107,7 +161,6 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   #     buf_ref,
   #     {:action, {:move_cursor, direction, x}}
   #   )
-
   #   :ignore
   # end
 
@@ -123,8 +176,17 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
   def process(
     %RadixState{} = rdx,
     %Quillex.Structs.BufState.BufRef{} = buf_ref,
-    {:set_mode, m}
+    {:set_mode, m} = a
   ) do
+
+    # --- start here. we can update rdx state but dont we rly need to update the buffer???
+    # rdx
+    # |> QlxWrap.Mutator.set_buf_mode(buf_ref, m)
+    Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
+
+
+    # :ignore
+    #TODo why do we need to do both???
     rdx
     |> QlxWrap.Mutator.set_buf_mode(buf_ref, m)
   end
@@ -278,10 +340,49 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     :ignore
   end
 
-  def process(_rdx, buf_ref, a) do
-    IO.puts "THIS IS EXPERIMENTAL CALLING BUFR #{inspect a}"
+  # def process(_rdx, buf_ref, a) do
+  #   IO.puts "THIS IS EXPERIMENTAL CALLING BUFR #{inspect a}"
+  #   Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
+  #   :ignore
+  # end
+
+  def process(_rdx, buf_ref, {:move_cursor, :prev_word} = a) do
     Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
     :ignore
+  end
+
+  # since soooo many go straight here just set this up lol
+  def process(_rdx, buf_ref, a) when is_tuple(a) do
+    Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
+    :ignore
+  end
+
+  def process(rdx, buf_ref, actions) when is_list(actions) do
+    # Enum.map_reduce(actions, fn action ->
+    #   process(rdx, buf_ref, action)
+    # end)
+
+    #TODO it's HERE!! Need to also process them!!!
+    Enum.reduce(actions, rdx, fn a, rdx_acc ->
+      case process(rdx_acc, buf_ref, a) do
+        :ignore ->
+          rdx_acc
+
+        new_rdx ->
+          new_rdx
+      end
+    end)
+
+    # {:ok, _buf_state} = Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, actions})
+    # :ignore
+  end
+
+  def process(
+    %RadixState{} = rdx,
+    unmatched_action
+  ) do
+    Logger.error "QlxWrap could not process: #{inspect unmatched_action}"
+  rdx
   end
 
   def process(

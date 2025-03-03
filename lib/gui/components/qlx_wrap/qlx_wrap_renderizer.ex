@@ -19,17 +19,25 @@ defmodule Flamelex.GUI.Component.QlxWrap.Render do
     %Flamelex.GUI.Component.QlxWrap.State{buffers: buffers, layout: layout} = state
   ) do
     case {layout, buffers} do
-      # Single buffer taking the whole frame
-      {:whole_frame, [buf_ref]} ->
-        render_buffer_pane(graph, scene, frame, buf_ref, state)
+      # # Single buffer taking the whole frame
+      # {:whole_frame, [_buf_ref]} ->
+      #   render_buffer_pane(graph, scene, frame, buf_ref, state)
+
+      # Only show the active buffer in a full frame
+      {:whole_frame, buf_list} when is_list(buf_list) ->
+        IO.puts "RENDERING MULTI BUFFER #{inspect state.active_buf}"
+        render_buffer_pane(graph, scene, frame, :whole_frame, state, state.active_buf)
 
       # Split frame layout with two buffers
-      {:split_frame, [buf_ref1, buf_ref2]} ->
+      {:split_frame, buf_list} ->
         [left_frame, right_frame] = Widgex.Frame.h_split(frame)
 
+        left_buf = Enum.at(buf_list, 0)
+        right_buf = Enum.at(buf_list, 1)
+
         graph
-        |> render_buffer_pane(scene, left_frame, buf_ref1, state)
-        |> render_buffer_pane(scene, right_frame, buf_ref2, state)
+        |> render_buffer_pane(scene, left_frame, {:split, :left}, state, left_buf)
+        |> render_buffer_pane(scene, right_frame, {:split, :right}, state, right_buf)
 
       # Unsupported layouts or buffer configurations
       _ ->
@@ -39,8 +47,12 @@ defmodule Flamelex.GUI.Component.QlxWrap.Render do
     end
   end
 
-  defp render_buffer_pane(graph, scene, frame, buf_ref, state) do
-    case Scenic.Graph.get(graph, {:buffer_pane, buf_ref.uuid}) do
+  defp render_buffer_pane(graph, scene, frame, graph_id, state, %{uuid: buf_ref_uuid} = buf_ref) do
+    # case Scenic.Graph.get(graph, {:buffer_pane, buf_ref.uuid}) do
+    case Scenic.Graph.find(graph, fn
+      {:buffer_pane, _uuid} -> true
+      _otherwise -> false
+    end) do
       [] ->
         graph
         |> Quillex.GUI.Components.BufferPane.add_to_graph(%{
@@ -52,12 +64,25 @@ defmodule Flamelex.GUI.Component.QlxWrap.Render do
           translate: frame.pin.point
         )
 
-      _primitive ->
+      [%Scenic.Primitive{id: {:buffer_pane, ^buf_ref_uuid}}] ->
+        # I need to redraw each bufferPane when we render that buffer, so cant just update existing one
         {:ok, [pid]} = Scenic.Scene.child(scene, {:buffer_pane, buf_ref.uuid})
         GenServer.cast(pid, {:frame_change, frame})
         GenServer.cast(pid, {:state_change, buf_ref})
 
         graph
+
+      [%Scenic.Primitive{id: {:buffer_pane, other_uuid}}] ->
+        graph
+        |> Scenic.Graph.delete({:buffer_pane, other_uuid})
+        |> Quillex.GUI.Components.BufferPane.add_to_graph(%{
+          frame: frame,
+          buf_ref: buf_ref,
+          font: state.font
+        },
+          id: {:buffer_pane, buf_ref.uuid},
+          translate: frame.pin.point
+        )
     end
   end
 end
