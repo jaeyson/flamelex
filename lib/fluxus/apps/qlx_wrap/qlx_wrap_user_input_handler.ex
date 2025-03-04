@@ -1,4 +1,18 @@
 defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
+  use ScenicWidgets.ScenicEventsDefinitions
+
+  # ctrl H moves to other split
+  def handle(rdx, {:key, {:key_h, @key_pressed, [:ctrl]}}) do
+    # IO.inspect(a)
+    # rdx
+    [{Flamelex.GUI.Component.QlxWrap, {:splits, :move_focus, 1, :left}}]
+  end
+
+  def handle(rdx, {:key, {:key_l, @key_pressed, [:ctrl]}}) do
+    # IO.inspect(a)
+    # rdx
+    [{Flamelex.GUI.Component.QlxWrap, {:splits, :move_focus, 1, :right}}]
+  end
 
   def handle(rdx, input) do
 

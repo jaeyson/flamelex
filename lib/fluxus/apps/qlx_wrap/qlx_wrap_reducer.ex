@@ -152,6 +152,14 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     |> QlxWrap.Mutator.set_layout(:split_frame)
   end
 
+  # hacked for now as a toggle
+  def process(rdx, {:splits, :move_focus, 1, _direction}) do
+    [other_buf] = rdx.apps.qlx_wrap.buffers |> Enum.reject(& &1.uuid == rdx.apps.qlx_wrap.active_buf.uuid)
+
+    rdx
+    |> QlxWrap.Mutator.set_active_buf(other_buf)
+  end
+
   # def process(
   #       %RadixState{} = rdx,
   #       buf_ref,
