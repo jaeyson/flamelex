@@ -47,7 +47,7 @@ defmodule Flamelex.GUI.Component.QlxWrap.Render do
     end
   end
 
-  defp render_buffer_pane(graph, scene, frame, graph_id, state, %{uuid: buf_ref_uuid} = buf_ref) do
+  defp render_buffer_pane(graph, scene, frame, layout, state, %{uuid: buf_ref_uuid} = buf_ref) do
     # case Scenic.Graph.get(graph, {:buffer_pane, buf_ref.uuid}) do
     case Scenic.Graph.find(graph, fn
       {:buffer_pane, _uuid} -> true
@@ -58,15 +58,16 @@ defmodule Flamelex.GUI.Component.QlxWrap.Render do
         |> Quillex.GUI.Components.BufferPane.add_to_graph(%{
           frame: frame,
           buf_ref: buf_ref,
-          font: state.font
+          font: state.font,
+          active?: state.active_buf.uuid == buf_ref_uuid
         },
-          id: {:buffer_pane, buf_ref.uuid},
+          id: {layout, {:buffer_pane, buf_ref.uuid}},
           translate: frame.pin.point
         )
 
       [%Scenic.Primitive{id: {:buffer_pane, ^buf_ref_uuid}}] ->
         # I need to redraw each bufferPane when we render that buffer, so cant just update existing one
-        {:ok, [pid]} = Scenic.Scene.child(scene, {:buffer_pane, buf_ref.uuid})
+        {:ok, [pid]} = Scenic.Scene.child(scene, {layout, {:buffer_pane, buf_ref.uuid}})
         GenServer.cast(pid, {:frame_change, frame})
         GenServer.cast(pid, {:state_change, buf_ref})
 
@@ -78,9 +79,10 @@ defmodule Flamelex.GUI.Component.QlxWrap.Render do
         |> Quillex.GUI.Components.BufferPane.add_to_graph(%{
           frame: frame,
           buf_ref: buf_ref,
-          font: state.font
+          font: state.font,
+          active?: state.active_buf.uuid == buf_ref_uuid
         },
-          id: {:buffer_pane, buf_ref.uuid},
+          id: {layout, {:buffer_pane, buf_ref.uuid}},
           translate: frame.pin.point
         )
     end
