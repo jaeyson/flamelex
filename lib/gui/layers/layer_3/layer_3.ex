@@ -1,4 +1,7 @@
 defmodule Flamelex.GUI.Layers.Layer3 do
+  @moduledoc """
+  Layer 3 contains/concerns all popups, modals & overlays.
+  """
   use Scenic.Component
   alias Flamelex.GUI.Layers.Layer3
 

@@ -102,21 +102,25 @@ defmodule Flamelex.GUI.Menus.MainMenu do
 
   def memex_menu(_radix_state) do
     memex_menu = [
-      {"novum memexi", fn -> raise "not yet" end},
-      {"memex aperi", fn ->
-            Flamelex.Fluxus.action(:memex_aperi)
-          end},
-      {:sub_menu, "library",
-       [
-         {"flamelex README", fn -> Flamelex.API.Buffer.open("README.md") end},
-         {"Spinoza's ethics",
-          fn ->
-            Flamelex.API.Buffer.open(
-              "/home/luke/workbench/flx/quillex/test/support/spinozas_ethics_p1.txt"
-            )
-          end},
-         encyclopedia()
-       ]}
+      {"start new memex", fn -> Flamelex.Fluxus.action(:novum_memexi) end},
+      {"load a memex", fn -> Flamelex.Fluxus.action(:memex_aperi) end}
+
+
+      # {"novum memexi", fn -> raise "not yet" end},
+      # {"memex aperi", fn ->
+      #       Flamelex.Fluxus.action(:memex_aperi)
+      #     end},
+      # {:sub_menu, "library",
+      #  [
+      #    {"flamelex README", fn -> Flamelex.API.Buffer.open("README.md") end},
+      #    {"Spinoza's ethics",
+      #     fn ->
+      #       Flamelex.API.Buffer.open(
+      #         "/home/luke/workbench/flx/quillex/test/support/spinozas_ethics_p1.txt"
+      #       )
+      #     end},
+      #    encyclopedia()
+      #  ]}
     ]
 
     {:sub_menu, "Memelex", memex_menu}

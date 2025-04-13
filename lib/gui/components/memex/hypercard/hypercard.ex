@@ -60,39 +60,14 @@ defmodule Memelex.GUI.Components.HyperCard do
     {:ok, init_scene}
   end
 
-  # def handle_event({:value_changed, :title, new_title}, _context, {:draft, draft_state} = scene) do
-    def handle_event({:value_changed, :title, new_title}, _context, %{assigns: %{state: {:draft, dft_tidbit}}} = scene) do
-    # ignore it for now, the way this component work sit will keep track of it until we go to save (??)
-    # {:draft, %Memelex.TidBit{title: d_title} = d_state} = scene.assigns.state
 
-    IO.puts new_title
-    # {:noreply, {:draft, %{draft_state|title: new_title}}}
+  # 	def handle_continue(:render_next_hyper_card, scene) do
+  # 		#TODO use cast to parent instead
+  # 		# send_parent_event(scene, {:value_changed, scene.assigns.id, new_text})
+  # 		Flamelex.GUI.Component.Memex.StoryRiver |> GenServer.cast(:render_next_component)
+  # 		{:noreply, scene}
+  # 	end
 
-    #TODO name the actual collection, call the TidBit Collection `whatever`
-    {:noreply, scene |> assign(state: {:draft, %{dft_tidbit|title: new_title}})}
-  end
-
-  def handle_event(_e, _context, scene) do
-    IO.inspect(scene.assigns.state)
-    # ignore it for now, the way this component work sit will keep track of it until we go to save (??)
-    {:noreply, scene}
-  end
-
-  def handle_cast({:click, :save_tidbit}, %{assigns: %{state: {:draft, dft_tidbit}}} = scene) do
-    IO.puts "SAVING #{inspect dft_tidbit}"
-
-    # here we would attempt to save, if it fails then show an error
-    {:ok, saved_tidbit} = Memelex.My.Wiki.save(dft_tidbit) # this then in turn will eventually throw some kind of action back `tidbit_opened`
-
-    {:noreply, scene |> assign(state: saved_tidbit)}
-  end
-
-  def handle_cast(msg, scene) do
-    IO.puts "got msg #{inspect msg} #{inspect scene.assigns.state}"
-    {:noreply, scene}
-  end
-
-end
 
   # 	def handle_continue(:publish_bounds, scene) do
   #         bounds = Scenic.Graph.bounds(scene.assigns.graph)
@@ -105,25 +80,85 @@ end
   #         {:noreply, scene, {:continue, :render_next_hyper_card}}
   #     end
 
-  # 	def handle_continue(:render_next_hyper_card, scene) do
-  # 		#TODO use cast to parent instead
-  # 		# send_parent_event(scene, {:value_changed, scene.assigns.id, new_text})
-  # 		Flamelex.GUI.Component.Memex.StoryRiver |> GenServer.cast(:render_next_component)
-  # 		{:noreply, scene}
-  # 	end
 
-  # def handle_cast({:click, {:close, tidbit_uuid}}, scene) do
-  #   # TODO pass it up to the story river (including tidbit info)
-  #   # which will then in turn call the API to close it?? Or just keep doing it here??
-  #   Flamelex.Fluxus.action({RapidSelector.Reducer, {:close_tidbit, %{tidbit_uuid: tidbit_uuid}}})
-  #   {:noreply, scene}
-  # end
 
-  # def handle_cast({:click, {:edit, tidbit_uuid}}, scene) do
-  #   IO.puts("SHOULD EDIT TIDBIT")
-  #   # Memelex.Fluxus.action({TidbitReducer, {:set_gui_mode, :edit, %{tidbit_uuid: tidbit_uuid}}})
-  #   {:noreply, scene}
-  # end
+  # def handle_event({:value_changed, :title, new_title}, _context, {:draft, draft_state} = scene) do
+  def handle_event({:value_changed, :title, new_title}, _context, %{assigns: %{state: {:draft, dft_tidbit}}} = scene) do
+    # ignore it for now, the way this component work sit will keep track of it until we go to save (??)
+    # {:draft, %Memelex.TidBit{title: d_title} = d_state} = scene.assigns.state
+
+    IO.puts new_title
+    # {:noreply, {:draft, %{draft_state|title: new_title}}}
+
+    #TODO name the actual collection, call the TidBit Collection `whatever`
+    {:noreply, scene |> assign(state: {:draft, %{dft_tidbit|title: new_title}})}
+  end
+
+  def handle_event({:value_changed, :title, new_title}, _context, %{assigns: %{state: %{meta: %{"is_draft?" => true}} = dft_tidbit}} = scene) do
+    # ignore it for now, the way this component work sit will keep track of it until we go to save (??)
+    # {:draft, %Memelex.TidBit{title: d_title} = d_state} = scene.assigns.state
+
+    IO.puts new_title
+    # {:noreply, {:draft, %{draft_state|title: new_title}}}
+
+    #TODO name the actual collection, call the TidBit Collection `whatever`
+    {:noreply, scene |> assign(state: %{dft_tidbit|title: new_title})}
+  end
+
+  def handle_event({:click, {collection_tidbit_uuid, :collection_new_item}}, _context, scene) do
+
+    #TODO here, need to set up backlinks correctly etc
+    t = Memelex.My.Wiki.new(%{title: "unnamed", meta: %{"is_draft?" => true}})
+
+    Memelex.My.Collections.add_to(collection_tidbit_uuid, t)
+
+    # open the new tidbit here
+    Memelex.My.Wiki.open(t)
+
+    {:noreply, scene}
+  end
+
+  def handle_event(e, _context, scene) do
+    # IO.inspect(scene.assigns.state)
+    IO.puts "ignoring event: #{inspect e}"
+    # ignore it for now, the way this component work sit will keep track of it until we go to save (??)
+    {:noreply, scene}
+  end
+
+  def handle_cast({:click, :save_tidbit}, %{assigns: %{state: %{meta: %{"is_draft?" => true}} = dft_tidbit}} = scene) do
+    IO.puts "SAVING #{inspect dft_tidbit}"
+
+    # here we would attempt to save, if it fails then show an error
+    {:ok, modifyd_tidbit} =
+      Memelex.My.Wiki.modify(dft_tidbit, %{meta: %{"is_draft?" => false}})
+
+    {:ok, saved_tidbit} = Memelex.My.Wiki.save(modifyd_tidbit) # this then in turn will eventually throw some kind of action back `tidbit_opened`
+
+    {:noreply, scene |> assign(state: saved_tidbit)}
+  end
+
+  def handle_cast({:click, :save_tidbit}, %{assigns: %{state: {:draft, dft_tidbit}}} = scene) do
+    IO.puts "SAVING #{inspect dft_tidbit}"
+    IO.puts "GET RID OF THIS :draft SHIT"
+
+    # here we would attempt to save, if it fails then show an error
+    {:ok, saved_tidbit} = Memelex.My.Wiki.save(dft_tidbit) # this then in turn will eventually throw some kind of action back `tidbit_opened`
+
+    {:noreply, scene |> assign(state: saved_tidbit)}
+  end
+
+  def handle_cast({:click, {:close, t_uuid}}, scene) do
+    # TODO pass it up to the story river (including tidbit info)
+    # which will then in turn call the API to close it?? Or just keep doing it here??
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.RapidSelector, {:close_tidbit, %{tidbit_uuid: t_uuid}}})
+    {:noreply, scene}
+  end
+
+  def handle_cast({:click, {:edit, tidbit_uuid}}, scene) do
+    IO.puts("SHOULD EDIT TIDBIT")
+    # Memelex.Fluxus.action({TidbitReducer, {:set_gui_mode, :edit, %{tidbit_uuid: tidbit_uuid}}})
+    {:noreply, scene}
+  end
 
   # def handle_cast({:click, {:save, tidbit_uuid}}, scene) do
   #   Memelex.Fluxus.action({TidbitReducer, {:save_tidbit, %{tidbit_uuid: tidbit_uuid}}})
@@ -140,11 +175,21 @@ end
   #   {:noreply, scene}
   # end
 
-  # def handle_event({:click, {:open_external_textfile, filepath}}, _from, scene) do
+    # def handle_event({:click, {:open_external_textfile, filepath}}, _from, scene) do
   #   IO.puts("Sample button was clicked! #{filepath}")
   #   Memelex.Utils.ToolBag.open_external_textfile(filepath)
   #   {:noreply, scene}
   # end
+
+  def handle_cast(msg, scene) do
+    IO.puts "got msg #{inspect msg} #{inspect scene.assigns.state}"
+    {:noreply, scene}
+  end
+
+end
+
+
+
 
   # def handle_info({:radix_state_change, new_radix_state}, scene) do
   #   # TODO would be better if we caught spcific TidBit changes here, rather

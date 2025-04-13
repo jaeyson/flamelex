@@ -105,6 +105,9 @@ defmodule Flamelex.Fluxus.RadixStore do
         # now process the actions that
         handle_call({:event, %{topic: @flx_actions, data: actions}}, from, rdx)
 
+      {:ok, not_a_list} ->
+        raise "Radix.UserInputHandler.handle returned something that wasn't a list: #{inspect not_a_list}"
+
       {:error, res} ->
         raise "Failed to process some input #{inspect input}! #{inspect res}"
     end
@@ -133,7 +136,7 @@ defmodule Flamelex.Fluxus.RadixStore do
           {:ok, :ignore} ->
             rdx_acc
 
-          # this is same clause as below, probably not very efficient to check it all the time...
+          # this is same clause as below (if it hasnt changed, we replace it with an exact copy), probably not very efficient to check it all the time...
           # {:ok, ^rdx_acc} ->
           #   rdx_acc
 

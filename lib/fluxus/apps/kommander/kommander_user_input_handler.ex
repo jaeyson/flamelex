@@ -22,25 +22,44 @@ defmodule Flamelex.Keymaps.Kommander do
     # Flamelex.API.Kommander.clear()
     # Flamelex.API.Kommander.hide()
     [:close_kommander]
+    |> Enum.map(& {Flamelex.GUI.Component.Kommander, &1})
   end
 
   def handle(_radix_state, @enter_key) do
     # NOTE - `@enter_key` is a member of `@valid_text_input_characters` so we need to match here first
     [:execute_kommander]
+    |> Enum.map(& {Flamelex.GUI.Component.Kommander, &1})
   end
 
   def handle(rdx, input) when input in @valid_text_input_characters do
-    Quillex.Utils.PubSub.broadcast(
-      topic: {:buffers, rdx.apps.kommander.buf_ref.uuid},
-      msg: {:user_input, input}
-    )
+    # Quillex.Utils.PubSub.broadcast(
+    #   topic: {:buffers, rdx.apps.kommander.buf_ref.uuid},
+    #   msg: {:user_input, input}
+    # )
+    # Quillex.GUI.Components.BufferPane.UserInputHandler.handler
 
-    :ignore
+    # :ignore
+
+    case Quillex.GUI.Components.BufferPane.UserInputHandler.handle(%{buf_ref: rdx.apps.kommander.buf_ref}, input) do
+      :ignore ->
+        :ignore
+
+      actions when is_list(actions) ->
+        # wrap actions in a Tuple with the Kommander component, so that they are easily routed to the Kommander reducer
+        actions
+        |> Enum.map(& {Flamelex.GUI.Component.Kommander, &1})
+        # [{Flamelex.GUI.Component.Kommander, actions}]
+    end
   end
 
   # def process(_radix_state, @backspace_key) do
   #   Flamelex.API.Kommander.modify({:backspace, 1, :at_cursor})
   # end
+
+  def handle(_rdx, @backspace_key) do
+    IO.puts "KOMMANDER BACKSPACE"
+    [{Flamelex.GUI.Component.Kommander, {:delete, :before_cursor}}]
+  end
 
   def handle(_rdx, input) do
     Logger.warning "#{__MODULE__} Ignoring input #{inspect input}..."

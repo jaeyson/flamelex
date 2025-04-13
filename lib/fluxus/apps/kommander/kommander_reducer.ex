@@ -1,5 +1,6 @@
 defmodule Flamelex.GUI.Component.Kommander.Reducer do
   alias Flamelex.GUI.Component.Kommander
+  require Logger
 
   def process(rdx, :open_kommander) do
     rdx
@@ -19,6 +20,21 @@ defmodule Flamelex.GUI.Component.Kommander.Reducer do
     :ignore
   end
 
+  def process(rdx, {:delete, :before_cursor} = a) do
+    Quillex.Buffer.BufferManager.call_buffer(rdx.apps.kommander.buf_ref, {:action, a})
+
+    # ignore on this level, buffer can update & broadcast out any changesk but no radix level changes will occur
+    :ignore
+  end
+
+  # def process(rdx, [{:insert, text, :at_cursor} = a]) do
+  #   Logger.warning "this is absurd dont accept a list here, this is a reducer we can handle specific actions here! Lists are for input handlers returning multiple actions"
+  #   Quillex.Buffer.BufferManager.call_buffer(rdx.apps.kommander.buf_ref, {:action, a})
+
+  #   # ignore on this level, buffer can update & broadcast out any changesk but no radix level changes will occur
+  #   :ignore
+  # end
+
   def process(rdx, :execute_kommander) do
 
     #TODO eventually might need to handle multiple lines here...
@@ -37,6 +53,10 @@ defmodule Flamelex.GUI.Component.Kommander.Reducer do
     |> process(:close_kommander)
   end
 
+  def process(rdx, unmatched_action) do
+    Logger.error "#{__MODULE__} failed to match action: #{inspect unmatched_action}"
+    :ignore
+  end
 end
 
 #   def process(

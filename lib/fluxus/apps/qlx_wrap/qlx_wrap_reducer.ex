@@ -359,8 +359,17 @@ defmodule Flamelex.GUI.Component.QlxWrap.Reducer do
     :ignore
   end
 
+  # def process(_rdx, buf_ref, {:set_overlay, :window_manager}) do
+  #   IO.puts "HER HER HER HER HER EHREHER"
+  #   Logger.warning "explicitely handling action #{inspect a} - DO IT EXPLICITELY YOU DOUCHE !!!"
+  #   Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
+  #   :ignore
+  # end
+
+
   # since soooo many go straight here just set this up lol
   def process(_rdx, buf_ref, a) when is_tuple(a) do
+    Logger.warning "implicitely handling action #{inspect a} - DO IT EXPLICITELY YOU DOUCHE !!!"
     Quillex.Buffer.BufferManager.call_buffer(buf_ref, {:action, a})
     :ignore
   end

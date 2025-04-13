@@ -1,7 +1,7 @@
 defmodule Flamelex.App.MixProject do
   use Mix.Project
 
-  @version "0.4.6"
+  @version "0.4.67"
 
   def project do
     [

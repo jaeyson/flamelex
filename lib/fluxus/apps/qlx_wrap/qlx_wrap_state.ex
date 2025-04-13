@@ -42,7 +42,8 @@ defmodule Flamelex.GUI.Component.QlxWrap.State do
             },
             font: nil,
             active_buf: nil,
-            layout: :whole_frame
+            layout: :whole_frame,
+            splits: []
 
             # for keeping track of whether leader was pressed etc we *obviously* should be tracking qlx wrap input in it's own place :facepalm:
             # history: %{keystrokes: []}

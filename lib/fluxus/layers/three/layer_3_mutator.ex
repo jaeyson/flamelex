@@ -13,4 +13,9 @@ defmodule Flamelex.GUI.Layers.Layer3.Mutator do
     rdx
     |> put_in([:layers, :three, :open_memex_popup_open?], false)
   end
+
+  def set_overlay(rdx, :window_manager) do
+    rdx
+    |> put_in([:layers, :three, :show_window_mode_overlay?], false)
+  end
 end

@@ -3,7 +3,8 @@ defmodule Flamelex.GUI.Layers.Layer3.State do
 
   defstruct [
     current_dir: nil,
-    open_memex_popup_open?: false
+    open_memex_popup_open?: false,
+    show_window_mode_overlay?: false
   ]
 
   def new do

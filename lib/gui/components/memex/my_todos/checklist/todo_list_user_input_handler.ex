@@ -13,11 +13,11 @@ defmodule Flamelex.GUI.Component.TODOlist.UserInputHandler do
   end
 
   def handle(rdx, @left_shift) do
-    [{TODOlist.Reducer, {:set_turbo, true}}]
+    [{TODOlist, {:set_turbo, true}}]
   end
 
   def handle(rdx, @left_shift_up) do
-    [{TODOlist.Reducer, {:set_turbo, false}}]
+    [{TODOlist, {:set_turbo, false}}]
   end
 
   def handle(rdx, @escape_key) do

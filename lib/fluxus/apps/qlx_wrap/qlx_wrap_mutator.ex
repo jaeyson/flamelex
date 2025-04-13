@@ -37,7 +37,13 @@ defmodule Flamelex.GUI.Component.QlxWrap.Mutator do
       b_num when is_integer(b_num) ->
         rdx
         |> put_in([:apps, :qlx_wrap, :active_buf], buf_ref)
+        |> update_buffer_activity_states()
     end
+  end
+
+  def update_buffer_activity_states(rdx) do
+    IO.inspect rdx.apps.qlx_wrap.buffers
+    rdx
   end
 
   # this doesnt do the actual save, but it mutates the radix state to show that a save took place / triggers updates required now that we've saved something

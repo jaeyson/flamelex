@@ -52,17 +52,17 @@ defmodule Flamelex.Fluxus.RadixReducer do
     rdx
   end
 
-  def process(rdx, :open_kommander = action) do
-    Flamelex.GUI.Component.Kommander.Reducer.process(rdx, action)
-  end
+  # def process(rdx, :open_kommander = action) do
+  #   Flamelex.GUI.Component.Kommander.Reducer.process(rdx, action)
+  # end
 
-  def process(rdx, :close_kommander = action) do
-    Flamelex.GUI.Component.Kommander.Reducer.process(rdx, action)
-  end
+  # def process(rdx, :close_kommander = action) do
+  #   Flamelex.GUI.Component.Kommander.Reducer.process(rdx, action)
+  # end
 
-  def process(rdx, :execute_kommander = action) do
-    Flamelex.GUI.Component.Kommander.Reducer.process(rdx, action)
-  end
+  # def process(rdx, :execute_kommander = action) do
+  #   Flamelex.GUI.Component.Kommander.Reducer.process(rdx, action)
+  # end
 
   def process(rdx, {Flamelex.GUI.Component.Kommander, action}) do
     Flamelex.GUI.Component.Kommander.Reducer.process(rdx, action)
@@ -104,9 +104,9 @@ defmodule Flamelex.Fluxus.RadixReducer do
     Flamelex.GUI.Component.HighCouncil.Reducer.process(rdx, action)
   end
 
-  def process(rdx, {Flamelex.GUI.Component.TODOlist.Reducer, action}) do
-    Flamelex.GUI.Component.TODOlist.Reducer.process(rdx, action)
-  end
+  # def process(rdx, {Flamelex.GUI.Component.TODOlist.Reducer, action}) do
+  #   Flamelex.GUI.Component.TODOlist.Reducer.process(rdx, action)
+  # end
 
   def process(rdx, {:open_tidbit, %Memelex.TidBit{} = _t} = action) do
     Flamelex.GUI.Component.RapidSelector.Reducer.process(rdx, action)
@@ -126,10 +126,25 @@ defmodule Flamelex.Fluxus.RadixReducer do
     # |> Flamelex.GUI.Component.HighCouncil.Reducer.process(action)
   end
 
+  def process(rdx, {Flamelex.GUI.Component.QlxWrap, {:set_overlay, :window_manager}}) do
+    # TODO do this in layer 3 as an overlay for whole app, or keep it local to QlxWrap? decide later!
+    IO.puts "RADIX MANAGING WINDOW MODE"
+    rdx
+    |> Flamelex.GUI.Layers.Layer3.Mutator.set_overlay(:window_manager)
+  end
+
   def process(rdx, {Flamelex.GUI.Component.QlxWrap, action}) do
+    Logger.warn "got QLX wrap action..."
     # cant wrap {:action, a} here, it just gets too messy since not everything was notated this way
     Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, action)
   end
+
+  # def process(rdx, {Flamelex.GUI.Component.QlxWrap, _buf, {:set_overlay, :window_manager}}) do
+  #   # TODO do this in layer 3 as an overlay for whole app, or keep it local to QlxWrap? decide later!
+  #   IO.puts "RADIX MANAGING WINDOW MODE"
+  #   rdx
+  #   |> Flamelex.GUI.Layers.Layer3.Mutator.set_overlay(:window_manager)
+  # end
 
   def process(rdx, {Flamelex.GUI.Component.QlxWrap, buf, action}) do
     Flamelex.GUI.Component.QlxWrap.Reducer.process(rdx, buf, action)
@@ -148,6 +163,11 @@ defmodule Flamelex.Fluxus.RadixReducer do
     rdx
     |> Flamelex.GUI.Component.RapidSelector.Reducer.process(action)
   end
+
+  # def process(rdx_state, {:set_overlay, :window_manager}) do
+  #   IO.puts "OVERLAY WINDOW MGR"
+  #   :ignore
+  # end
 
   # theoretically we dont need to handle things we dont know how to handle (because Wormhole will prevent a crash)
   # but it does make a lot of noise... sometimes it's nicer to just print the msg, but delete this before 1.0

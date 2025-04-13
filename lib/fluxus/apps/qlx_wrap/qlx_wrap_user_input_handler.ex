@@ -14,7 +14,13 @@ defmodule Flamelex.GUI.Component.QlxWrap.UserInputHandler do
     [{Flamelex.GUI.Component.QlxWrap, {:splits, :move_focus, 1, :right}}]
   end
 
+  #TODO the idea of seperately catching ctrl-W here is intriguing, I guess we could look in rdx to match on the buffer state?
+  # however in practice, either way I think I want to route events to QlxWrap.Reducer anyway, so letting vim normal mode keymap
+  # handle it achieves the same effect, whilst feeling more natural (binding ctrl-W to window management is very much a "vim normal mode keymap" to me)
+
   def handle(rdx, input) do
+
+    IO.puts "QlxWrap user INPUT HANDLER BEGIN HERE"
 
     active_buf = rdx.apps.qlx_wrap.active_buf
 

@@ -294,7 +294,7 @@ defmodule Flamelex.GUI.Component.TODOlist do
   end
 
   def handle_cast({:click, %Memelex.TidBit{} = t}, scene) do
-    Flamelex.Fluxus.action({TODOlist.Reducer, {:open_todo, t}})
+    Flamelex.Fluxus.action({TODOlist, {:open_todo, t}})
     {:noreply, scene}
   end
 

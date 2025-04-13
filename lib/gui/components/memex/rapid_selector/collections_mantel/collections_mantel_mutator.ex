@@ -26,10 +26,13 @@ defmodule Flamelex.GUI.Component.CollectionsMantel.Mutator do
   end
 
   def refresh_tidbit(
-    _rdx_state,
+    rdx,
     _tidbit
   ) do
-    :ignore
+    # :ignore
+
+    # TODO this is not pretty lol but whatever, gets the job done today
+    populate_collections(rdx)
   end
 
   def populate_collections(rdx) do

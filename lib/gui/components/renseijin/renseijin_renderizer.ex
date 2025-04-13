@@ -13,6 +13,7 @@ defmodule Flamelex.GUI.Components.Renseijin.Rend do
   @e 2.718281828
 
   @transparent_light_grey {:color_rgba, {211, 211, 211, 37}}
+  @really_really_transparent_light_grey {:color_rgba, {211, 211, 211, 17}}
 
   # it's called `er` because the module is Rend,
   # to together it's Rend.er
@@ -376,7 +377,8 @@ defmodule Flamelex.GUI.Components.Renseijin.Rend do
     graph
     |> draw_circle(state, factor * Renseijin.State.radius(frame), %{stroke: {
       state.primary_stroke,
-      @transparent_light_grey
+      # @transparent_light_grey
+      @really_really_transparent_light_grey
     }})
     # |> draw_circle(state, factor * Renseijin.State.inner_radius(frame, state), %{stroke: {
     #   state.primary_stroke,
@@ -384,7 +386,8 @@ defmodule Flamelex.GUI.Components.Renseijin.Rend do
     # }})
     |> draw_circle(state, factor * Renseijin.State.outer_radius(frame, state), %{stroke: {
       state.primary_stroke,
-      @transparent_light_grey
+      # @transparent_light_grey
+      @really_really_transparent_light_grey
     }})
   end
 
@@ -464,7 +467,7 @@ defmodule Flamelex.GUI.Components.Renseijin.Rend do
     |> Scenic.Primitives.rounded_rectangle(
       {(@double * 2 * @sin45 * radius)-1, (@double * 2 * @sin45 * radius), 4},
       # fill: :white,
-      stroke: {1, @transparent_light_grey},
+      stroke: {1, @really_really_transparent_light_grey},
       # translate: {-@sin45*radius, -@sin45*radius}
       # translate: c.point
       # translate: {-1/2*frame.size.width, -1/2*frame.size.height}

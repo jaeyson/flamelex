@@ -62,6 +62,8 @@ defmodule Flamelex.Fluxus.Radix.UserInputHandler do
         @lowercase_k
       ) do
     [:open_kommander]
+    # send each action to the RadixReducer wrapped in a routing-tuple, it helps make the reducers easier to write
+    |> Enum.map(& {Flamelex.GUI.Component.Kommander, &1})
   end
 
   def handle(
@@ -76,6 +78,8 @@ defmodule Flamelex.Fluxus.Radix.UserInputHandler do
         @lowercase_k
       ) do
     [:open_kommander]
+    # send each action to the RadixReducer wrapped in a routing-tuple, it helps make the reducers easier to write
+    |> Enum.map(& {Flamelex.GUI.Component.Kommander, &1})
   end
 
   def handle(
@@ -98,6 +102,7 @@ defmodule Flamelex.Fluxus.Radix.UserInputHandler do
         } = rdx,
         input
       ) do
+    Logger.debug "routing through RDX-QlxWrap..."
     QlxWrap.UserInputHandler.handle(rdx, input)
   end
 

@@ -51,6 +51,7 @@ defmodule Flamelex.GUI.Layers.Layer3.Renderizer do
       _primitive ->
         graph
         |> render_popup_modal(frame, state)
+        |> render_overlays(frame, state)
     end
   end
 
@@ -61,6 +62,7 @@ defmodule Flamelex.GUI.Layers.Layer3.Renderizer do
     |> Scenic.Primitives.group(fn graph ->
       graph
       |> render_popup_modal(frame, state)
+      |> render_overlays(frame, state)
     end, id: @layer_3)
   end
 
@@ -94,6 +96,56 @@ defmodule Flamelex.GUI.Layers.Layer3.Renderizer do
         graph
         |> render_background(frame, state)
         |> render_modal_box(frame, state)
+    end
+  end
+
+  # @modal_box :modal_box
+  # defp render_modal_box(graph, frame, state) do
+  #   case Scenic.Graph.get(graph, @modal_box) do
+  #     [] ->
+  #       graph
+  #       |> draw_modal_box(frame, state)
+
+  #     _primitive ->
+  #       # The modal box already exists; no need to redraw
+  #       graph
+  #   end
+  # end
+
+  @overlays :overlays
+  defp render_overlays(graph, frame, %{show_window_mode_overlay?: true} = state) do
+    case Scenic.Graph.get(graph, @overlays) do
+      [] ->
+        right_pad = 2
+        menu_bar_height = 58
+
+        f = Widgex.Frame.new(%{pin: {frame.size.width-200-right_pad, frame.size.height+menu_bar_height-50}, size: {200, 50}})
+
+        graph
+        |> Scenic.Primitives.rect(f.size.box,
+                # id: @background,
+                # fill: {:color_rgba, @semi_transparent_black},
+                translate: f.pin.point,
+                stroke: {2, :blue}
+            )
+        |> ScenicWidgets.Markup.Header6.draw(f, "WINDOW OVRLAY")
+
+      _primitive ->
+        # leave it
+        graph
+    end
+  end
+
+  defp render_overlays(graph, frame, %{show_window_mode_overlay?: false} = state) do
+    case Scenic.Graph.get(graph, @overlays) do
+      [] ->
+        # do nothing don't show it
+        graph
+
+      _primitive ->
+        # If it exists then take it off
+        graph
+        |> Scenic.Graph.delete(@overlays)
     end
   end
 

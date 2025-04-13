@@ -2,7 +2,7 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   @moduledoc """
   This is where Flamelex is able to handle events from Memelex.
   """
-  alias Flamelex.GUI.Component.TODOlist
+  # alias Flamelex.GUI.Component.TODOlist
   alias Flamelex.GUI.Component.TODOdetails
   alias Flamelex.GUI.Component.RapidSelector
   require Logger
@@ -12,7 +12,7 @@ defmodule Flamelex.Fluxus.MemelexEventHandler do
   end
 
   def handle(rdx, :show_todos) do
-    [{TODOlist.Reducer, :show_todos}]
+    [{Flamelex.GUI.Component.TODOlist, :show_todos}]
   end
 
   # def handle(rdx, {:open_tidbit, t}) do

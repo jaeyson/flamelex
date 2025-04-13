@@ -52,6 +52,21 @@ defmodule Memelex.GUI.Components.HyperCard.Renderizer do
 #     )
 #   end
 
+def render(
+    %Scenic.Graph{} = graph,
+    %Scenic.Scene{} = scene,
+    %Widgex.Frame{} = frame,
+    %Memelex.TidBit{meta: %{"is_draft?" => true}} = t = _state) do
+
+    # for now we are rendering draft tidbits like this inside here... yeh
+    render(
+      %Scenic.Graph{} = graph,
+      %Scenic.Scene{} = scene,
+      %Widgex.Frame{} = frame,
+      {:draft, %Memelex.TidBit{} = t}
+    )
+  end
+
 
   def render(
     %Scenic.Graph{} = graph,
@@ -234,7 +249,7 @@ defmodule Memelex.GUI.Components.HyperCard.Renderizer do
             fill: :beige,
             translate: frame.pin.point
         )
-        |> Scenic.Primitives.text(tidbit.title, font_size: 72, fill: :black, translate: {frame.pin.x+10+26,frame.pin.y+64})
+        |> Scenic.Primitives.text(tidbit.title || "", font_size: 72, fill: :black, translate: {frame.pin.x+10+26,frame.pin.y+64})
         # |> Scenic.Components.text_field("new Collection - #{tidbit.data.name}", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
 
       _primitive ->
@@ -254,7 +269,7 @@ defmodule Memelex.GUI.Components.HyperCard.Renderizer do
             fill: :beige,
             translate: frame.pin.point
         )
-        |> Scenic.Components.text_field("new Collection - #{tidbit.data.name}", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
+        |> Scenic.Components.text_field("#{tidbit.title}", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
 
       _primitive ->
         graph
@@ -479,8 +494,16 @@ end
 #       translate: {@margin, @margin + @header_height}
 #     )
 #   end
-
-  defp render_data(graph, _scene, frame, %Memelex.TidBit{data: %Memelex.Lib.Structs.MemexConcepts.V01.Collection{} = col} = state) do
+defp render_data(
+  graph,
+  _scene,
+  frame,
+  %Memelex.TidBit{
+    data: %Memelex.Lib.Structs.MemexConcepts.V01.Collection{
+      type: "ordered_list",
+      items: items
+    } = col
+  } = state) do
     case Scenic.Graph.get(graph, :data) do
       [] ->
         graph
@@ -500,7 +523,39 @@ end
             }
           )
 
-        # |> Scenic.Components.text_field("new Collection", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
+        base_x = frame.pin.point |> elem(0)
+        base_y = frame.pin.point |> elem(1)
+
+        btn_coords = {frame.pin.x + 100, frame.pin.y + 100}
+
+        if items == [] do
+          graph
+          |> Scenic.Components.button(
+            "New item",
+            id: {state.uuid, :collection_new_item},
+            width: 60,
+            height: 30,
+            translate: btn_coords
+          )
+        else
+          # Render each list item
+          Enum.reduce(Enum.with_index(items), graph, fn {item, idx}, acc_graph ->
+            acc_graph
+            |> Scenic.Primitives.text(
+                "#{idx + 1}. #{item["title"]}",
+                fill: :black,
+                font_size: 18,
+                translate: {base_x + 20, base_y + 50 + idx * 25}
+            )
+            |> Scenic.Components.button(
+              "New item",
+              id: {state.uuid, :collection_new_item},
+              width: 60,
+              height: 30,
+              translate: btn_coords
+            )
+          end)
+        end
 
       _primitive ->
         graph
@@ -509,6 +564,70 @@ end
         # )
     end
   end
+
+defp render_data(graph, _scene, frame, %Memelex.TidBit{data: %Memelex.Lib.Structs.MemexConcepts.V01.Collection{} = col} = state) do
+
+
+  case Scenic.Graph.get(graph, :data) do
+    [] ->
+      graph
+      |> Scenic.Primitives.rect(frame.size.box,
+          id: :data,
+          fill: :light_blue,
+          translate: frame.pin.point
+      )
+      |> Scenic.Primitives.text(
+          "Collection type: #{inspect col.type}",
+          fill: :white,
+          font_size: 20,
+          # Offset slightly inside the box
+          translate: {
+            (frame.pin.point |> elem(0)) + 10,
+            (frame.pin.point |> elem(1)) + 20
+          }
+        )
+
+      # |> Scenic.Components.text_field("new Collection", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
+
+    _primitive ->
+      graph
+      # |> Scenic.Graph.modify(:background,
+      #   &Scenic.Primitives.update_opts(&1, fill: bg_color)
+      # )
+  end
+end
+
+# defp render_data(graph, _scene, frame, %Memelex.TidBit{data: %Memelex.Lib.Structs.MemexConcepts.V01.Collection{type: :ordered_list, items: items}} = state) do
+#   base_x = frame.pin.point |> elem(0)
+#   base_y = frame.pin.point |> elem(1)
+
+#   # Base rectangle for the collection
+#   graph =
+#     graph
+#     |> Scenic.Primitives.rect(frame.size.box,
+#         id: :data,
+#         fill: :light_blue,
+#         translate: frame.pin.point
+#     )
+#     |> Scenic.Primitives.text(
+#         "Collection type: \"ordered_list\"",
+#         fill: :white,
+#         font_size: 20,
+#         translate: {base_x + 10, base_y + 20}
+#     )
+
+#   # Render each list item
+#   Enum.reduce(Enum.with_index(items), graph, fn {item, idx}, acc_graph ->
+#     acc_graph
+#     |> Scenic.Primitives.text(
+#         "#{idx + 1}. #{item.name}",
+#         fill: :black,
+#         font_size: 18,
+#         translate: {base_x + 20, base_y + 50 + idx * 25}
+#     )
+#   end)
+# end
+
 
   defp render_data(graph, _scene, frame, %Memelex.TidBit{data: data, type: ["text"]} = state) do
     case Scenic.Graph.get(graph, :data) do
@@ -521,6 +640,97 @@ end
         )
         |> Scenic.Primitives.text(
             data,
+            fill: :white,
+            font_size: 20,
+            # Offset slightly inside the box
+            translate: {
+              (frame.pin.point |> elem(0)) + 10,
+              (frame.pin.point |> elem(1)) + 20
+            }
+          )
+
+        # |> Scenic.Components.text_field("new Collection", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
+
+      _primitive ->
+        graph
+        # |> Scenic.Graph.modify(:background,
+        #   &Scenic.Primitives.update_opts(&1, fill: bg_color)
+        # )
+    end
+  end
+
+  defp render_data(graph, _scene, frame, %Memelex.TidBit{type: [], data: []} = state) do
+    case Scenic.Graph.get(graph, :data) do
+      [] ->
+        graph
+        |> Scenic.Primitives.rect(frame.size.box,
+            id: :data,
+            fill: :light_blue,
+            translate: frame.pin.point
+        )
+        |> Scenic.Primitives.text(
+            "TidBit has no type and contains no data",
+            fill: :white,
+            font_size: 20,
+            # Offset slightly inside the box
+            translate: {
+              (frame.pin.point |> elem(0)) + 10,
+              (frame.pin.point |> elem(1)) + 20
+            }
+          )
+
+        # |> Scenic.Components.text_field("new Collection", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
+
+      _primitive ->
+        graph
+        # |> Scenic.Graph.modify(:background,
+        #   &Scenic.Primitives.update_opts(&1, fill: bg_color)
+        # )
+    end
+  end
+
+  # this is a catchall now, just print the Tidbit... not very sophisticated
+  defp render_data(graph, _scene, frame, %Memelex.TidBit{type: ["text"], data: data} = state) do
+    case Scenic.Graph.get(graph, :data) do
+      [] ->
+        graph
+        |> Scenic.Primitives.rect(frame.size.box,
+            id: :data,
+            fill: :light_blue,
+            translate: frame.pin.point
+        )
+        |> Scenic.Primitives.text(
+            IO.inspect(data),
+            fill: :white,
+            font_size: 20,
+            # Offset slightly inside the box
+            translate: {
+              (frame.pin.point |> elem(0)) + 10,
+              (frame.pin.point |> elem(1)) + 20
+            }
+          )
+
+        # |> Scenic.Components.text_field("new Collection", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
+
+      _primitive ->
+        graph
+        # |> Scenic.Graph.modify(:background,
+        #   &Scenic.Primitives.update_opts(&1, fill: bg_color)
+        # )
+    end
+  end
+
+  defp render_data(graph, _scene, frame, %Memelex.TidBit{data: %Memelex.Lib.Structs.MemexConcepts.V01.Agent{} = state}) do
+    case Scenic.Graph.get(graph, :data) do
+      [] ->
+        graph
+        |> Scenic.Primitives.rect(frame.size.box,
+            id: :data,
+            fill: :light_blue,
+            translate: frame.pin.point
+        )
+        |> Scenic.Primitives.text(
+            "an Agent:" <> state.name,
             fill: :white,
             font_size: 20,
             # Offset slightly inside the box
@@ -572,6 +782,102 @@ end
     end
   end
 
+  defp render_draft_data(graph, _scene, frame, %Memelex.TidBit{data: %Memelex.Lib.Structs.MemexConcepts.V01.Collection{type: "ordered_list", items: []}} = state) do
+    # TODO fetch all the infrom from data.items, create a list of tidbits & links for them too
+
+    case Scenic.Graph.get(graph, :data) do
+      [] ->
+        graph
+        |> Scenic.Primitives.rect(frame.size.box,
+            id: :data,
+            fill: :light_blue,
+            translate: frame.pin.point
+        )
+        |> Scenic.Primitives.text(
+            "No items in the collection",
+            id: :draft_of_notice_txt,
+            fill: :white,
+            font_size: 20,
+            # Offset slightly inside the box
+            translate: {
+              (frame.pin.point |> elem(0)) + 10,
+              (frame.pin.point |> elem(1)) + 20
+            }
+          )
+
+        # |> Scenic.Components.text_field("new Collection", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
+
+      _primitive ->
+        graph
+        # |> Scenic.Graph.modify(:background,
+        #   &Scenic.Primitives.update_opts(&1, fill: bg_color)
+        # )
+    end
+  end
+
+  defp render_draft_data(graph, _scene, frame, %Memelex.TidBit{data: %Memelex.Lib.Structs.MemexConcepts.V01.Collection{type: "ordered_list"}} = state) do
+    # TODO fetch all the infrom from data.items, create a list of tidbits & links for them too
+
+    case Scenic.Graph.get(graph, :data) do
+      [] ->
+        graph
+        |> Scenic.Primitives.rect(frame.size.box,
+            id: :data,
+            fill: :light_blue,
+            translate: frame.pin.point
+        )
+        |> Scenic.Primitives.text(
+            "#{inspect state.data.items}",
+            id: :draft_of_notice_txt,
+            fill: :white,
+            font_size: 20,
+            # Offset slightly inside the box
+            translate: {
+              (frame.pin.point |> elem(0)) + 10,
+              (frame.pin.point |> elem(1)) + 20
+            }
+          )
+
+        # |> Scenic.Components.text_field("new Collection", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
+
+      _primitive ->
+        graph
+        # |> Scenic.Graph.modify(:background,
+        #   &Scenic.Primitives.update_opts(&1, fill: bg_color)
+        # )
+    end
+  end
+
+  defp render_draft_data(graph, _scene, frame, %Memelex.TidBit{type: [], data: []} = state) do
+    case Scenic.Graph.get(graph, :data) do
+      [] ->
+        graph
+        |> Scenic.Primitives.rect(frame.size.box,
+            id: :data,
+            fill: :light_blue,
+            translate: frame.pin.point
+        )
+        |> Scenic.Primitives.text(
+            "since we dont even have a type we shold get people to choose the type first (default to txt but give the option maybe)",
+            id: :draft_of_notice_txt,
+            fill: :white,
+            font_size: 20,
+            # Offset slightly inside the box
+            translate: {
+              (frame.pin.point |> elem(0)) + 10,
+              (frame.pin.point |> elem(1)) + 20
+            }
+          )
+
+        # |> Scenic.Components.text_field("new Collection", id: :title, translate: {frame.pin.x+10,frame.pin.y+10})
+
+      _primitive ->
+        graph
+        # |> Scenic.Graph.modify(:background,
+        #   &Scenic.Primitives.update_opts(&1, fill: bg_color)
+        # )
+    end
+  end
 
 
 #   def render_background(graph, frame, %{gui: %{mode: m}}) when m in [:normal, :edit] do
@@ -616,7 +922,7 @@ end
             translate: f1.pin.point
           )
           |> Scenic.Primitives.text(
-            "draft Collection",
+            "draft Tidbit (maybe collection??)",
             id: :draft_of_notice_txt,
             fill: :white,
             font_size: 20,

@@ -94,7 +94,8 @@ defmodule Flamelex.GUI.Component.RapidSelector.Reducer do
         } = radix_state,
         {:close_tidbit, t}
       ) do
-    radix_state |> Layer01.Mutator.close_tidbit(t)
+    radix_state
+    |> StoryRiver.Mutator.close_tidbit(t)
   end
 end
 

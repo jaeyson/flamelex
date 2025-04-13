@@ -89,6 +89,10 @@ defmodule Flamelex.API.Buffer do
     buf
   end
 
+  def luke do
+    IO.puts "this worked!! new Buffer API fn"
+  end
+
   def switch(n) when is_integer(n) do
     Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, {:activate_buffer, n}})
   end
@@ -99,6 +103,14 @@ defmodule Flamelex.API.Buffer do
 
   def split do
     Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, :split_buffer_pane})
+  end
+
+  def close_active_split do
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, :close_active_split})
+  end
+
+  def select_split(%Quillex.Structs.BufState.BufRef{} = buf_ref) do
+    Flamelex.Fluxus.action({Flamelex.GUI.Component.QlxWrap, {:select_split, buf_ref}})
   end
 
   #TODO use split horizontal as my demo for how to add functionality
