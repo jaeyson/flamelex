@@ -18,7 +18,7 @@ defmodule Flamelex.App.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :observer, :wx],
+      extra_applications: [:logger, :observer, :wx, :inets],
       mod: {Flamelex.App, []}
     ]
   end
@@ -32,12 +32,26 @@ defmodule Flamelex.App.MixProject do
 
   defp deps do
     [
-      # {:scenic, git: "https://github.com/JediLuke/scenic", branch: "update_deps_instructions_for_ubuntu_24", override: true},
-      {:scenic, path: "../scenic", override: true},
+      {:scenic, git: "https://github.com/ScenicFramework/scenic.git", tag: "v0.11.1", override: true},
+      # {:scenic, path: "../scenic_local", override: true},
       {:scenic_driver_local, git: "https://github.com/JediLuke/scenic_driver_local", branch: "no_line_wrap"},
-      {:scenic_widget_contrib, path: "../scenic-widget-contrib", override: true},
-      {:quillex, path: "../quillex", runtime: false},
-      {:memelex, path: "../memelex", runtime: false}, # TODO use same runtime false trick as above
+      {:scenic_widget_contrib, git: "https://github.com/JediLuke/scenic-widget-contrib", branch: "text_pad_wip", override: true},
+
+      # import Quillex & Memelex
+      # ** the reason runtime is false here is because, the boot sequence of
+      #    these apps is managed explicitely by Flamelex, so that we can define
+      #    certain variables before booting the GUI. Thus we dont boot at runtime
+      {:quillex, git: "https://github.com/JediLuke/quillex", runtime: false},
+      # {:memelex, git: "https://github.com/JediLuke/memelex", runtime: false},
+      {:memelex, path: "../memelex"},
+      
+      # MCP server for AI automation
+      # {:scenic_mcp, path: "../scenic_mcp"},
+
+      # one day, try this out again...
+      # {:scenic_layout_o_matic, "~> 0.4.0"},
+
+      # Flamelex deps
       {:truetype_metrics, "~> 0.5"},
       {:font_metrics, "~> 0.5"},
       {:elixir_uuid, "~> 1.2"},
@@ -49,9 +63,13 @@ defmodule Flamelex.App.MixProject do
     ]
   end
 
+  # {:stream_data, "~> 0.5", only: :test}
+  # {:ex_doc, "~> 0.23", only: :dev, runtime: false},
+  # {:map_diff, "~> 1.3"},
+
   defp docs do
     [
-      # source_url: "https://github.com/YourAcct/project",
+      source_url: "https://github.com/JediLuke/flamelex",
       extras: ["README.md"]
       # groups_for_modules: groups_for_modules(),
       # extras: extras(),
@@ -59,26 +77,3 @@ defmodule Flamelex.App.MixProject do
     ]
   end
 end
-
-      # {:stream_data, "~> 0.5", only: :test}
-
-
-      # {:ex_doc, "~> 0.23", only: :dev, runtime: false},
-
-      # {:map_diff, "~> 1.3"},
-      # {:event_bus, "~> 1.6.2"},
-
-      # {:scenic_layout_o_matic, "~> 0.4.0"},
-      # {:ecto_sql, "~> 3.0"},
-
-      # {:scenic_driver_local,
-      #  git: "https://github.com/JediLuke/scenic_driver_local",
-      #  branch: "luke_working",
-      #  override: true},
-      # {:scenic_driver_local, path: "../scenic_driver_local", override: true},
-      # {:scenic_widget_contrib, path: "../scenic-widget-contrib", override: true},
-      # {:memelex, git: "https://github.com/JediLuke/memelex"},
-      # {:memelex, path: "../memelex"},
-      # Quillex boot is managed explicitely be Flamelex so that we can
-      # define certain environment variables before we try and boot the
-      # GUI, so dont boot at runtime
