@@ -259,6 +259,11 @@ fi
 echo "Fetching dependencies..."
 mix deps.get
 
+echo "Compiling dependencies only..."
+mix deps.compile
+
+echo "✅ Dependencies ready!"
+
 echo "Compiling Flamelex..."
 mix compile
 
@@ -302,19 +307,40 @@ fi
 # ------------------------------
 # 7. Final message and instructions
 # ------------------------------
+# Installation complete
 echo ""
-echo "🎉 Flamelex installation complete!"
+echo "✨ Base materials transmuted successfully! ✨"
+echo "🧪 The apparatus is prepared. The Great Work begins..."
+sleep 0.5
+
 echo ""
-echo "To start using Flamelex:"
-echo "  1. Open a new terminal (or run: source $SHELL_RC)"
-echo "  2. Run: flx"
+echo "         🜀     🜁     🜂     🜃     ⚛️     🔥"
 echo ""
-echo "If you encounter any issues:"
-echo "  - Make sure all dependencies compiled successfully"
-echo "  - Check that you have OpenGL drivers installed"
-echo "  - On Linux, ensure you have a desktop environment running"
+echo "              🔥 FLAMELEX READY 🔥"
 echo ""
-echo "For troubleshooting, see: https://hexdocs.pm/scenic/install_dependencies.html"
+echo "           Where code and spirit transmute"
+echo "             in the digital crucible"
 echo ""
-echo "Happy coding with Flamelex! 🔥"
+echo "         🔥     ⚛️     🜃     🜂     🜁     🜀"
+echo ""
+
+# Terminal usage example
+echo "╭──────────────────────────────────────╮"
+echo "│ 🖥️  Terminal Usage                   │"
+echo "├──────────────────────────────────────┤"
+echo "│                                      │"
+echo "│  \$ flx                              │"
+echo "│  # Starts Flamelex                   │"
+echo "│                                      │"
+echo "│  \$ flx --help                       │"
+echo "│  # Show help (if available)          │"
+echo "│                                      │"
+echo "╰──────────────────────────────────────╯"
+echo ""
+
+echo "🧬 Ready to begin your digital transmutation!"
+echo "📖 Troubleshooting: https://hexdocs.pm/scenic/install_dependencies.html"
+echo ""
+echo "    🌟 THE ATHANOR AWAITS YOUR COMMAND 🌟"
+echo ""
 
