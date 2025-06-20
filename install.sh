@@ -75,20 +75,27 @@ mix compile
 # ------------------------------
 # 5. Create flx launcher command
 # ------------------------------
-FLX_CMD="iex -S mix run"
-
 echo "Setting up flx command..."
 
-FLX_PATH="$PWD"
-
-SHELL_RC="$HOME/.bashrc"
-if [[ "$SHELL" == */zsh ]]; then
-  SHELL_RC="$HOME/.zshrc"
-fi
-
-if ! grep -q "alias flx=" "$SHELL_RC"; then
-  echo "alias flx='cd $FLX_PATH && $FLX_CMD'" >> "$SHELL_RC"
-  echo "Added alias to $SHELL_RC"
+# Make flx script executable (it should already be in parent directory)
+FLX_SCRIPT="$(dirname "$PWD")/flx"
+if [[ -f "$FLX_SCRIPT" ]]; then
+  chmod +x "$FLX_SCRIPT"
+  echo "Made flx script executable at $FLX_SCRIPT"
+  
+  # Add to PATH if not already there
+  BIN_DIR="$(dirname "$FLX_SCRIPT")"
+  SHELL_RC="$HOME/.bashrc"
+  if [[ "$SHELL" == */zsh ]]; then
+    SHELL_RC="$HOME/.zshrc"
+  fi
+  
+  if ! grep -q "export PATH.*$BIN_DIR" "$SHELL_RC" 2>/dev/null; then
+    echo "export PATH=\"$BIN_DIR:\$PATH\"" >> "$SHELL_RC"
+    echo "Added $BIN_DIR to PATH in $SHELL_RC"
+  fi
+else
+  echo "Warning: flx script not found at $FLX_SCRIPT"
 fi
 
 # ------------------------------
