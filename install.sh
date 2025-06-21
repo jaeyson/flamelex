@@ -313,34 +313,61 @@ echo "✨ Base materials transmuted successfully! ✨"
 echo "🧪 The apparatus is prepared. The Great Work begins..."
 sleep 0.5
 
-echo ""
-echo "         🜀     🜁     🜂     🜃     ⚛️     🔥"
-echo ""
-echo "              🔥 FLAMELEX READY 🔥"
-echo ""
-echo "           Where code and spirit transmute"
-echo "             in the digital crucible"
-echo ""
-echo "         🔥     ⚛️     🜃     🜂     🜁     🜀"
-echo ""
+# ── colour helpers ────────────────────────────────────────────────
+GREEN='\033[1;32m'   # bright green
+RESET='\033[0m'
+
+# ── small centering helper (assumes 64-char interior width) ──────
+WIDTH=64
+
+center () {
+  local s="$1"
+
+  # Detect emojis / CJK / other double-width glyphs you care about
+  local wide_extra=0
+  [[ "$s" == *"🍾"* ]] && (( wide_extra+=1 ))   # each 🍾 counts as one extra column
+  # Add more patterns if needed, e.g. 🜁🜂🜃🜄: [[ "$s" =~ [🜁🜂🜃🜄] ]] && (( wide_extra+=${#BASH_REMATCH[@]} ))
+
+  local visual_len=$(( ${#s} + wide_extra ))
+  local pad=$(( (WIDTH - visual_len) / 2 ))
+
+  printf '║%*s%s%*s║\n' "$pad" "" "$s" "$(( WIDTH - visual_len - pad ))" ""
+}
+
+# ── Hermetic scroll ───────────────────────────────────────────────
+echo "${GREEN}"
+echo
+echo "╔════════════════════════════════════════════════════════════════╗"
+center "🜁   🜂   🜃   🜄   ☿"
+center ""
+center "Eval conjures apply, and apply folds back into eval—"
+center "the primal pulse animating creation itself. In that"
+center "recursive beat, code and cosmos mirror one another,"
+center "fulfilling the alchemists’ vow *as above, so below*."
+center ""
+center "Hand in hand, explorer, we entwingle the unfolding"
+center "cosmos — transmutation at machine speed! 🍾"
+center ""
+center "☿   🜄   🜃   🜂   🜁"
+echo "╚════════════════════════════════════════════════════════════════╝"
+echo "${RESET}"
+
 
 # Terminal usage example
 echo "╭──────────────────────────────────────╮"
-echo "│ 🖥️  Terminal Usage                   │"
+echo "│ 🖥️  Terminal Usage                    │"
 echo "├──────────────────────────────────────┤"
 echo "│                                      │"
-echo "│  \$ flx                              │"
+echo "│  \$ flx                               │"
 echo "│  # Starts Flamelex                   │"
 echo "│                                      │"
-echo "│  \$ flx --help                       │"
+echo "│  \$ flx --help                        │"
 echo "│  # Show help (if available)          │"
 echo "│                                      │"
 echo "╰──────────────────────────────────────╯"
 echo ""
 
-echo "🧬 Ready to begin your digital transmutation!"
+echo "🔥 Flamelex is ready to use. The Athanor awais your command 🌟"
 echo "📖 Troubleshooting: https://hexdocs.pm/scenic/install_dependencies.html"
 echo ""
-echo "    🌟 THE ATHANOR AWAITS YOUR COMMAND 🌟"
 echo ""
-
