@@ -273,14 +273,14 @@ mix compile
 echo ""
 echo "🚀 Setting up flx global command..."
 
-# Make flx script executable (it should already be in parent directory)
-FLX_SCRIPT="$(dirname "$PWD")/flx"
+# Make flx script executable (it should be in the current directory)
+FLX_SCRIPT="$PWD/flx"
 if [[ -f "$FLX_SCRIPT" ]]; then
   chmod +x "$FLX_SCRIPT"
   echo "Made flx script executable at $FLX_SCRIPT"
   
   # Add to PATH if not already there
-  BIN_DIR="$(dirname "$FLX_SCRIPT")"
+  BIN_DIR="$PWD"
   
   # Determine shell RC file (reuse logic from earlier)
   SHELL_RC=""

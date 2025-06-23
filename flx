@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Flamelex launcher script
+# This script boots Flamelex from anywhere on the system
+
+set -e
+
+# Get the directory where this script is located
+FLAMELEX_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Change to the flamelex directory
+cd "$FLAMELEX_DIR"
+
+# Launch Flamelex with any passed arguments
+exec iex -S mix run -- "$@"
