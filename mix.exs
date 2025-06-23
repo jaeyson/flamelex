@@ -1,7 +1,7 @@
 defmodule Flamelex.App.MixProject do
   use Mix.Project
 
-  @version "0.4.67"
+  @version "0.4.7"
 
   def project do
     [
@@ -42,10 +42,11 @@ defmodule Flamelex.App.MixProject do
       #    these apps is managed explicitely by Flamelex, so that we can define
       #    certain variables before booting the GUI. Thus we dont boot at runtime
       {:quillex, git: "https://github.com/JediLuke/quillex", runtime: false},
-      # {:memelex, git: "https://github.com/JediLuke/memelex", runtime: false},
-      {:memelex, path: "../memelex"},
+      {:memelex, git: "https://github.com/JediLuke/memelex", runtime: false},
+      # {:memelex, path: "../memelex"},
       
       # MCP server for AI automation
+      {:scenic_mcp, git: "https://github.com/scenic-contrib/scenic_mcp_experimental"},
       # {:scenic_mcp, path: "../scenic_mcp"},
 
       # one day, try this out again...
@@ -60,12 +61,13 @@ defmodule Flamelex.App.MixProject do
       {:tzdata, "~> 1.0.4"},
       {:event_bus, git: "https://github.com/JediLuke/event_bus", override: true},
       {:struct_access, "~> 1.1.2"}
+
+      # maybe one day we will bring these back
+      # {:stream_data, "~> 0.5", only: :test}
+      # {:ex_doc, "~> 0.23", only: :dev, runtime: false},
+      # {:map_diff, "~> 1.3"},
     ]
   end
-
-  # {:stream_data, "~> 0.5", only: :test}
-  # {:ex_doc, "~> 0.23", only: :dev, runtime: false},
-  # {:map_diff, "~> 1.3"},
 
   defp docs do
     [
