@@ -304,6 +304,12 @@ else
   echo "You may need to create it manually or run this script from the correct directory."
 fi
 
+# Source the shell configuration to make flx available immediately
+if [[ -n "$SHELL_RC" ]] && [[ -f "$SHELL_RC" ]]; then
+  echo "Sourcing $SHELL_RC to make flx command available immediately..."
+  source "$SHELL_RC"
+fi
+
 # ------------------------------
 # 7. Final message and instructions
 # ------------------------------
@@ -343,10 +349,7 @@ center ""
 center "Eval conjures apply, and apply folds back into eval—"
 center "the primal pulse animating creation itself. In that"
 center "recursive beat, code and cosmos mirror one another,"
-center "fulfilling the alchemists’ vow *as above, so below*."
-center ""
-center "Hand in hand, explorer, we entwingle the unfolding"
-center "cosmos — transmutation at machine speed! 🍾"
+center "as the ancients gifted us - *as above, so below*."
 center ""
 center "☿   🜄   🜃   🜂   🜁"
 echo "╚════════════════════════════════════════════════════════════════╝"
@@ -360,9 +363,6 @@ echo "├───────────────────────�
 echo "│                                      │"
 echo "│  \$ flx                               │"
 echo "│  # Starts Flamelex                   │"
-echo "│                                      │"
-echo "│  \$ flx --help                        │"
-echo "│  # Show help (if available)          │"
 echo "│                                      │"
 echo "╰──────────────────────────────────────╯"
 echo ""
